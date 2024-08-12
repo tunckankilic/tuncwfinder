@@ -1,0 +1,9 @@
+export 'auth/pages/login_screen.dart';
+export 'auth/pages/register_screen.dart';
+export 'splash/splash_screen.dart';
+export 'home/home_screen.dart';
+export 'favoritesent/fsfr.dart';
+export 'likesent/lslr.dart';
+export 'swipe/swipe_screen.dart';
+export 'viewsent/vsvr.dart';
+export "profile/user_details/user_details.dart";
