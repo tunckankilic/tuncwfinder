@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tuncdating/service/service.dart';
+import 'package:tuncwfinder/service/service.dart';
 
 class VsvrController extends GetxController {
   RxBool isViewSentClicked = true.obs;

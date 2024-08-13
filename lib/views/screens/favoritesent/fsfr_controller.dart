@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tuncdating/service/global.dart';
+import 'package:tuncwfinder/service/global.dart';
 
 class FsfrController extends GetxController {
   RxBool isFavoriteSentClicked = true.obs;

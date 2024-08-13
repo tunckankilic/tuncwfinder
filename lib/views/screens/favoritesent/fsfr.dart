@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:tuncdating/service/service.dart';
-import 'package:tuncdating/views/screens/favoritesent/fsfr_controller.dart';
+import 'package:tuncwfinder/service/service.dart';
+import 'package:tuncwfinder/views/screens/favoritesent/fsfr_controller.dart';
 
 class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
-  FavoriteSendFavoriteReceived({Key? key}) : super(key: key);
+  const FavoriteSendFavoriteReceived({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildTabButton("My Favorites", true),
-            Text(
+            const Text(
               "   |   ",
               style: TextStyle(color: ElegantTheme.accentBordeaux),
             ),
@@ -27,7 +27,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
         centerTitle: true,
       ),
       body: Obx(() => controller.favoritesList.isEmpty
-          ? Center(
+          ? const Center(
               child: Icon(
                 Icons.favorite_border,
                 color: ElegantTheme.accentBordeaux,
@@ -116,15 +116,15 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.location_on_outlined,
                       color: Colors.white70,
                       size: 16,
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         "${user["city"]}, ${user["country"]}",

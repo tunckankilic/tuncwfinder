@@ -1,5 +1,5 @@
-import 'package:tuncdating/service/service.dart';
-import 'package:tuncdating/views/screens/viewsent/vsvr_controller.dart';
+import 'package:tuncwfinder/service/service.dart';
+import 'package:tuncwfinder/views/screens/viewsent/vsvr_controller.dart';
 
 class VSVRBindings extends Bindings {
   @override

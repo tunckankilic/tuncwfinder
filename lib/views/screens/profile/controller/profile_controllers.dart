@@ -1,271 +1,156 @@
 import 'dart:convert';
-
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tuncdating/models/person.dart';
-import 'package:tuncdating/service/global.dart';
+import 'package:tuncwfinder/models/person.dart';
+import 'package:tuncwfinder/service/global.dart';
 import 'package:http/http.dart' as http;
-import 'package:tuncdating/views/screens/auth/pages/screens.dart';
+import 'package:tuncwfinder/views/screens/auth/pages/screens.dart';
 
 class ProfileController extends GetxController {
   final Rx<List<Person>> usersProfileList = Rx<List<Person>>([]);
   List<Person> get allUsersProfileList => usersProfileList.value;
-  getResults() {
-    onInit();
-  }
 
-  Future<void> signOut(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
-  }
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void onInit() {
     super.onInit();
-
-    if (chosenGender == null || chosenCountry == null || chosenAge == null) {
-      usersProfileList.bindStream(FirebaseFirestore.instance
-          .collection("users")
-          .where("uid", isNotEqualTo: FirebaseAuth.instance.currentUser!.uid)
-          .snapshots()
-          .map((QuerySnapshot queryDataSnapshot) {
-        List<Person> profilesList = [];
-
-        for (var eachProfile in queryDataSnapshot.docs) {
-          profilesList.add(Person.fromDataSnapshot(eachProfile));
-        }
-        return profilesList;
-      }));
-    } else {
-      usersProfileList.bindStream(FirebaseFirestore.instance
-          .collection("users")
-          .where("gender", isEqualTo: chosenGender.toString().toLowerCase())
-          .where("country", isEqualTo: chosenCountry.toString())
-          .where("age", isGreaterThanOrEqualTo: int.parse(chosenAge.toString()))
-          .snapshots()
-          .map((QuerySnapshot queryDataSnapshot) {
-        List<Person> profilesList = [];
-
-        for (var eachProfile in queryDataSnapshot.docs) {
-          profilesList.add(Person.fromDataSnapshot(eachProfile));
-        }
-        return profilesList;
-      }));
-    }
+    _initializeProfileStream();
   }
 
-  favoriteSentAndFavoriteReceived(
+  void _initializeProfileStream() {
+    Query query = _firestore
+        .collection("users")
+        .where("uid", isNotEqualTo: _auth.currentUser!.uid);
+
+    if (chosenGender != null && chosenCountry != null && chosenAge != null) {
+      query = query
+          .where("gender", isEqualTo: chosenGender.toString().toLowerCase())
+          .where("country", isEqualTo: chosenCountry)
+          .where("age",
+              isGreaterThanOrEqualTo: int.parse(chosenAge.toString()));
+    }
+
+    usersProfileList.bindStream(query.snapshots().map((querySnapshot) {
+      return querySnapshot.docs
+          .map((doc) => Person.fromDataSnapshot(doc))
+          .toList();
+    }));
+  }
+
+  Future<void> signOut() async {
+    await _auth.signOut();
+    Get.offAllNamed(LoginScreen.routeName);
+  }
+
+  Future<void> toggleFavorite(
       {required String toUserID, required String senderName}) async {
-    var document = await FirebaseFirestore.instance
+    await _toggleInteraction(
+      toUserID: toUserID,
+      senderName: senderName,
+      interactionType: "favorite",
+      notificationType: "Favorite",
+    );
+  }
+
+  Future<void> toggleView(
+      {required String toUserId, required String senderName}) async {
+    await _toggleInteraction(
+      toUserID: toUserId,
+      senderName: senderName,
+      interactionType: "view",
+      notificationType: "View",
+    );
+  }
+
+  Future<void> toggleLike(
+      {required String toUserId, required String senderName}) async {
+    await _toggleInteraction(
+      toUserID: toUserId,
+      senderName: senderName,
+      interactionType: "like",
+      notificationType: "Like",
+    );
+  }
+
+  Future<void> _toggleInteraction({
+    required String toUserID,
+    required String senderName,
+    required String interactionType,
+    required String notificationType,
+  }) async {
+    final receivedRef = _firestore
         .collection("users")
         .doc(toUserID)
-        .collection("favoriteReceived")
-        .doc(currentUserId)
-        .get();
-
-    //remove the favorite from database
-    if (document.exists) {
-      //remove currentUserId from the favoriteReceived list of that profile person [toUserID]
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(toUserID)
-          .collection("favoriteReceived")
-          .doc(currentUserId)
-          .delete();
-
-      //remove profile person [toUserID] from the favoriteSent list of the currentUser
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(currentUserId)
-          .collection("favoriteSent")
-          .doc(toUserID)
-          .delete();
-    } else //mark as favorite //add favorite in database
-    {
-      //add currentUserId to the favoriteReceived list of that profile person [toUserID]
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(toUserID)
-          .collection("favoriteReceived")
-          .doc(currentUserId)
-          .set({});
-
-      //add profile person [toUserID] to the favoriteSent list of the currentUser
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(currentUserId)
-          .collection("favoriteSent")
-          .doc(toUserID)
-          .set({});
-
-      //send notification
-      sendNotificationToUser(toUserID, "Favorite", senderName);
-    }
-
-    update();
-  }
-
-  viewSentAndViewReceived(
-      {required String toUserId, required String senderName}) async {
-    var document = await FirebaseFirestore.instance
+        .collection("${interactionType}Received")
+        .doc(currentUserId);
+    final sentRef = _firestore
         .collection("users")
-        .doc(toUserId)
-        .collection("viewReceived")
         .doc(currentUserId)
-        .get();
+        .collection("${interactionType}Sent")
+        .doc(toUserID);
 
-    //remove the likes from database
-    if (document.exists) {
-      //remove currentUserId from the favoriteReceived list of that profile person [toUserID]
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(toUserId)
-          .collection("viewReceived")
-          .doc(currentUserId)
-          .delete();
+    final exists = await receivedRef.get().then((doc) => doc.exists);
 
-      //remove profile person [toUserID] from the likeSent list of the currentUser
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(currentUserId)
-          .collection("viewSent")
-          .doc(toUserId)
-          .delete();
-    } else //mark as Liked //add Liked in database
-    {
-      //add currentUserId to the likeReceived list of that profile person [toUserID]
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(toUserId)
-          .collection("viewReceived")
-          .doc(currentUserId)
-          .set({});
-
-      //add profile person [toUserID] to the likeSent list of the currentUser
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(currentUserId)
-          .collection("viewSent")
-          .doc(toUserId)
-          .set({});
-
-      //send notification
-      sendNotificationToUser(toUserId, "Viewe", senderName);
+    if (exists) {
+      await Future.wait([receivedRef.delete(), sentRef.delete()]);
+    } else {
+      await Future.wait([receivedRef.set({}), sentRef.set({})]);
+      await sendNotificationToUser(toUserID, notificationType, senderName);
     }
 
     update();
   }
 
-  likeSentAndLikeReceived(
-      {required String toUserId, required String senderName}) async {
-    var document = await FirebaseFirestore.instance
-        .collection("users")
-        .doc(toUserId)
-        .collection("likeReceived")
-        .doc(currentUserId)
-        .get();
-
-    //remove the likes from database
-    if (document.exists) {
-      //remove currentUserId from the favoriteReceived list of that profile person [toUserID]
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(toUserId)
-          .collection("likeReceived")
-          .doc(currentUserId)
-          .delete();
-
-      //remove profile person [toUserID] from the likeSent list of the currentUser
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(currentUserId)
-          .collection("likeSent")
-          .doc(toUserId)
-          .delete();
-    } else //mark as Liked //add Liked in database
-    {
-      //add currentUserId to the likeReceived list of that profile person [toUserID]
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(toUserId)
-          .collection("likeReceived")
-          .doc(currentUserId)
-          .set({});
-
-      //add profile person [toUserID] to the likeSent list of the currentUser
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(currentUserId)
-          .collection("likeSent")
-          .doc(toUserId)
-          .set({});
-
-      //send notification
-      sendNotificationToUser(toUserId, "Like", senderName);
-    }
-
-    update();
-  }
-
-  sendNotificationToUser(receiverID, featureType, senderName) async {
-    String userDeviceToken = "";
-
-    await FirebaseFirestore.instance
+  Future<void> sendNotificationToUser(
+      String receiverID, String featureType, String senderName) async {
+    final userDeviceToken = await _firestore
         .collection("users")
         .doc(receiverID)
         .get()
-        .then((snapshot) {
-      if (snapshot.data()!["userDeviceToken"] != null) {
-        userDeviceToken = snapshot.data()!["userDeviceToken"].toString();
-      }
-    });
+        .then((snapshot) => snapshot.data()?["userDeviceToken"] as String?);
 
-    notificationFormat(
-      userDeviceToken,
-      receiverID,
-      featureType,
-      senderName,
-    );
+    if (userDeviceToken != null) {
+      await _sendNotification(
+          userDeviceToken, receiverID, featureType, senderName);
+    }
   }
 
-  notificationFormat(
-    userDeviceToken,
-    receiverID,
-    featureType,
-    senderName,
-  ) {
-    Map<String, String> headerNotification = {
+  Future<void> _sendNotification(String userDeviceToken, String receiverID,
+      String featureType, String senderName) async {
+    final url = Uri.parse("https://fcm.googleapis.com/fcm/send");
+    final headers = {
       "Content-Type": "application/json",
-      "Authorization": fcmServerToken,
+      "Authorization": "key=$fcmServerToken",
     };
 
-    Map bodyNotification = {
-      "body":
-          "you have received a new $featureType from $senderName. Click to see.",
-      "title": "New $featureType",
-    };
-
-    Map dataMap = {
-      "click_action": "FLUTTER_NOTIFICATION_CLICK",
-      "id": "1",
-      "status": "done",
-      "userID": receiverID,
-      "senderID": currentUserId,
-    };
-
-    Map notificationOfficialFormat = {
-      "notification": bodyNotification,
-      "data": dataMap,
+    final body = jsonEncode({
+      "notification": {
+        "body":
+            "You have received a new $featureType from $senderName. Click to see.",
+        "title": "New $featureType",
+      },
+      "data": {
+        "click_action": "FLUTTER_NOTIFICATION_CLICK",
+        "id": "1",
+        "status": "done",
+        "userID": receiverID,
+        "senderID": currentUserId,
+      },
       "priority": "high",
       "to": userDeviceToken,
-    };
+    });
 
-    http.post(
-      Uri.parse("https://fcm.googleapis.com/fcm/send"),
-      headers: headerNotification,
-      body: jsonEncode(notificationOfficialFormat),
-    );
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      if (response.statusCode != 200) {
+        log('Failed to send notification. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      log('Error sending notification: $e');
+    }
   }
 }

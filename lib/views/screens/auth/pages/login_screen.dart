@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:tuncdating/service/service.dart';
-import 'package:tuncdating/views/screens/auth/controller/auth_controller.dart';
-import 'package:tuncdating/views/screens/screens.dart';
+import 'package:tuncwfinder/service/service.dart';
+import 'package:tuncwfinder/views/screens/auth/controller/auth_controller.dart';
+import 'package:tuncwfinder/views/screens/screens.dart';
 
 class LoginScreen extends GetView<AuthController> {
   static const routeName = "/login";
@@ -40,7 +40,7 @@ class LoginScreen extends GetView<AuthController> {
 
   Widget _buildHeader() {
     return Text(
-      "Welcome to Workpid",
+      "Welcome to TuncWFinder",
       style: ElegantTheme.textTheme.headlineMedium?.copyWith(
         color: ElegantTheme.primaryColor,
         fontWeight: FontWeight.bold,

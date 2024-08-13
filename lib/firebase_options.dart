@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAHnJ_p6_fAEmMW58UQ6ygpAm08mEU4IUM',
-    appId: '1:478614026227:android:f486f00d8891820d6d8486',
+    appId: '1:478614026227:android:e669fe1348f74ef66d8486',
     messagingSenderId: '478614026227',
     projectId: 'tuncdating-ac461',
     storageBucket: 'tuncdating-ac461.appspot.com',
@@ -59,13 +59,13 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCb8LjIvPsOUvpe6E1qc0zo6U0WI1ehSqc',
-    appId: '1:478614026227:ios:e62c01189fdc95906d8486',
+    appId: '1:478614026227:ios:fd60452c1ff9f3a76d8486',
     messagingSenderId: '478614026227',
     projectId: 'tuncdating-ac461',
     storageBucket: 'tuncdating-ac461.appspot.com',
-    androidClientId: '478614026227-u6c2ejklm2ogh8ts80ib056c77pdfr2b.apps.googleusercontent.com',
-    iosClientId: '478614026227-9ldich368blehqdvelf3v3sovh2n02h8.apps.googleusercontent.com',
-    iosBundleId: 'site.tunckankilic.tuncdating',
+    androidClientId: '478614026227-9jpqttadmm002j80mgghl5qmg69v06ei.apps.googleusercontent.com',
+    iosClientId: '478614026227-koh37f005vi80o8856eg1tu3v2ui5tp2.apps.googleusercontent.com',
+    iosBundleId: 'site.tunckankilic.tuncwfinder',
   );
 
 }

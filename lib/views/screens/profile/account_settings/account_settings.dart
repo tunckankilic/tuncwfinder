@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:tuncdating/service/service.dart';
-import 'package:tuncdating/views/screens/profile/account_settings/account_settings_controller.dart';
+import 'package:tuncwfinder/service/service.dart';
+import 'package:tuncwfinder/views/screens/profile/account_settings/account_settings_controller.dart';
 
 class AccountSettings extends GetView<AccountSettingsController> {
-  AccountSettings({Key? key}) : super(key: key);
+  const AccountSettings({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class AccountSettings extends GetView<AccountSettingsController> {
         Obx(
           () => !controller.next.value
               ? IconButton(
-                  icon: Icon(Icons.arrow_forward, color: Colors.white),
+                  icon: const Icon(Icons.arrow_forward, color: Colors.white),
                   onPressed: () {
                     if (controller.images.length == 5) {
                       controller.next.value = true;
@@ -48,9 +48,9 @@ class AccountSettings extends GetView<AccountSettingsController> {
     return Stack(
       children: [
         GridView.builder(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           itemCount: controller.images.length + 1,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             crossAxisSpacing: 8,
             mainAxisSpacing: 8,
@@ -68,7 +68,7 @@ class AccountSettings extends GetView<AccountSettingsController> {
               ? Center(
                   child: CircularProgressIndicator(
                     value: controller.uploadProgress.value,
-                    valueColor: AlwaysStoppedAnimation<Color>(
+                    valueColor: const AlwaysStoppedAnimation<Color>(
                         ElegantTheme.primaryColor),
                   ),
                 )
@@ -86,7 +86,7 @@ class AccountSettings extends GetView<AccountSettingsController> {
           color: ElegantTheme.primaryColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(Icons.add_photo_alternate,
+        child: const Icon(Icons.add_photo_alternate,
             color: ElegantTheme.primaryColor, size: 40),
       ),
     );
@@ -101,7 +101,7 @@ class AccountSettings extends GetView<AccountSettingsController> {
 
   Widget _buildProfileForm() {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -162,7 +162,7 @@ class AccountSettings extends GetView<AccountSettingsController> {
           _buildTextField(
               controller.linkedInController, "LinkedIn", Icons.work),
           _buildTextField(controller.gitHubController, "GitHub", Icons.code),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildUpdateButton(),
         ],
       ),
@@ -192,7 +192,8 @@ class AccountSettings extends GetView<AccountSettingsController> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: ElegantTheme.primaryColor, width: 2),
+            borderSide:
+                const BorderSide(color: ElegantTheme.primaryColor, width: 2),
           ),
         ),
       ),
@@ -202,12 +203,12 @@ class AccountSettings extends GetView<AccountSettingsController> {
   Widget _buildUpdateButton() {
     return ElevatedButton(
       onPressed: controller.updateUserDataToFirestore,
-      child: Text("Update Profile"),
       style: ElevatedButton.styleFrom(
         backgroundColor: ElegantTheme.primaryColor,
-        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
+      child: const Text("Update Profile"),
     );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tuncdating/views/screens/screens.dart';
+import 'package:tuncwfinder/views/screens/screens.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {

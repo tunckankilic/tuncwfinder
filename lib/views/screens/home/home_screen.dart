@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tuncdating/service/service.dart';
-import 'package:tuncdating/views/screens/home/home_controller.dart';
+import 'package:tuncwfinder/service/service.dart';
+import 'package:tuncwfinder/views/screens/home/home_controller.dart';
 
 class HomeScreen extends GetView<HomeController> {
   static const routeName = "/home";
@@ -9,6 +9,7 @@ class HomeScreen extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    PushNotificationSystem().whenNotificationReceived(context);
     return GetBuilder<HomeController>(
       init: HomeController(),
       builder: (controller) {

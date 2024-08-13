@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:tuncdating/service/service.dart';
-import 'package:tuncdating/views/screens/viewsent/vsvr_controller.dart';
+import 'package:tuncwfinder/service/service.dart';
+import 'package:tuncwfinder/views/screens/viewsent/vsvr_controller.dart';
 
 class ViewSentViewReceive extends StatelessWidget {
   final VsvrController controller = Get.put(VsvrController());

@@ -1,10 +1,10 @@
 import "package:flutter/material.dart";
 import "package:flutter_svg/svg.dart";
-import "package:tuncdating/service/service.dart";
-import "package:tuncdating/views/screens/swipe/swipe_controller.dart";
+import "package:tuncwfinder/service/service.dart";
+import "package:tuncwfinder/views/screens/swipe/swipe_controller.dart";
 
 class SwipeScreen extends GetView<SwipeController> {
-  SwipeScreen({Key? key}) : super(key: key);
+  const SwipeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +69,7 @@ class SwipeScreen extends GetView<SwipeController> {
       alignment: Alignment.topRight,
       child: IconButton(
         onPressed: controller.applyFilter,
-        icon: Icon(
+        icon: const Icon(
           Icons.filter_list_outlined,
           size: 30,
           color: ElegantTheme.textColor,
@@ -89,14 +89,14 @@ class SwipeScreen extends GetView<SwipeController> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Text(
           "${eachProfile["age"] ?? "XX"} • ${eachProfile["city"] ?? "XX"}",
           style: ElegantTheme.textTheme.titleMedium!.copyWith(
             color: Colors.white70,
           ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Wrap(
           spacing: 8,
           runSpacing: 8,

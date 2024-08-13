@@ -1,14 +1,10 @@
-import 'dart:developer';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:tuncdating/service/global.dart';
-import 'package:tuncdating/service/service.dart';
-import 'package:tuncdating/views/screens/likesent/lslr_controller.dart';
+import 'package:tuncwfinder/service/service.dart';
+import 'package:tuncwfinder/views/screens/likesent/lslr_controller.dart';
 
 class LikeSentLikeReceived extends GetView<LslrController> {
-  LikeSentLikeReceived({Key? key}) : super(key: key);
+  const LikeSentLikeReceived({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +17,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildTabButton("My Likes", true),
-            Text(
+            const Text(
               "   |   ",
               style: TextStyle(color: ElegantTheme.accentBordeaux),
             ),
@@ -31,7 +27,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
         centerTitle: true,
       ),
       body: Obx(() => controller.likedList.isEmpty
-          ? Center(
+          ? const Center(
               child: Icon(
                 Icons.favorite_border,
                 color: ElegantTheme.accentBordeaux,
@@ -119,15 +115,15 @@ class LikeSentLikeReceived extends GetView<LslrController> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.location_on_outlined,
                       color: Colors.white70,
                       size: 16,
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         "${user["city"]}, ${user["country"]}",

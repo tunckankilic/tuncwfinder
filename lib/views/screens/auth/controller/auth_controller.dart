@@ -5,9 +5,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:tuncdating/models/person.dart' as pM;
-import 'package:tuncdating/views/screens/home/home_bindings.dart';
-import 'package:tuncdating/views/screens/screens.dart';
+import 'package:tuncwfinder/models/person.dart' as pM;
+import 'package:tuncwfinder/views/screens/home/home_bindings.dart';
+import 'package:tuncwfinder/views/screens/screens.dart';
 
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
@@ -81,9 +81,9 @@ class AuthController extends GetxController {
 
   _setInitialScreen(User? user) {
     if (user == null) {
-      Get.offAll(() => LoginScreen());
+      Get.offAll(() => const LoginScreen());
     } else {
-      Get.offAll(() => HomeScreen());
+      Get.offAll(() => const HomeScreen());
     }
   }
 
@@ -144,7 +144,7 @@ class AuthController extends GetxController {
             .set(newUser.toJson());
 
         Get.snackbar('Success', 'Account created successfully');
-        Get.offAll(() => HomeScreen());
+        Get.offAll(() => const HomeScreen());
       }
     } catch (error) {
       Get.snackbar('Error', error.toString());
@@ -160,7 +160,7 @@ class AuthController extends GetxController {
         email: emailController.text,
         password: passwordController.text,
       );
-      Get.offAll(() => HomeScreen(), binding: HomeBindings());
+      Get.offAll(() => const HomeScreen(), binding: HomeBindings());
     } catch (error) {
       Get.snackbar('Error', error.toString());
     } finally {

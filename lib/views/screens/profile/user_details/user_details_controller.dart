@@ -3,10 +3,10 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tuncdating/service/global.dart';
-import 'package:tuncdating/views/screens/auth/controller/auth_bindings.dart';
-import 'package:tuncdating/views/screens/auth/pages/screens.dart';
-import 'package:tuncdating/views/screens/profile/account_settings/account_settings.dart';
+import 'package:tuncwfinder/service/global.dart';
+import 'package:tuncwfinder/views/screens/auth/controller/auth_bindings.dart';
+import 'package:tuncwfinder/views/screens/auth/pages/screens.dart';
+import 'package:tuncwfinder/views/screens/profile/account_settings/account_settings.dart';
 
 class UserDetailsController extends GetxController {
   final String? userId;
@@ -125,7 +125,7 @@ class UserDetailsController extends GetxController {
   }
 
   void navigateToAccountSettings() {
-    Get.to(() => AccountSettings());
+    Get.to(() => const AccountSettings());
   }
 
   void signOut() {

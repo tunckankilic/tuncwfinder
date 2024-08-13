@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tuncdating/service/service.dart';
-import 'package:tuncdating/views/screens/auth/controller/auth_controller.dart';
+import 'package:tuncwfinder/service/service.dart';
+import 'package:tuncwfinder/views/screens/auth/controller/auth_controller.dart';
 
 class RegistrationScreen extends GetView<AuthController> {
   static const routeName = "/register";
@@ -224,11 +224,12 @@ class RegistrationScreen extends GetView<AuthController> {
           prefixIcon: Icon(icon, color: ElegantTheme.primaryColor),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: ElegantTheme.primaryColor),
+            borderSide: const BorderSide(color: ElegantTheme.primaryColor),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: ElegantTheme.primaryColor, width: 2),
+            borderSide:
+                const BorderSide(color: ElegantTheme.primaryColor, width: 2),
           ),
         ),
       ),
@@ -242,13 +243,13 @@ class RegistrationScreen extends GetView<AuthController> {
         onPressed: () async {
           await controller.register();
         },
-        child: Text("Create Account", style: ElegantTheme.textTheme.labelLarge),
         style: ElevatedButton.styleFrom(
           backgroundColor: ElegantTheme.primaryColor,
           padding: const EdgeInsets.symmetric(vertical: 15),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
+        child: Text("Create Account", style: ElegantTheme.textTheme.labelLarge),
       ),
     );
   }
@@ -274,7 +275,7 @@ class RegistrationScreen extends GetView<AuthController> {
 
   Widget _buildProgressIndicator() {
     return Obx(() => controller.isLoading.value
-        ? Center(
+        ? const Center(
             child: CircularProgressIndicator(
                 valueColor:
                     AlwaysStoppedAnimation<Color>(ElegantTheme.primaryColor)))
