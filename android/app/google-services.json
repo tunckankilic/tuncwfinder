@@ -7,6 +7,42 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:478614026227:android:d4db3ee858c1ac466d8486",
+        "android_client_info": {
+          "package_name": "site.tunckankilic.tuncforwork"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "478614026227-ep2l1766bnt8me9ef0r2rcv0pvk1bfb3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHnJ_p6_fAEmMW58UQ6ygpAm08mEU4IUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "478614026227-ep2l1766bnt8me9ef0r2rcv0pvk1bfb3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "478614026227-9ldich368blehqdvelf3v3sovh2n02h8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "site.tunckankilic.tuncdating"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:478614026227:android:e669fe1348f74ef66d8486",
         "android_client_info": {
           "package_name": "site.tunckankilic.tuncwfinder"

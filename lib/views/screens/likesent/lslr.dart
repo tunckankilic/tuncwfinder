@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:tuncwfinder/service/service.dart';
-import 'package:tuncwfinder/views/screens/likesent/lslr_controller.dart';
+import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
 
 class LikeSentLikeReceived extends GetView<LslrController> {
   const LikeSentLikeReceived({Key? key}) : super(key: key);

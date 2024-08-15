@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>478614026227-koh37f005vi80o8856eg1tu3v2ui5tp2.apps.googleusercontent.com</string>
+	<string>478614026227-smlink6n5ml74fia9lqrh0js3p7k7mls.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.478614026227-koh37f005vi80o8856eg1tu3v2ui5tp2</string>
+	<string>com.googleusercontent.apps.478614026227-smlink6n5ml74fia9lqrh0js3p7k7mls</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>478614026227-9jpqttadmm002j80mgghl5qmg69v06ei.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>site.tunckankilic.tuncwfinder</string>
+	<string>site.tunckankilic.tuncforwork</string>
 	<key>PROJECT_ID</key>
 	<string>tuncdating-ac461</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:478614026227:ios:fd60452c1ff9f3a76d8486</string>
+	<string>1:478614026227:ios:ba165032bd2ba8246d8486</string>
 </dict>
 </plist>

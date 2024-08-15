@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tuncwfinder/service/global.dart';
-import 'package:tuncwfinder/views/screens/screens.dart';
+import 'package:tuncforwork/service/global.dart';
+import 'package:tuncforwork/views/screens/screens.dart';
 
 class PushNotificationSystem {
   FirebaseMessaging messaging = FirebaseMessaging.instance;

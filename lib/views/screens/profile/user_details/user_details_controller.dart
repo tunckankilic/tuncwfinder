@@ -3,10 +3,10 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tuncwfinder/service/global.dart';
-import 'package:tuncwfinder/views/screens/auth/controller/auth_bindings.dart';
-import 'package:tuncwfinder/views/screens/auth/pages/screens.dart';
-import 'package:tuncwfinder/views/screens/profile/account_settings/account_settings.dart';
+import 'package:tuncforwork/service/global.dart';
+import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
+import 'package:tuncforwork/views/screens/auth/pages/screens.dart';
+import 'package:tuncforwork/views/screens/profile/account_settings/account_settings.dart';
 
 class UserDetailsController extends GetxController {
   final String? userId;

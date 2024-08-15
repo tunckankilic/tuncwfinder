@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tuncwfinder/service/service.dart';
+import 'package:tuncforwork/service/service.dart';
 
 class LslrController extends GetxController {
   RxBool isLikeSentClicked = true.obs;

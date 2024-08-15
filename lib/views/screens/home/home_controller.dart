@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:tuncwfinder/service/service.dart';
-import 'package:tuncwfinder/views/screens/screens.dart';
-import 'package:tuncwfinder/views/screens/swipe/swipe_bindings.dart';
+import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/screens.dart';
+import 'package:tuncforwork/views/screens/swipe/swipe_bindings.dart';
 
 class HomeController extends GetxController {
   RxInt screenIndex = 0.obs;

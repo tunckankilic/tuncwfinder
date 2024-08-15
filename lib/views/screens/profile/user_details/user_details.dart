@@ -2,8 +2,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
-import 'package:tuncwfinder/service/service.dart';
-import 'package:tuncwfinder/views/screens/profile/user_details/user_details_controller.dart';
+import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
 
 class UserDetails extends GetView<UserDetailsController> {
   static const routeName = "/user";

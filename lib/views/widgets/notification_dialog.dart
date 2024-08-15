@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tuncwfinder/views/screens/screens.dart';
+import 'package:tuncforwork/views/screens/screens.dart';
 
 class NotificationDialog extends StatelessWidget {
   final String name;

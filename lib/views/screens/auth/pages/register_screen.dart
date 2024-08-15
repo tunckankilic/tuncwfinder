@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tuncwfinder/service/service.dart';
-import 'package:tuncwfinder/views/screens/auth/controller/auth_controller.dart';
+import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 
 class RegistrationScreen extends GetView<AuthController> {
   static const routeName = "/register";

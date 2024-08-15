@@ -5,9 +5,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:tuncwfinder/models/person.dart' as pM;
-import 'package:tuncwfinder/views/screens/home/home_bindings.dart';
-import 'package:tuncwfinder/views/screens/screens.dart';
+import 'package:tuncforwork/models/person.dart' as pM;
+import 'package:tuncforwork/views/screens/home/home_bindings.dart';
+import 'package:tuncforwork/views/screens/screens.dart';
 
 class AuthController extends GetxController {
   static AuthController instance = Get.find();

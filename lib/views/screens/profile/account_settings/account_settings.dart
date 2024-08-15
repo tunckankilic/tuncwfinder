@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:tuncwfinder/service/service.dart';
-import 'package:tuncwfinder/views/screens/profile/account_settings/account_settings_controller.dart';
+import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/profile/account_settings/account_settings_controller.dart';
 
 class AccountSettings extends GetView<AccountSettingsController> {
   const AccountSettings({Key? key}) : super(key: key);

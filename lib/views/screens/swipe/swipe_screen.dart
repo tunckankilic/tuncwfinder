@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_svg/svg.dart";
-import "package:tuncwfinder/service/service.dart";
-import "package:tuncwfinder/views/screens/swipe/swipe_controller.dart";
+import "package:tuncforwork/service/service.dart";
+import "package:tuncforwork/views/screens/swipe/swipe_controller.dart";
 
 class SwipeScreen extends GetView<SwipeController> {
   const SwipeScreen({Key? key}) : super(key: key);

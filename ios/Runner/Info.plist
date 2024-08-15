@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Tuncwfinder</string>
+	<string>TuncForWork</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>tuncwfinder</string>
+	<string>tuncforwork</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -26,12 +26,14 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Bu uygulama, müzik özelliklerini kullanmak için Apple Music'e erişim gerektirebilir.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>This app requires access to the camera.</string>
+	<string>Bu uygulama, profil fotoğrafı çekmek ve içerik paylaşmak için kameraya erişim gerektiriyor.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app does not require access to the microphone.</string>
+	<string>Bu uygulama, sesli mesajlar ve video kayıtları için mikrofona erişim gerektiriyor.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app requires access to the photo library.</string>
+	<string>Bu uygulama, fotoğraf seçmenize ve paylaşmanıza izin vermek için fotoğraf kütüphanesine erişim gerektiriyor.</string>
 	<key>NSUserNotificationUsageDescription</key>
 	<string>Bu uygulama size önemli güncellemeler ve bilgiler göndermek için bildirim göndermek istiyor.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

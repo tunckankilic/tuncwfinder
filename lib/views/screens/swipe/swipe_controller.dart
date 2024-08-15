@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:tuncwfinder/service/global.dart';
+import 'package:tuncforwork/service/global.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SwipeController extends GetxController {
