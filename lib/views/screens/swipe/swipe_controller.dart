@@ -145,7 +145,7 @@ class SwipeController extends GetxController {
 
   void openLinkedInProfile(
       {required String linkedInUsername, required BuildContext context}) async {
-    var url = "https://www.linkedin.com/in/$linkedInUsername";
+    var url = linkedInUsername;
 
     try {
       if (await canLaunchUrl(Uri.parse(url))) {
@@ -176,21 +176,14 @@ class SwipeController extends GetxController {
   void openInstagramProfile(
       {required String instagramUsername,
       required BuildContext context}) async {
-    var instagramUrl = "instagram://user?username=$instagramUsername";
-    var webUrl = "https://www.instagram.com/$instagramUsername";
+    var webUrl = instagramUsername;
 
     try {
-      if (await canLaunchUrl(Uri.parse(instagramUrl))) {
-        await launchUrl(Uri.parse(instagramUrl),
+      if (await canLaunchUrl(Uri.parse(webUrl))) {
+        await launchUrl(Uri.parse(webUrl),
             mode: LaunchMode.externalApplication);
       } else {
-        // Eğer Instagram uygulaması yüklü değilse, web sayfasını aç
-        if (await canLaunchUrl(Uri.parse(webUrl))) {
-          await launchUrl(Uri.parse(webUrl),
-              mode: LaunchMode.externalApplication);
-        } else {
-          throw 'Could not launch $webUrl';
-        }
+        throw 'Could not launch $webUrl';
       }
     } catch (e) {
       showDialog(

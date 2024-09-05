@@ -153,4 +153,15 @@ class ProfileController extends GetxController {
       log('Error sending notification: $e');
     }
   }
+
+  Future<void> deleteAccount() async {
+    try {
+      await _firestore.collection('users').doc(_auth.currentUser?.uid).delete();
+      await _auth.currentUser?.delete();
+      // await logout();
+      Get.snackbar('Success', 'Account deleted successfully');
+    } catch (error) {
+      Get.snackbar('Error', 'Failed to delete account: ${error.toString()}');
+    }
+  }
 }

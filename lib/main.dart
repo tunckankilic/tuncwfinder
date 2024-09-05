@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
+import 'package:tuncforwork/views/screens/home/home_bindings.dart';
 import 'package:tuncforwork/views/screens/home/home_controller.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -28,37 +30,11 @@ Future<void> initializeApp() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await requestNotificationPermission();
-  await setupFCM();
 }
 
 Future<void> requestNotificationPermission() async {
   final status = await Permission.notification.request();
   log('Notification permission status: $status');
-}
-
-Future<void> setupFCM() async {
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
-
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    log("Foreground message received: ${message.messageId}");
-    // Implement your foreground message handling logic here
-    // You might want to use a local notification plugin to show the notification
-  });
-
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    log("App opened from background state: ${message.messageId}");
-    // Implement navigation or other logic when the app is opened from a notification
-  });
-
-  String? token = await FirebaseMessaging.instance.getToken();
-  log("FCM Token: $token");
-  // TODO: Send this token to your server
 }
 
 class MyApp extends StatelessWidget {
@@ -83,8 +59,6 @@ class InitialBindings extends Bindings {
   @override
   void dependencies() {
     Get.put(PushNotificationSystem()); // Assuming you have this controller
-    FirebaseAuth.instance.currentUser != null
-        ? Get.lazyPut(() => HomeController())
-        : Get.lazyPut(() => AuthController());
+    FirebaseAuth.instance.currentUser != null ? HomeBindings() : AuthBindings();
   }
 }

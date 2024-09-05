@@ -35,7 +35,6 @@ class Person {
   String? income;
   String? livingSituation;
   String? willingToRelocate;
-  String? relationshipYouAreLookingFor;
 
   //Background - Cultural Values
   String? nationality;
@@ -79,7 +78,6 @@ class Person {
     this.income,
     this.livingSituation,
     this.willingToRelocate,
-    this.relationshipYouAreLookingFor,
     this.nationality,
     this.education,
     this.languageSpoken,
@@ -125,8 +123,6 @@ class Person {
         income: dataSnapshot["income"],
         livingSituation: dataSnapshot["livingSituation"],
         willingToRelocate: dataSnapshot["willingToRelocate"],
-        relationshipYouAreLookingFor:
-            dataSnapshot["relationshipYouAreLookingFor"],
 
         //Background - Cultural Values
         nationality: dataSnapshot["nationality"],
@@ -173,7 +169,6 @@ class Person {
         "income": income,
         "livingSituation": livingSituation,
         "willingToRelocate": willingToRelocate,
-        "relationshipYouAreLookingFor": relationshipYouAreLookingFor,
 
         //Background - Cultural Values
         "nationality": nationality,
@@ -215,7 +210,6 @@ class Person {
     String? income,
     String? livingSituation,
     String? willingToRelocate,
-    String? relationshipYouAreLookingFor,
     String? nationality,
     String? education,
     String? languageSpoken,
@@ -252,8 +246,6 @@ class Person {
       income: income ?? this.income,
       livingSituation: livingSituation ?? this.livingSituation,
       willingToRelocate: willingToRelocate ?? this.willingToRelocate,
-      relationshipYouAreLookingFor:
-          relationshipYouAreLookingFor ?? this.relationshipYouAreLookingFor,
       nationality: nationality ?? this.nationality,
       education: education ?? this.education,
       languageSpoken: languageSpoken ?? this.languageSpoken,
@@ -293,7 +285,6 @@ class Person {
       'income': income,
       'livingSituation': livingSituation,
       'willingToRelocate': willingToRelocate,
-      'relationshipYouAreLookingFor': relationshipYouAreLookingFor,
       'nationality': nationality,
       'education': education,
       'languageSpoken': languageSpoken,
@@ -350,9 +341,6 @@ class Person {
       willingToRelocate: map['willingToRelocate'] != null
           ? map['willingToRelocate'] as String
           : null,
-      relationshipYouAreLookingFor: map['relationshipYouAreLookingFor'] != null
-          ? map['relationshipYouAreLookingFor'] as String
-          : null,
       nationality:
           map['nationality'] != null ? map['nationality'] as String : null,
       education: map['education'] != null ? map['education'] as String : null,
@@ -374,7 +362,7 @@ class Person {
 
   @override
   String toString() {
-    return 'Person(uid: $uid, imageProfile: $imageProfile, email: $email, password: $password, name: $name, age: $age, phoneNo: $phoneNo, city: $city, country: $country, profileHeading: $profileHeading, lookingForInaPartner: $lookingForInaPartner, publishedDateTime: $publishedDateTime, gender: $gender, height: $height, weight: $weight, bodyType: $bodyType, drink: $drink, smoke: $smoke, martialStatus: $martialStatus, haveChildren: $haveChildren, noOfChildren: $noOfChildren, profession: $profession, employmentStatus: $employmentStatus, income: $income, livingSituation: $livingSituation, willingToRelocate: $willingToRelocate, relationshipYouAreLookingFor: $relationshipYouAreLookingFor, nationality: $nationality, education: $education, languageSpoken: $languageSpoken, religion: $religion, ethnicity: $ethnicity, instagramUrl: $instagramUrl, linkedInUrl: $linkedInUrl, githubUrl: $githubUrl)';
+    return 'Person(uid: $uid, imageProfile: $imageProfile, email: $email, password: $password, name: $name, age: $age, phoneNo: $phoneNo, city: $city, corelationuntry: $country, profileHeading: $profileHeading, lookingForInaPartner: $lookingForInaPartner, publishedDateTime: $publishedDateTime, gender: $gender, height: $height, weight: $weight, bodyType: $bodyType, drink: $drink, smoke: $smoke, martialStatus: $martialStatus, haveChildren: $haveChildren, noOfChildren: $noOfChildren, profession: $profession, employmentStatus: $employmentStatus, income: $income, livingSituation: $livingSituation, willingToRelocate: $willingToRelocate,  nationality: $nationality, education: $education, languageSpoken: $languageSpoken, religion: $religion, ethnicity: $ethnicity, instagramUrl: $instagramUrl, linkedInUrl: $linkedInUrl, githubUrl: $githubUrl)';
   }
 
   @override
@@ -407,7 +395,6 @@ class Person {
         other.income == income &&
         other.livingSituation == livingSituation &&
         other.willingToRelocate == willingToRelocate &&
-        other.relationshipYouAreLookingFor == relationshipYouAreLookingFor &&
         other.nationality == nationality &&
         other.education == education &&
         other.languageSpoken == languageSpoken &&
@@ -446,7 +433,6 @@ class Person {
         income.hashCode ^
         livingSituation.hashCode ^
         willingToRelocate.hashCode ^
-        relationshipYouAreLookingFor.hashCode ^
         nationality.hashCode ^
         education.hashCode ^
         languageSpoken.hashCode ^

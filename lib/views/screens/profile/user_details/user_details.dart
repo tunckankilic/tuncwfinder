@@ -180,8 +180,23 @@ class UserDetails extends GetView<UserDetailsController> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: ElegantTheme.textTheme.titleMedium),
-          Obx(() => Text(value.value, style: ElegantTheme.textTheme.bodyLarge)),
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: ElegantTheme.textTheme.titleMedium,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Obx(() => Text(
+                  value.value,
+                  style: ElegantTheme.textTheme.bodyLarge,
+                  textAlign: TextAlign.end,
+                  overflow: TextOverflow.ellipsis,
+                )),
+          ),
         ],
       ),
     );
