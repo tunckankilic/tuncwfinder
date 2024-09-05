@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_svg/svg.dart";
 import "package:tuncforwork/service/service.dart";
+import "package:tuncforwork/views/screens/profile/user_details/user_details.dart";
 import "package:tuncforwork/views/screens/swipe/swipe_controller.dart";
 
 class SwipeScreen extends GetView<SwipeController> {
@@ -30,34 +31,37 @@ class SwipeScreen extends GetView<SwipeController> {
   }
 
   Widget _buildUserCard(BuildContext context, dynamic eachProfile) {
-    return Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: NetworkImage(eachProfile['imageProfile']?.toString() ?? ''),
-          fit: BoxFit.cover,
-        ),
-      ),
+    return GestureDetector(
+      onDoubleTap: () => Get.to(UserDetails(userId: eachProfile["uid"])),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.black.withOpacity(0.7),
-            ],
+          image: DecorationImage(
+            image: NetworkImage(eachProfile['imageProfile']?.toString() ?? ''),
+            fit: BoxFit.cover,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildFilterButton(),
-              _buildUserInfo(context, eachProfile),
-              _buildActionButtons(eachProfile),
-            ],
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.black.withOpacity(0.7),
+              ],
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildFilterButton(),
+                _buildUserInfo(context, eachProfile),
+                _buildActionButtons(eachProfile),
+              ],
+            ),
           ),
         ),
       ),

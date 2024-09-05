@@ -1,9 +1,13 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
+import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 
 class UserDetails extends GetView<UserDetailsController> {
   static const routeName = "/user";
@@ -20,7 +24,7 @@ class UserDetails extends GetView<UserDetailsController> {
       backgroundColor: ElegantTheme.backgroundColor,
       body: CustomScrollView(
         slivers: [
-          _buildSliverAppBar(),
+          _buildSliverAppBar(context),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -43,12 +47,18 @@ class UserDetails extends GetView<UserDetailsController> {
     );
   }
 
-  Widget _buildSliverAppBar() {
+  Widget _buildSliverAppBar(BuildContext context) {
     return SliverAppBar(
       expandedHeight: 200.0,
       floating: false,
-      automaticallyImplyLeading: false,
       pinned: true,
+      automaticallyImplyLeading: false,
+      leading: Obx(() => controller.isMainProfilePage.value
+          ? SizedBox.shrink()
+          : IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            )),
       flexibleSpace: FlexibleSpaceBar(
         title: Obx(() => Text(controller.name.value,
             style: ElegantTheme.textTheme.titleLarge
@@ -165,13 +175,11 @@ class UserDetails extends GetView<UserDetailsController> {
   }
 
   Widget _buildConnections() {
-    return Column(
-      children: [
-        _buildInfoRow("LinkedIn", controller.linkedInUrl),
-        _buildInfoRow("Instagram", controller.instagramUrl),
-        _buildInfoRow("GitHub", controller.githubUrl),
-      ],
-    );
+    return ProfileActionButtons(
+        phoneNo: controller.phoneNo.value,
+        instagramUsername: controller.instagramUrl.value,
+        linkedInUsername: controller.linkedInUrl.value,
+        github: controller.githubUrl.value);
   }
 
   Widget _buildInfoRow(String label, RxString value) {
@@ -198,6 +206,111 @@ class UserDetails extends GetView<UserDetailsController> {
                 )),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class ProfileActionButtons extends GetView<SwipeController> {
+  final String instagramUsername;
+  final String linkedInUsername;
+  final String github;
+  final String phoneNo;
+
+  const ProfileActionButtons({
+    Key? key,
+    required this.instagramUsername,
+    required this.linkedInUsername,
+    required this.github,
+    required this.phoneNo,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: ElegantTheme.primaryColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _profileButton(
+              context: context,
+              widget: _buildActionButton(
+                  'assets/instagram.svg',
+                  () => controller.openInstagramProfile(
+                      instagramUsername: instagramUsername, context: context)),
+              title: "Instagram"),
+          _profileButton(
+              context: context,
+              widget: _buildActionButton(
+                'assets/linkedin.svg',
+                () => controller.openLinkedInProfile(
+                    linkedInUsername: linkedInUsername, context: context),
+              ),
+              title: "LinkedIn"),
+          _profileButton(
+              context: context,
+              widget: _buildActionButton(
+                'assets/whatsapp.svg',
+                () => controller.startChattingInWhatsApp(
+                    receiverPhoneNumber: phoneNo, context: context),
+              ),
+              title: "Whatsapp"),
+          _profileButton(
+              context: context,
+              widget: _buildActionButton(
+                'assets/whatsapp.svg',
+                () => controller.startChattingInWhatsApp(
+                    receiverPhoneNumber: phoneNo, context: context),
+              ),
+              title: "GitHub")
+        ],
+      ),
+    );
+  }
+
+  Column _profileButton(
+      {required BuildContext context, required Widget widget, required title}) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Text(
+              title,
+              style: ElegantTheme.textTheme.titleMedium,
+            ),
+            widget
+          ],
+        ),
+        SizedBox(
+          height: 10,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(String asset, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: ElegantTheme.primaryColor.withOpacity(0.8),
+          shape: BoxShape.circle,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: SvgPicture.asset(
+            asset,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }

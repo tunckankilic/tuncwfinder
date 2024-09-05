@@ -59,6 +59,7 @@ class InitialBindings extends Bindings {
   @override
   void dependencies() {
     Get.put(PushNotificationSystem()); // Assuming you have this controller
+    Get.put(AuthController());
     FirebaseAuth.instance.currentUser != null ? HomeBindings() : AuthBindings();
   }
 }

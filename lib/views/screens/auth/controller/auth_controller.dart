@@ -604,27 +604,6 @@ class AuthController extends GetxController {
     }
   }
 
-  // Future<void> linkAccountWithFacebook() async {
-  //   try {
-  //     final LoginResult result = await FacebookAuth.instance.login();
-  //     if (result.status == LoginStatus.success) {
-  //       final AccessToken accessToken = result.accessToken!;
-  //       final AuthCredential credential =
-  //           FacebookAuthProvider.credential(accessToken.tokenString);
-
-  //       await firebaseUser.value?.linkWithCredential(credential);
-  //       Get.snackbar('Success', 'Facebook account linked successfully');
-  //     }
-  //   } catch (e) {
-  //     if (e is FirebaseAuthException && e.code == 'credential-already-in-use') {
-  //       Get.snackbar(
-  //           'Error', 'This Facebook account is already linked to another user');
-  //     } else {
-  //       Get.snackbar('Error', 'Failed to link Facebook account: $e');
-  //     }
-  //   }
-  // }
-
   Future<void> linkAccountWithApple() async {
     try {
       final credential = await SignInWithApple.getAppleIDCredential(

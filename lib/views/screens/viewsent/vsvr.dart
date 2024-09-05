@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
 import 'package:tuncforwork/views/screens/viewsent/vsvr_controller.dart';
 
 class ViewSentViewReceive extends StatelessWidget {
@@ -88,63 +89,66 @@ class ViewSentViewReceive extends StatelessWidget {
   }
 
   Widget _buildGridTile(Map<String, dynamic> user) {
-    return Card(
-      elevation: 5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
+    return GestureDetector(
+      onTap: () => Get.to(UserDetails(userId: user["uid"])),
+      child: Card(
+        elevation: 5,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
-          gradient: const LinearGradient(
-            colors: [Colors.black54, Colors.transparent],
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-          ),
-          image: DecorationImage(
-            image: NetworkImage(user["imageProfile"]),
-            fit: BoxFit.cover,
-          ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                "${user["name"]} ◉ ${user["age"]}",
-                maxLines: 2,
-                style: ElegantTheme.textTheme.titleLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  shadows: [const Shadow(color: Colors.black, blurRadius: 2)],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.location_on_outlined,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            gradient: const LinearGradient(
+              colors: [Colors.black54, Colors.transparent],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            ),
+            image: DecorationImage(
+              image: NetworkImage(user["imageProfile"]),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  "${user["name"]} ◉ ${user["age"]}",
+                  maxLines: 2,
+                  style: ElegantTheme.textTheme.titleLarge?.copyWith(
                     color: Colors.white,
-                    size: 18,
+                    fontWeight: FontWeight.bold,
+                    shadows: [const Shadow(color: Colors.black, blurRadius: 2)],
                   ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      "${user["city"]}, ${user["country"]}",
-                      maxLines: 2,
-                      style: ElegantTheme.textTheme.bodyLarge?.copyWith(
-                        color: Colors.white,
-                        shadows: [
-                          const Shadow(color: Colors.black, blurRadius: 2)
-                        ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        "${user["city"]}, ${user["country"]}",
+                        maxLines: 2,
+                        style: ElegantTheme.textTheme.bodyLarge?.copyWith(
+                          color: Colors.white,
+                          shadows: [
+                            const Shadow(color: Colors.black, blurRadius: 2)
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

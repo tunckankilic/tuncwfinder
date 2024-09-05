@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
+import 'package:tuncforwork/views/screens/screens.dart';
 
 class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
   const FavoriteSendFavoriteReceived({Key? key}) : super(key: key);
@@ -76,68 +77,71 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
   }
 
   Widget _buildFavoriteCard(Map<String, dynamic> user) {
-    return Card(
-      elevation: 5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
+    return GestureDetector(
+      onTap: () => Get.to(UserDetails(userId: user["uid"])),
+      child: Card(
+        elevation: 5,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
-          image: DecorationImage(
-            image: NetworkImage(user["imageProfile"]),
-            fit: BoxFit.cover,
-          ),
         ),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                Colors.black.withOpacity(0.7),
-              ],
+            image: DecorationImage(
+              image: NetworkImage(user["imageProfile"]),
+              fit: BoxFit.cover,
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  "${user["name"]} • ${user["age"]}",
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: ElegantTheme.textTheme.titleMedium!.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on_outlined,
-                      color: Colors.white70,
-                      size: 16,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.7),
+                ],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    "${user["name"]} • ${user["age"]}",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: ElegantTheme.textTheme.titleMedium!.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        "${user["city"]}, ${user["country"]}",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: ElegantTheme.textTheme.bodySmall!.copyWith(
-                          color: Colors.white70,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on_outlined,
+                        color: Colors.white70,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          "${user["city"]}, ${user["country"]}",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: ElegantTheme.textTheme.bodySmall!.copyWith(
+                            color: Colors.white70,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

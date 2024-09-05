@@ -7,6 +7,7 @@ import 'package:tuncforwork/service/global.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
 import 'package:tuncforwork/views/screens/auth/pages/screens.dart';
 import 'package:tuncforwork/views/screens/profile/account_settings/account_settings.dart';
+import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 
 class UserDetailsController extends GetxController {
   final String? userId;
@@ -51,7 +52,7 @@ class UserDetailsController extends GetxController {
   RxString githubUrl = ''.obs;
 
   RxList<String> imageUrls = <String>[].obs;
-
+  final isMainProfilePage = true.obs;
   @override
   void onInit() {
     super.onInit();
@@ -125,7 +126,10 @@ class UserDetailsController extends GetxController {
   }
 
   void navigateToAccountSettings() {
-    Get.to(() => const AccountSettings());
+    Get.to(
+      () => const AccountSettings(),
+      binding: ProfileBindings(),
+    );
   }
 
   void signOut() {
