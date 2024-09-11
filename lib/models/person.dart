@@ -15,7 +15,6 @@ class Person {
   String? city;
   String? country;
   String? profileHeading;
-  String? lookingForInaPartner;
   int? publishedDateTime;
   String? gender;
 
@@ -62,7 +61,6 @@ class Person {
     this.city,
     this.country,
     this.profileHeading,
-    this.lookingForInaPartner,
     this.publishedDateTime,
     this.gender,
     this.height,
@@ -103,7 +101,6 @@ class Person {
         city: dataSnapshot["city"],
         country: dataSnapshot["country"],
         profileHeading: dataSnapshot["profileHeading"],
-        lookingForInaPartner: dataSnapshot["lookingForInaPartner"],
         publishedDateTime: dataSnapshot["publishedDateTime"],
         gender: dataSnapshot["gender"],
 
@@ -149,7 +146,6 @@ class Person {
         "city": city,
         "country": country,
         "profileHeading": profileHeading,
-        "lookingForInaPartner": lookingForInaPartner,
         "publishedDateTime": publishedDateTime,
         "gender": gender,
 
@@ -230,7 +226,6 @@ class Person {
       city: city ?? this.city,
       country: country ?? this.country,
       profileHeading: profileHeading ?? this.profileHeading,
-      lookingForInaPartner: lookingForInaPartner ?? this.lookingForInaPartner,
       publishedDateTime: publishedDateTime ?? this.publishedDateTime,
       gender: gender ?? this.gender,
       height: height ?? this.height,
@@ -269,7 +264,6 @@ class Person {
       'city': city,
       'country': country,
       'profileHeading': profileHeading,
-      'lookingForInaPartner': lookingForInaPartner,
       'publishedDateTime': publishedDateTime,
       'gender': gender,
       'height': height,
@@ -310,9 +304,6 @@ class Person {
       country: map['country'] != null ? map['country'] as String : null,
       profileHeading: map['profileHeading'] != null
           ? map['profileHeading'] as String
-          : null,
-      lookingForInaPartner: map['lookingForInaPartner'] != null
-          ? map['lookingForInaPartner'] as String
           : null,
       publishedDateTime: map['publishedDateTime'] != null
           ? map['publishedDateTime'] as int
@@ -362,7 +353,7 @@ class Person {
 
   @override
   String toString() {
-    return 'Person(uid: $uid, imageProfile: $imageProfile, email: $email, password: $password, name: $name, age: $age, phoneNo: $phoneNo, city: $city, corelationuntry: $country, profileHeading: $profileHeading, lookingForInaPartner: $lookingForInaPartner, publishedDateTime: $publishedDateTime, gender: $gender, height: $height, weight: $weight, bodyType: $bodyType, drink: $drink, smoke: $smoke, martialStatus: $martialStatus, haveChildren: $haveChildren, noOfChildren: $noOfChildren, profession: $profession, employmentStatus: $employmentStatus, income: $income, livingSituation: $livingSituation, willingToRelocate: $willingToRelocate,  nationality: $nationality, education: $education, languageSpoken: $languageSpoken, religion: $religion, ethnicity: $ethnicity, instagramUrl: $instagramUrl, linkedInUrl: $linkedInUrl, githubUrl: $githubUrl)';
+    return 'Person(uid: $uid, imageProfile: $imageProfile, email: $email, password: $password, name: $name, age: $age, phoneNo: $phoneNo, city: $city, corelationuntry: $country, profileHeading: $profileHeading, publishedDateTime: $publishedDateTime, gender: $gender, height: $height, weight: $weight, bodyType: $bodyType, drink: $drink, smoke: $smoke, martialStatus: $martialStatus, haveChildren: $haveChildren, noOfChildren: $noOfChildren, profession: $profession, employmentStatus: $employmentStatus, income: $income, livingSituation: $livingSituation, willingToRelocate: $willingToRelocate,  nationality: $nationality, education: $education, languageSpoken: $languageSpoken, religion: $religion, ethnicity: $ethnicity, instagramUrl: $instagramUrl, linkedInUrl: $linkedInUrl, githubUrl: $githubUrl)';
   }
 
   @override
@@ -379,7 +370,6 @@ class Person {
         other.city == city &&
         other.country == country &&
         other.profileHeading == profileHeading &&
-        other.lookingForInaPartner == lookingForInaPartner &&
         other.publishedDateTime == publishedDateTime &&
         other.gender == gender &&
         other.height == height &&
@@ -417,7 +407,6 @@ class Person {
         city.hashCode ^
         country.hashCode ^
         profileHeading.hashCode ^
-        lookingForInaPartner.hashCode ^
         publishedDateTime.hashCode ^
         gender.hashCode ^
         height.hashCode ^

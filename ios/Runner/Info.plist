@@ -40,15 +40,15 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppleMusicUsageDescription</key>
-	<string>Bu uygulama, müzik özelliklerini kullanmak için Apple Music'e erişim gerektirebilir.</string>
+	<string>This application may require access to Apple Music to use music features.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Bu uygulama, profil fotoğrafı çekmek ve içerik paylaşmak için kameraya erişim gerektiriyor.</string>
+	<string>This application requires camera access to take profile photos and share content.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Bu uygulama, sesli mesajlar ve video kayıtları için mikrofona erişim gerektiriyor.</string>
+	<string>This application requires microphone access for voice messages and video recordings.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Bu uygulama, fotoğraf seçmenize ve paylaşmanıza izin vermek için fotoğraf kütüphanesine erişim gerektiriyor.</string>
+	<string>This application requires access to the photo library to allow you to select and share photos.</string>
 	<key>NSUserNotificationUsageDescription</key>
-	<string>Bu uygulama size önemli güncellemeler ve bilgiler göndermek için bildirim göndermek istiyor.</string>
+	<string>This application wants to send notifications to provide you with important updates and information.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

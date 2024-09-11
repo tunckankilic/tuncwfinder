@@ -546,7 +546,6 @@ class AuthController extends GetxController {
   //       cityController.text.isNotEmpty &&
   //       countryController.text.isNotEmpty &&
   //       profileHeadingController.text.isNotEmpty &&
-  //       lookingForInaPartnerController.text.isNotEmpty &&
   //       genderController.text.isNotEmpty &&
   //       heightController.text.isNotEmpty &&
   //       weightController.text.isNotEmpty &&
@@ -561,7 +560,6 @@ class AuthController extends GetxController {
   //       incomeController.text.isNotEmpty &&
   //       livingSituationController.text.isNotEmpty &&
   //       willingToRelocateController.text.isNotEmpty &&
-  //       relationshipYouAreLookingForController.text.isNotEmpty &&
   //       nationalityController.text.isNotEmpty &&
   //       educationController.text.isNotEmpty &&
   //       languageSpokenController.text.isNotEmpty &&
