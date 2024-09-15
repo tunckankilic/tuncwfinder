@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 
 class NotificationDialog extends StatelessWidget {
@@ -26,7 +27,7 @@ class NotificationDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       elevation: 0,
       backgroundColor: Colors.transparent,
@@ -39,17 +40,17 @@ class NotificationDialog extends StatelessWidget {
       children: <Widget>[
         Container(
           padding:
-              const EdgeInsets.only(left: 20, top: 65, right: 20, bottom: 20),
-          margin: const EdgeInsets.only(top: 45),
+              EdgeInsets.only(left: 20.w, top: 65.h, right: 20.w, bottom: 20.h),
+          margin: EdgeInsets.only(top: 45.h),
           decoration: BoxDecoration(
             shape: BoxShape.rectangle,
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: const [
+            borderRadius: BorderRadius.circular(20.r),
+            boxShadow: [
               BoxShadow(
                 color: Colors.black,
-                offset: Offset(0, 10),
-                blurRadius: 10,
+                offset: Offset(0, 10.h),
+                blurRadius: 10.r,
               ),
             ],
           ),
@@ -58,22 +59,21 @@ class NotificationDialog extends StatelessWidget {
             children: <Widget>[
               Text(
                 name,
-                style:
-                    const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 15),
+              SizedBox(height: 15.h),
               Text(
                 "$age years old, $profession",
-                style: const TextStyle(fontSize: 14),
+                style: TextStyle(fontSize: 14.sp),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               Text(
                 "$city, $country",
-                style: const TextStyle(fontSize: 14),
+                style: TextStyle(fontSize: 14.sp),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 22),
+              SizedBox(height: 22.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
@@ -84,12 +84,15 @@ class NotificationDialog extends StatelessWidget {
                         Get.back();
                         Get.toNamed(UserDetails.routeName, arguments: senderId);
                       },
-                      child: const Text('View Profile'),
+                      child: Text('View Profile',
+                          style: TextStyle(fontSize: 14.sp)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.0),
+                          borderRadius: BorderRadius.circular(18.r),
                         ),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.w, vertical: 8.h),
                       ),
                     ),
                   ),
@@ -99,8 +102,7 @@ class NotificationDialog extends StatelessWidget {
                       onPressed: () {
                         Get.back();
                       },
-                      child:
-                          const Text('Close', style: TextStyle(fontSize: 18)),
+                      child: Text('Close', style: TextStyle(fontSize: 18.sp)),
                     ),
                   ),
                 ],
@@ -109,13 +111,13 @@ class NotificationDialog extends StatelessWidget {
           ),
         ),
         Positioned(
-          left: 20,
-          right: 20,
+          left: 20.w,
+          right: 20.w,
           child: CircleAvatar(
             backgroundColor: Colors.transparent,
-            radius: 45,
+            radius: 45.r,
             child: ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(45)),
+              borderRadius: BorderRadius.all(Radius.circular(45.r)),
               child: Image.network(profileImage),
             ),
           ),

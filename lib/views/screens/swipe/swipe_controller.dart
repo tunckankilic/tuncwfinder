@@ -205,6 +205,36 @@ class SwipeController extends GetxController {
     }
   }
 
+  void openGitHubProfile(
+      {required String gitHubUsername, required BuildContext context}) async {
+    var url = gitHubUsername;
+
+    try {
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("GıtHub Error"),
+              content: const Text("Could not open GitHub profile."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Get.back();
+                  },
+                  child: const Text("Ok"),
+                ),
+              ],
+            );
+          });
+    }
+  }
+
   void getResults() async {
     try {
       Query query = FirebaseFirestore.instance.collection("users");

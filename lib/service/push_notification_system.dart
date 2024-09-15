@@ -5,8 +5,16 @@ import 'package:get/get.dart';
 import 'package:tuncforwork/service/global.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 
-class PushNotificationSystem {
+class PushNotificationSystem extends GetxController {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  @override
+  void onInit() {
+    super.onInit();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      whenNotificationReceived(Get.context!);
+    });
+  }
 
   //notification arrived/received
   Future whenNotificationReceived(BuildContext context) async {
@@ -53,127 +61,140 @@ class PushNotificationSystem {
   }
 
   openAppAndShowNotificationData(receiverID, senderID, context) async {
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(senderID)
-        .get()
-        .then((snapshot) {
-      String profileImage = snapshot.data()!["imageProfile"].toString();
-      String name = snapshot.data()!["name"].toString();
-      String age = snapshot.data()!["age"].toString();
-      String city = snapshot.data()!["city"].toString();
-      String country = snapshot.data()!["country"].toString();
-      String profession = snapshot.data()!["profession"].toString();
+    try {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(senderID)
+          .get();
 
-      showDialog(
-          context: context,
-          builder: (context) {
-            return notificationDialogBox(
-              senderID,
-              profileImage,
-              name,
-              age,
-              city,
-              country,
-              profession,
-              context,
-            );
-          });
-    });
+      if (snapshot.exists && snapshot.data() != null) {
+        Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+        String profileImage = data["imageProfile"]?.toString() ?? "";
+        String name = data["name"]?.toString() ?? "";
+        String age = data["age"]?.toString() ?? "";
+        String city = data["city"]?.toString() ?? "";
+        String country = data["country"]?.toString() ?? "";
+        String profession = data["profession"]?.toString() ?? "";
+
+        if (context.mounted) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return notificationDialogBox(
+                senderID,
+                profileImage,
+                name,
+                age,
+                city,
+                country,
+                profession,
+                context,
+              );
+            },
+          );
+        }
+      } else {
+        print('User data not found');
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
   }
 
   notificationDialogBox(
       senderID, profileImage, name, age, city, country, profession, context) {
-    return Dialog(
-      child: GridTile(
-        child: Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: SizedBox(
-            height: 300,
-            child: Card(
-              color: Colors.blue.shade200,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                    image: DecorationImage(
-                  image: NetworkImage(profileImage),
-                  fit: BoxFit.cover,
-                )),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        //name - age
-                        Text(
-                          name + " ● " + age.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        const SizedBox(
-                          height: 8,
-                        ),
-
-                        //icon - city country location
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.location_on_outlined,
+    return Get.dialog(
+      Dialog(
+        child: GridTile(
+          child: Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: SizedBox(
+              height: 300,
+              child: Card(
+                color: Colors.blue.shade200,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                    image: NetworkImage(profileImage),
+                    fit: BoxFit.cover,
+                  )),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          //name - age
+                          Text(
+                            name + " ● " + age.toString(),
+                            style: const TextStyle(
                               color: Colors.white,
-                              size: 16,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
-                            const SizedBox(
-                              width: 2,
-                            ),
-                            Expanded(
-                              child: Text(
-                                city + ", " + country.toString(),
-                                maxLines: 4,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
+                          ),
+
+                          const SizedBox(
+                            height: 8,
+                          ),
+
+                          //icon - city country location
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on_outlined,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              const SizedBox(
+                                width: 2,
+                              ),
+                              Expanded(
+                                child: Text(
+                                  city + ", " + country.toString(),
+                                  maxLines: 4,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
 
-                        const Spacer(),
+                          const Spacer(),
 
-                        // 2 button
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Center(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  Get.back();
+                          // 2 button
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Center(
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Get.back();
 
-                                  Get.to(() => UserDetails(userId: senderID));
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
+                                    Get.to(() => UserDetails(userId: senderID));
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                  ),
+                                  child: const Text("View Profile"),
                                 ),
-                                child: const Text("View Profile"),
                               ),
-                            ),
-                            Center(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  Get.back();
-                                },
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.redAccent),
-                                child: const Text("Close"),
+                              Center(
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Get.back();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.redAccent),
+                                  child: const Text("Close"),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -187,12 +208,14 @@ class PushNotificationSystem {
 
   Future generateDeviceRegistrationToken() async {
     String? deviceToken = await messaging.getToken();
+    String? userId = currentUserId;
 
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(currentUserId)
-        .update({
-      "userDeviceToken": deviceToken,
-    });
+    if (userId != null) {
+      await FirebaseFirestore.instance.collection("users").doc(userId).update({
+        "userDeviceToken": deviceToken,
+      });
+    } else {
+      print('User not logged in, cannot update device token');
+    }
   }
 }

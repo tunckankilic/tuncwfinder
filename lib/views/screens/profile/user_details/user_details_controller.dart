@@ -1,12 +1,13 @@
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tuncforwork/service/global.dart';
+import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
 import 'package:tuncforwork/views/screens/auth/pages/screens.dart';
-import 'package:tuncforwork/views/screens/profile/account_settings/account_settings.dart';
+import 'package:tuncforwork/views/screens/profile/account_settings/pages/account_info_settings.dart';
+import 'package:tuncforwork/views/screens/profile/account_settings/pages/photo_settings_screen.dart';
 import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 
 class UserDetailsController extends GetxController {
@@ -126,10 +127,57 @@ class UserDetailsController extends GetxController {
   }
 
   void navigateToAccountSettings() {
-    Get.to(
-      () => const AccountSettings(),
-      binding: ProfileBindings(),
+    Get.dialog(
+      AlertDialog(
+        title:
+            Text('Profile Settings', style: ElegantTheme.textTheme.titleLarge),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading:
+                  Icon(Icons.photo_library, color: ElegantTheme.primaryColor),
+              title:
+                  Text('Edit Photos', style: ElegantTheme.textTheme.bodyLarge),
+              onTap: () {
+                Get.back();
+                Get.to(
+                  () => const PhotoSettingsScreen(),
+                  binding: ProfileBindings(),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.person, color: ElegantTheme.primaryColor),
+              title: Text('Edit Profile Info',
+                  style: ElegantTheme.textTheme.bodyLarge),
+              onTap: () {
+                Get.back();
+                Get.to(
+                  () => const ProfileInfoScreen(),
+                  binding: ProfileBindings(),
+                );
+              },
+            ),
+          ],
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        backgroundColor: ElegantTheme.backgroundColor,
+      ),
+      barrierDismissible: true,
     );
+  }
+
+  void updateName(String newName) {
+    name.value = newName;
+  }
+
+  void updateImageUrls(List<String> newUrls) {
+    imageUrls.assignAll(newUrls);
+  }
+
+  void setIsMainProfilePage(bool value) {
+    isMainProfilePage.value = value;
   }
 
   void signOut() {

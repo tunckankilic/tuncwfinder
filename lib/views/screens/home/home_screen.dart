@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/home/home_controller.dart';
 
@@ -27,8 +29,8 @@ class HomeScreen extends GetView<HomeController> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
+            blurRadius: 8.r,
+            offset: Offset(0, -2.h),
           ),
         ],
       ),
@@ -46,8 +48,14 @@ class HomeScreen extends GetView<HomeController> {
           _buildNavItem(Icons.favorite, "Likes"),
           _buildNavItem(Icons.person, "Profile"),
         ],
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
+        selectedLabelStyle: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 12.sp,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontWeight: FontWeight.normal,
+          fontSize: 12.sp,
+        ),
         showSelectedLabels: true,
         showUnselectedLabels: true,
       ),
@@ -56,8 +64,8 @@ class HomeScreen extends GetView<HomeController> {
 
   BottomNavigationBarItem _buildNavItem(IconData icon, String label) {
     return BottomNavigationBarItem(
-      icon: Icon(icon, size: 24),
-      activeIcon: Icon(icon, size: 28),
+      icon: Icon(icon, size: 24.sp),
+      activeIcon: Icon(icon, size: 28.sp),
       label: label,
     );
   }

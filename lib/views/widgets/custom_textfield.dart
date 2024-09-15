@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CustomTField extends StatelessWidget {
   final TextEditingController textEditingController;
@@ -26,18 +27,18 @@ class CustomTField extends StatelessWidget {
         prefixIcon: iconData != null
             ? Icon(iconData)
             : Padding(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.sp),
                 child: Image.asset(
                   assetRef.toString(),
                 ),
               ),
-        labelStyle: const TextStyle(fontSize: 18, color: Colors.white),
+        labelStyle: TextStyle(fontSize: 18.sp, color: Colors.white),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.sp),
           borderSide: BorderSide(color: Colors.grey[900]!),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.sp),
           borderSide: BorderSide(color: Colors.grey[900]!),
         ),
       ),

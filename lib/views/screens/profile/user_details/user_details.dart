@@ -1,10 +1,7 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'package:get/get.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
@@ -22,107 +19,111 @@ class UserDetails extends GetView<UserDetailsController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ElegantTheme.backgroundColor,
-      body: CustomScrollView(
-        slivers: [
-          _buildSliverAppBar(context),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildImageCarousel(),
-                  const SizedBox(height: 24),
-                  _buildSection("Personal Info", _buildPersonalInfo()),
-                  _buildSection("Appearance", _buildAppearance()),
-                  _buildSection("Lifestyle", _buildLifestyle()),
-                  _buildSection("Background", _buildBackground()),
-                  _buildSection("Connections", _buildConnections()),
-                ],
+      body: GetX<UserDetailsController>(
+        init: UserDetailsController(userId: userId),
+        builder: (controller) {
+          return CustomScrollView(
+            slivers: [
+              _buildSliverAppBar(context),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildImageCarousel(),
+                      SizedBox(height: 24.h),
+                      _buildSection("Personal Info", _buildPersonalInfo()),
+                      _buildSection("Appearance", _buildAppearance()),
+                      _buildSection("Lifestyle", _buildLifestyle()),
+                      _buildSection("Background", _buildBackground()),
+                      _buildSection("Connections", _buildConnections()),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 
   Widget _buildSliverAppBar(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 200.0,
+      expandedHeight: 200.0.h,
       floating: false,
       pinned: true,
       automaticallyImplyLeading: false,
-      leading: Obx(() => controller.isMainProfilePage.value
+      leading: controller.isMainProfilePage.value
           ? SizedBox.shrink()
           : IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white),
+              icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
               onPressed: () => Navigator.of(context).pop(),
-            )),
+            ),
       flexibleSpace: FlexibleSpaceBar(
-        title: Obx(() => Text(controller.name.value,
-            style: ElegantTheme.textTheme.titleLarge
-                ?.copyWith(color: Colors.white))),
-        background: Obx(() => controller.imageUrls.isNotEmpty
+        title: Text(
+          controller.name.value,
+          style: ElegantTheme.textTheme.titleLarge?.copyWith(
+            color: Colors.white,
+            fontSize: 18.sp,
+          ),
+        ),
+        background: controller.imageUrls.isNotEmpty
             ? Image.network(controller.imageUrls[0], fit: BoxFit.cover)
-            : Container(color: ElegantTheme.primaryColor)),
+            : Container(color: ElegantTheme.primaryColor),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.settings),
-          onPressed: controller.navigateToAccountSettings,
-        ),
-        IconButton(
-          icon: const Icon(Icons.exit_to_app),
-          onPressed: controller.signOut,
-        ),
+        if (controller.isMainProfilePage.value) ...[
+          IconButton(
+            icon: Icon(Icons.settings, size: 24.sp),
+            onPressed: controller.navigateToAccountSettings,
+          ),
+          IconButton(
+            icon: Icon(Icons.exit_to_app, size: 24.sp),
+            onPressed: controller.signOut,
+          ),
+        ],
       ],
     );
   }
 
   Widget _buildImageCarousel() {
-    return Obx(() => CarouselSlider(
-          options: CarouselOptions(
-            height: 200.0,
-            enlargeCenterPage: true,
-            autoPlay: true,
-            aspectRatio: 16 / 9,
-            autoPlayCurve: Curves.fastOutSlowIn,
-            enableInfiniteScroll: true,
-            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-            viewportFraction: 0.8,
-          ),
-          items: controller.imageUrls.map((url) {
-            return Builder(
-              builder: (BuildContext context) {
-                return Container(
-                  width: MediaQuery.of(context).size.width,
-                  margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0),
-                    image: DecorationImage(
-                      image: NetworkImage(url),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                );
-              },
-            );
-          }).toList(),
-        ));
+    return SizedBox(
+      height: 200.0.h,
+      child: PageView.builder(
+        itemCount: controller.imageUrls.length,
+        itemBuilder: (context, index) {
+          return Container(
+            margin: EdgeInsets.symmetric(horizontal: 5.0.w),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8.0.r),
+              image: DecorationImage(
+                image: NetworkImage(controller.imageUrls[index]),
+                fit: BoxFit.cover,
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildSection(String title, Widget content) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
-            style: ElegantTheme.textTheme.headlineSmall
-                ?.copyWith(color: ElegantTheme.primaryColor)),
-        const Divider(color: ElegantTheme.primaryColor),
-        const SizedBox(height: 8),
+        Text(
+          title,
+          style: ElegantTheme.textTheme.headlineSmall?.copyWith(
+            color: ElegantTheme.primaryColor,
+            fontSize: 18.sp,
+          ),
+        ),
+        Divider(color: ElegantTheme.primaryColor, thickness: 1.h),
+        SizedBox(height: 8.h),
         content,
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
       ],
     );
   }
@@ -184,7 +185,7 @@ class UserDetails extends GetView<UserDetailsController> {
 
   Widget _buildInfoRow(String label, RxString value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: EdgeInsets.symmetric(vertical: 4.0.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -192,18 +193,20 @@ class UserDetails extends GetView<UserDetailsController> {
             flex: 2,
             child: Text(
               label,
-              style: ElegantTheme.textTheme.titleMedium,
+              style:
+                  ElegantTheme.textTheme.titleMedium?.copyWith(fontSize: 14.sp),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           Expanded(
             flex: 3,
-            child: Obx(() => Text(
-                  value.value,
-                  style: ElegantTheme.textTheme.bodyLarge,
-                  textAlign: TextAlign.end,
-                  overflow: TextOverflow.ellipsis,
-                )),
+            child: Text(
+              value.value,
+              style:
+                  ElegantTheme.textTheme.bodyLarge?.copyWith(fontSize: 14.sp),
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
@@ -228,10 +231,10 @@ class ProfileActionButtons extends GetView<SwipeController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(8.w),
       decoration: BoxDecoration(
         color: ElegantTheme.primaryColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -263,9 +266,9 @@ class ProfileActionButtons extends GetView<SwipeController> {
           _profileButton(
               context: context,
               widget: _buildActionButton(
-                'assets/whatsapp.svg',
-                () => controller.startChattingInWhatsApp(
-                    receiverPhoneNumber: phoneNo, context: context),
+                'assets/github.svg', // Changed from 'assets/whatsapp.svg'
+                () => controller.openGitHubProfile(
+                    gitHubUsername: github, context: context),
               ),
               title: "GitHub")
         ],
@@ -274,21 +277,24 @@ class ProfileActionButtons extends GetView<SwipeController> {
   }
 
   Column _profileButton(
-      {required BuildContext context, required Widget widget, required title}) {
+      {required BuildContext context,
+      required Widget widget,
+      required String title}) {
     return Column(
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               title,
-              style: ElegantTheme.textTheme.titleMedium,
+              style:
+                  ElegantTheme.textTheme.titleMedium?.copyWith(fontSize: 14.sp),
             ),
             widget
           ],
         ),
         SizedBox(
-          height: 10,
+          height: 10.h,
         ),
       ],
     );
@@ -298,17 +304,19 @@ class ProfileActionButtons extends GetView<SwipeController> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 50,
-        height: 50,
+        width: 50.w,
+        height: 50.h,
         decoration: BoxDecoration(
           color: ElegantTheme.primaryColor.withOpacity(0.8),
           shape: BoxShape.circle,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: EdgeInsets.all(10.w),
           child: SvgPicture.asset(
             asset,
             color: Colors.white,
+            width: 24.w,
+            height: 24.h,
           ),
         ),
       ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:get/get.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
@@ -10,51 +12,64 @@ class LikeSentLikeReceived extends GetView<LslrController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        elevation: 0,
-        backgroundColor: ElegantTheme.primaryColor,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildTabButton("My Likes", true),
-            const Text(
-              "   |   ",
-              style: TextStyle(color: ElegantTheme.accentBordeaux),
-            ),
-            _buildTabButton("They liked me", false),
-          ],
-        ),
-        centerTitle: true,
+      appBar: _buildAppBar(),
+      body: Obx(() => _buildBody()),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      elevation: 0,
+      backgroundColor: ElegantTheme.primaryColor,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildTabButton("My Likes", true),
+          Text(
+            "   |   ",
+            style:
+                TextStyle(color: ElegantTheme.accentBordeaux, fontSize: 16.sp),
+          ),
+          _buildTabButton("They liked me", false),
+        ],
       ),
-      body: Obx(() => controller.likedList.isEmpty
-          ? const Center(
-              child: Icon(
-                Icons.favorite_border,
-                color: ElegantTheme.accentBordeaux,
-                size: 80,
-              ),
-            )
-          : AnimationLimiter(
-              child: GridView.count(
+      centerTitle: true,
+    );
+  }
+
+  Widget _buildBody() {
+    return controller.likedList.isEmpty
+        ? Center(
+            child: Icon(
+              Icons.favorite_border,
+              color: ElegantTheme.accentBordeaux,
+              size: 80.sp,
+            ),
+          )
+        : AnimationLimiter(
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                padding: const EdgeInsets.all(8),
-                children: List.generate(
-                  controller.likedList.length,
-                  (index) => AnimationConfiguration.staggeredGrid(
-                    position: index,
-                    duration: const Duration(milliseconds: 375),
-                    columnCount: 2,
-                    child: ScaleAnimation(
-                      child: FadeInAnimation(
-                        child: _buildLikedCard(controller.likedList[index]),
-                      ),
-                    ),
+                childAspectRatio: 0.75,
+                crossAxisSpacing: 8.w,
+                mainAxisSpacing: 8.h,
+              ),
+              padding: EdgeInsets.all(8.w),
+              itemCount: controller.likedList.length,
+              itemBuilder: (context, index) =>
+                  AnimationConfiguration.staggeredGrid(
+                position: index,
+                duration: const Duration(milliseconds: 375),
+                columnCount: 2,
+                child: ScaleAnimation(
+                  child: FadeInAnimation(
+                    child: _buildLikedCard(controller.likedList[index]),
                   ),
                 ),
               ),
-            )),
-    );
+            ),
+          );
   }
 
   Widget _buildTabButton(String text, bool isSent) {
@@ -64,12 +79,12 @@ class LikeSentLikeReceived extends GetView<LslrController> {
             text,
             style: TextStyle(
               color: controller.isLikeSentClicked.value == isSent
-                  ? ElegantTheme.accentBordeaux
-                  : ElegantTheme.textColor.withOpacity(0.7),
+                  ? ElegantTheme.lightGrey
+                  : ElegantTheme.secondaryColor,
               fontWeight: controller.isLikeSentClicked.value == isSent
                   ? FontWeight.bold
                   : FontWeight.normal,
-              fontSize: 16,
+              fontSize: 14.sp,
             ),
           ),
         ));
@@ -77,15 +92,15 @@ class LikeSentLikeReceived extends GetView<LslrController> {
 
   Widget _buildLikedCard(Map<String, dynamic> user) {
     return GestureDetector(
-      onTap: () => Get.to(UserDetails(userId: user["uid"])),
+      onTap: () => Get.to(() => UserDetails(userId: user["uid"])),
       child: Card(
         elevation: 5,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(15.r),
         ),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(15.r),
             image: DecorationImage(
               image: NetworkImage(user["imageProfile"]),
               fit: BoxFit.cover,
@@ -93,7 +108,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
           ),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(15.r),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -104,7 +119,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: EdgeInsets.all(12.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -116,17 +131,18 @@ class LikeSentLikeReceived extends GetView<LslrController> {
                     style: ElegantTheme.textTheme.titleMedium!.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16.sp,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.location_on_outlined,
                         color: Colors.white70,
-                        size: 16,
+                        size: 16.sp,
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4.w),
                       Expanded(
                         child: Text(
                           "${user["city"]}, ${user["country"]}",
@@ -134,6 +150,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
                           overflow: TextOverflow.ellipsis,
                           style: ElegantTheme.textTheme.bodySmall!.copyWith(
                             color: Colors.white70,
+                            fontSize: 12.sp,
                           ),
                         ),
                       ),

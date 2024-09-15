@@ -24,7 +24,7 @@ class AuthController extends GetxController {
   Rx<User?> firebaseUser = Rx<User?>(null);
   RxBool isLoading = false.obs;
   RxBool showProgressBar = false.obs;
-
+  RxBool termsAccepted = false.obs;
   // PageView controller
   late PageController pageController;
   RxInt currentPage = 0.obs;
@@ -76,7 +76,6 @@ class AuthController extends GetxController {
   final TextEditingController ethnicityController = TextEditingController();
 
   Rx<File?> pickedImage = Rx<File?>(null);
-  RxBool termsAccepted = false.obs;
   final childrenSelection = RxString('No');
   final relationshipSelection = RxString('Single');
 
@@ -106,6 +105,56 @@ class AuthController extends GetxController {
   void updateRelationshipStatus(String value) {
     radioRelationshipStatusController.value = value;
   }
+
+  final String termsAndConditions = '''
+TuncForWork Terms and Conditions
+
+1. Acceptance of Terms
+By using the TuncForWork application ("Application"), you agree to comply with and be bound by these Terms and Conditions.
+
+2. User Accounts
+You must create an account to use certain features of the Application. You are responsible for maintaining the confidentiality of your account information.
+
+3. User Conduct
+You agree not to use the Application for any unlawful purpose or to harass, abuse, or harm other users.
+
+4. Intellectual Property
+All content in the Application, unless user-generated, is the property of TuncForWork and is protected by copyright and other intellectual property laws.
+
+5. Disclaimer of Warranties
+THE APPLICATION IS PROVIDED "AS IS" WITHOUT ANY WARRANTIES, EXPRESS OR IMPLIED.
+
+6. Limitation of Liability
+TO THE FULLEST EXTENT PERMITTED BY LAW, TUNCFORWORK SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.
+
+7. Changes to Terms
+We reserve the right to modify these Terms at any time. Your continued use of the Application after any changes indicates your acceptance of the modified Terms.
+  ''';
+
+  final String privacyPolicy = '''
+TuncForWork Privacy Policy
+
+1. Information Collection
+We collect personal information that you provide to us, including but not limited to your name, email address, and profile information.
+
+2. Use of Information
+We use the collected information to provide and improve our services, personalize your experience, and communicate with you.
+
+3. Information Sharing
+We do not sell or rent your personal information to third parties. We may share your information in certain circumstances, such as when required by law.
+
+4. Data Security
+We implement reasonable security measures to protect your personal information. However, no method of transmission over the internet is 100% secure.
+
+5. Your Rights
+You have the right to access, correct, or delete your personal information. You may also have the right to object to or restrict certain processing of your information.
+
+6. Changes to Privacy Policy
+We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.
+
+7. Contact Us
+If you have any questions about this Privacy Policy, please contact us at: [Your Contact Email]
+  ''';
 
   // var childrenOptions = {'Yes': false.obs, 'No': false.obs};
   // var relationshipOptions = {

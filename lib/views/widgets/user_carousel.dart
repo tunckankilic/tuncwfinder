@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class Carousel extends StatefulWidget {
   List<Widget> items = [];
@@ -22,26 +23,28 @@ class Carousel extends StatefulWidget {
   Color unActivatedIndicatorColor;
   Color indicatorBarColor;
   double? indicatorBarColorOpacity;
-  Carousel(
-      {super.key,
-      required this.items,
-      this.activateIndicatorColor = Colors.black,
-      this.animationPageCurve = Curves.easeIn,
-      this.animationPageDuration = Duration.zero,
-      this.autoScroll = false,
-      this.autoScrollDuration = Duration.zero,
-      this.height = 0.0,
-      this.indicatorBarHeight = 0.0,
-      this.indicatorBarWidth = 0.0,
-      this.indicatorHeight = 10,
-      this.indicatorWidth = 10,
-      this.initialPage = 0,
-      this.isCircle = true,
-      this.scrollAxis = Axis.horizontal,
-      this.stopAtEnd = false,
-      this.unActivatedIndicatorColor = Colors.grey,
-      this.indicatorBarColor = Colors.black,
-      this.width = 0.0});
+
+  Carousel({
+    super.key,
+    required this.items,
+    this.activateIndicatorColor = Colors.black,
+    this.animationPageCurve = Curves.easeIn,
+    this.animationPageDuration = Duration.zero,
+    this.autoScroll = false,
+    this.autoScrollDuration = Duration.zero,
+    this.height = 0.0,
+    this.indicatorBarHeight = 0.0,
+    this.indicatorBarWidth = 0.0,
+    this.indicatorHeight = 10,
+    this.indicatorWidth = 10,
+    this.initialPage = 0,
+    this.isCircle = true,
+    this.scrollAxis = Axis.horizontal,
+    this.stopAtEnd = false,
+    this.unActivatedIndicatorColor = Colors.grey,
+    this.indicatorBarColor = Colors.black,
+    this.width = 0.0,
+  });
 
   @override
   _CarouselState createState() => _CarouselState();
@@ -61,31 +64,28 @@ class _CarouselState extends State<Carousel> {
 
   @override
   void dispose() {
-    _pageController!.dispose(); // _pageController'ı dispose et
+    _pageController!.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-
     return SizedBox(
-      height: widget.height != 0.0 ? widget.height : size.height * 0.4,
-      width: widget.width != 0.0 ? widget.width : size.width,
+      height: widget.height != 0.0 ? widget.height.h : 0.4.sh,
+      width: widget.width != 0.0 ? widget.width.w : 1.sw,
       child: Stack(
         children: [
           SizedBox(
-            height: widget.height != 0.0 ? widget.height : size.height * 0.4,
-            width: widget.width != 0.0 ? widget.width : size.width,
+            height: widget.height != 0.0 ? widget.height.h : 0.4.sh,
+            width: widget.width != 0.0 ? widget.width.w : 1.sw,
             child: PageView.builder(
               controller: _pageController,
               scrollDirection: widget.scrollAxis,
               itemCount: _totalItem,
               itemBuilder: (context, index) {
                 return SizedBox(
-                  height:
-                      widget.height != 0.0 ? widget.height : size.height * 0.4,
-                  width: widget.width != 0.0 ? widget.width : size.width,
+                  height: widget.height != 0.0 ? widget.height.h : 0.4.sh,
+                  width: widget.width != 0.0 ? widget.width.w : 1.sw,
                   child: widget.items[index],
                 );
               },
@@ -101,15 +101,13 @@ class _CarouselState extends State<Carousel> {
             activeIndex: _current,
             count: _totalItem,
             height: widget.indicatorBarHeight == 0.0
-                ? 30
-                : widget.indicatorBarHeight,
+                ? 30.h
+                : widget.indicatorBarHeight.h,
             width: widget.indicatorBarWidth != 0.0
-                ? widget.indicatorBarWidth
-                : widget.width == 0.0
-                    ? size.width
-                    : widget.width,
-            indicatorHeight: widget.indicatorHeight,
-            indicatorWidth: widget.indicatorWidth,
+                ? widget.indicatorBarWidth.w
+                : (widget.width == 0.0 ? 1.sw : widget.width.w),
+            indicatorHeight: widget.indicatorHeight.h,
+            indicatorWidth: widget.indicatorWidth.w,
             unActivatedIndicatorColor: widget.unActivatedIndicatorColor,
             isCircle: widget.isCircle,
             indicatorBarColor: widget.indicatorBarColor,
@@ -131,18 +129,20 @@ class Circle extends StatefulWidget {
   Color activateIndicatorColor;
   Color unActivatedIndicatorColor;
   Color indicatorBarColor;
-  Circle(
-      {super.key,
-      required this.width,
-      required this.height,
-      required this.activeIndex,
-      required this.count,
-      required this.activateIndicatorColor,
-      required this.indicatorHeight,
-      required this.indicatorWidth,
-      required this.indicatorBarColor,
-      this.isCircle,
-      required this.unActivatedIndicatorColor});
+
+  Circle({
+    super.key,
+    required this.width,
+    required this.height,
+    required this.activeIndex,
+    required this.count,
+    required this.activateIndicatorColor,
+    required this.indicatorHeight,
+    required this.indicatorWidth,
+    required this.indicatorBarColor,
+    this.isCircle,
+    required this.unActivatedIndicatorColor,
+  });
 
   @override
   _CircleState createState() => _CircleState();
@@ -150,17 +150,19 @@ class Circle extends StatefulWidget {
 
 class _CircleState extends State<Circle> {
   List<Widget> widgets = [];
+
   Widget mywidget(index) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8),
+      padding: EdgeInsets.only(left: 8.w),
       child: Container(
         width: widget.indicatorWidth,
         height: widget.indicatorHeight,
         decoration: BoxDecoration(
-            color: index == widget.activeIndex
-                ? widget.activateIndicatorColor
-                : widget.unActivatedIndicatorColor,
-            shape: widget.isCircle! ? BoxShape.circle : BoxShape.rectangle),
+          color: index == widget.activeIndex
+              ? widget.activateIndicatorColor
+              : widget.unActivatedIndicatorColor,
+          shape: widget.isCircle! ? BoxShape.circle : BoxShape.rectangle,
+        ),
       ),
     );
   }
@@ -179,9 +181,10 @@ class _CircleState extends State<Circle> {
         width: widget.width,
         color: widget.indicatorBarColor,
         child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: widgets.isNotEmpty ? widgets : []),
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: widgets.isNotEmpty ? widgets : [],
+        ),
       ),
     );
   }

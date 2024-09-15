@@ -45,7 +45,7 @@ class HomeController extends GetxController {
     ),
     GetPage(
       name: '/profile',
-      page: () => UserDetails(userId: currentUserId),
+      page: () => UserDetails(userId: currentUserId!),
       binding: BindingsBuilder(() {
         Get.lazyPut(() => ProfileController());
       }),

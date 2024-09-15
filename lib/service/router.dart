@@ -4,6 +4,10 @@ import 'package:tuncforwork/views/screens/screens.dart';
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case SplashScreen.routeName:
+        return MaterialPageRoute(
+          builder: (_) => SplashScreen(),
+        );
       case LoginScreen.routeName:
         return MaterialPageRoute(
             settings: settings,

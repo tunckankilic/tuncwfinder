@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CustomTextFieldWidget extends StatelessWidget {
   final TextEditingController? editingController;
@@ -28,8 +29,8 @@ class CustomTextFieldWidget extends StatelessWidget {
                 padding: const EdgeInsets.all(8),
                 child: Image.asset(assetRef.toString()),
               ),
-        labelStyle: const TextStyle(
-          fontSize: 18,
+        labelStyle: TextStyle(
+          fontSize: 18.sp,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(6),

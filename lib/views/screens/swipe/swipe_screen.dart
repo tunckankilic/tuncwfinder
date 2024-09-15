@@ -1,38 +1,36 @@
-import "package:flutter/material.dart";
-import "package:flutter_svg/svg.dart";
-import "package:tuncforwork/service/service.dart";
-import "package:tuncforwork/views/screens/profile/user_details/user_details.dart";
-import "package:tuncforwork/views/screens/swipe/swipe_controller.dart";
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
+import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 
 class SwipeScreen extends GetView<SwipeController> {
   const SwipeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Get.put(() => SwipeController());
     Get.lazyPut(() => SwipeController());
     return SafeArea(
       child: Scaffold(
-        body: Obx(
-          () => PageView.builder(
-            pageSnapping: true,
-            physics: const BouncingScrollPhysics(),
-            itemCount: controller.allUsersProfileList.length,
-            controller: controller.pageController.value,
-            scrollDirection: Axis.vertical,
-            itemBuilder: (context, index) {
-              final eachProfile = controller.allUsersProfileList[index];
-              return _buildUserCard(context, eachProfile);
-            },
-          ),
-        ),
+        body: Obx(() => PageView.builder(
+              pageSnapping: true,
+              physics: const BouncingScrollPhysics(),
+              itemCount: controller.allUsersProfileList.length,
+              controller: controller.pageController.value,
+              scrollDirection: Axis.vertical,
+              itemBuilder: (context, index) {
+                final eachProfile = controller.allUsersProfileList[index];
+                return _buildUserCard(context, eachProfile);
+              },
+            )),
       ),
     );
   }
 
   Widget _buildUserCard(BuildContext context, dynamic eachProfile) {
     return GestureDetector(
-      onDoubleTap: () => Get.to(UserDetails(userId: eachProfile["uid"])),
+      onDoubleTap: () => Get.to(() => UserDetails(userId: eachProfile["uid"])),
       child: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
@@ -41,18 +39,9 @@ class SwipeScreen extends GetView<SwipeController> {
           ),
         ),
         child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                Colors.black.withOpacity(0.7),
-              ],
-            ),
-          ),
+          decoration: _buildGradientDecoration(),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.w),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,14 +57,27 @@ class SwipeScreen extends GetView<SwipeController> {
     );
   }
 
+  BoxDecoration _buildGradientDecoration() {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.transparent,
+          Colors.black.withOpacity(0.7),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFilterButton() {
     return Align(
       alignment: Alignment.topRight,
       child: IconButton(
         onPressed: controller.applyFilter,
-        icon: const Icon(
+        icon: Icon(
           Icons.filter_list_outlined,
-          size: 30,
+          size: 30.sp,
           color: ElegantTheme.textColor,
         ),
       ),
@@ -91,26 +93,44 @@ class SwipeScreen extends GetView<SwipeController> {
           style: ElegantTheme.textTheme.headlineMedium!.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
+            fontSize: 24.sp,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
           "${eachProfile["age"] ?? "XX"} • ${eachProfile["city"] ?? "XX"}",
           style: ElegantTheme.textTheme.titleMedium!.copyWith(
             color: Colors.white70,
+            fontSize: 16.sp,
           ),
         ),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
+        SizedBox(height: 16.h),
+        _buildInfoChips(eachProfile),
+      ],
+    );
+  }
+
+  Widget _buildInfoChips(dynamic eachProfile) {
+    return Column(
+      children: [
+        Row(
           children: [
             _buildInfoChip(eachProfile["profession"].toString()),
+            SizedBox(
+              width: 5.w,
+            ),
             _buildInfoChip(eachProfile["religion"].toString()),
-            _buildInfoChip(eachProfile["country"].toString()),
-            _buildInfoChip(eachProfile["ethnicity"].toString()),
           ],
         ),
+        Row(
+          children: [
+            _buildInfoChip(eachProfile["country"].toString()),
+            SizedBox(
+              width: 5.w,
+            ),
+            _buildInfoChip(eachProfile["ethnicity"].toString()),
+          ],
+        )
       ],
     );
   }
@@ -122,6 +142,7 @@ class SwipeScreen extends GetView<SwipeController> {
       labelStyle: ElegantTheme.textTheme.bodyMedium!.copyWith(
         color: Colors.white,
         fontWeight: FontWeight.w500,
+        fontSize: 12.sp,
       ),
     );
   }
@@ -138,9 +159,11 @@ class SwipeScreen extends GetView<SwipeController> {
           ),
         ),
         SocialActionButtons(
-            instagramUsername: eachProfile["instagram"],
-            linkedInUsername: eachProfile["linkedIn"],
-            whatsappNumber: eachProfile["phoneNo"]),
+          instagramUsername: eachProfile["instagram"],
+          linkedInUsername: eachProfile["linkedIn"],
+          whatsappNumber: eachProfile["phoneNo"],
+          gitHub: eachProfile["github"],
+        ),
         _buildActionButton(
           "assets/like.png",
           () => controller.likeSentAndLikeReceived(
@@ -156,17 +179,15 @@ class SwipeScreen extends GetView<SwipeController> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 60,
-        height: 60,
+        width: 60.w,
+        height: 60.h,
         decoration: BoxDecoration(
           color: ElegantTheme.primaryColor.withOpacity(0.8),
           shape: BoxShape.circle,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Image.asset(
-            asset,
-          ),
+          padding: EdgeInsets.all(12.w),
+          child: Image.asset(asset),
         ),
       ),
     );
@@ -177,9 +198,11 @@ class SocialActionButtons extends GetView<SwipeController> {
   final String instagramUsername;
   final String linkedInUsername;
   final String whatsappNumber;
+  final String gitHub;
 
   const SocialActionButtons({
     Key? key,
+    required this.gitHub,
     required this.instagramUsername,
     required this.linkedInUsername,
     required this.whatsappNumber,
@@ -188,47 +211,58 @@ class SocialActionButtons extends GetView<SwipeController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(8.w),
       decoration: BoxDecoration(
         color: ElegantTheme.primaryColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildActionButton(
-              'assets/instagram.svg',
-              () => controller.openInstagramProfile(
-                  instagramUsername: instagramUsername, context: context)),
-          const SizedBox(width: 12),
-          _buildActionButton(
-            'assets/linkedin.svg',
-            () => controller.openLinkedInProfile(
-                linkedInUsername: linkedInUsername, context: context),
+          Row(
+            children: [
+              _buildSocialButton(
+                  'assets/instagram.svg',
+                  () => controller.openInstagramProfile(
+                      instagramUsername: instagramUsername, context: context)),
+              SizedBox(width: 12.w),
+              _buildSocialButton(
+                  'assets/linkedin.svg',
+                  () => controller.openLinkedInProfile(
+                      linkedInUsername: linkedInUsername, context: context)),
+            ],
           ),
-          const SizedBox(width: 12),
-          _buildActionButton(
-            'assets/whatsapp.svg',
-            () => controller.startChattingInWhatsApp(
-                receiverPhoneNumber: whatsappNumber, context: context),
-          ),
+          SizedBox(height: 5.w),
+          Row(
+            children: [
+              _buildSocialButton(
+                  'assets/whatsapp.svg',
+                  () => controller.startChattingInWhatsApp(
+                      receiverPhoneNumber: whatsappNumber, context: context)),
+              SizedBox(width: 12.w),
+              _buildSocialButton(
+                  'assets/github.svg',
+                  () => controller.openGitHubProfile(
+                      gitHubUsername: gitHub, context: context)),
+            ],
+          )
         ],
       ),
     );
   }
 
-  Widget _buildActionButton(String asset, VoidCallback onTap) {
+  Widget _buildSocialButton(String asset, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 50,
-        height: 50,
+        width: 50.w,
+        height: 50.h,
         decoration: BoxDecoration(
           color: ElegantTheme.primaryColor.withOpacity(0.8),
           shape: BoxShape.circle,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: EdgeInsets.all(10.w),
           child: SvgPicture.asset(
             asset,
             color: Colors.white,

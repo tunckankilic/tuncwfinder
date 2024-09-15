@@ -8,7 +8,7 @@ import 'package:tuncforwork/views/screens/screens.dart';
 class AccountSettingsController extends GetxController {
   RxBool uploading = false.obs;
   RxBool next = false.obs;
-  RxList<File> images = <File>[].obs;
+  RxList<dynamic> images = <dynamic>[].obs;
   RxList<String> urlsList = <String>[].obs;
   RxDouble uploadProgress = 0.0.obs;
 
@@ -66,6 +66,7 @@ class AccountSettingsController extends GetxController {
 
     if (snapshot.exists) {
       var data = snapshot.data()!;
+
       // Personal Info
       nameController.text = data['name'] ?? '';
       ageController.text = data['age']?.toString() ?? '';
@@ -106,6 +107,17 @@ class AccountSettingsController extends GetxController {
       instagramController.text = data['instagram'] ?? '';
       linkedInController.text = data['linkedIn'] ?? '';
       gitHubController.text = data['github'] ?? '';
+
+      // Mevcut fotoğrafları yükle
+      images.clear();
+      urlsList.clear();
+      for (int i = 1; i <= 5; i++) {
+        String? url = data['urlImage$i'];
+        if (url != null && url.isNotEmpty) {
+          urlsList.add(url);
+          images.add(url);
+        }
+      }
     }
   }
 
@@ -231,6 +243,23 @@ class AccountSettingsController extends GetxController {
       await refImages.putFile(img);
       var downloadUrl = await refImages.getDownloadURL();
       urlsList.add(downloadUrl);
+    }
+  }
+
+  void addImage(XFile pickedFile) {
+    if (images.length < 5) {
+      images.add(File(pickedFile.path));
+    } else {
+      Get.snackbar("Maximum Images", "You can only select up to 5 images");
+    }
+  }
+
+  void removeImage(int index) {
+    if (index < images.length) {
+      if (images[index] is String) {
+        urlsList.remove(images[index]);
+      }
+      images.removeAt(index);
     }
   }
 

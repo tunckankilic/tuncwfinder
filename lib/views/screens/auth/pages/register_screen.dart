@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 
@@ -17,7 +18,7 @@ class RegistrationScreen extends GetView<AuthController> {
             Expanded(
               child: PageView.builder(
                 controller: controller.pageController,
-                itemCount: 5, // Toplam sayfa sayısı
+                itemCount: 5,
                 physics: NeverScrollableScrollPhysics(),
                 onPageChanged: (index) {
                   controller.currentPage.value = index;
@@ -37,27 +38,153 @@ class RegistrationScreen extends GetView<AuthController> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: EdgeInsets.all(20.0.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "Create Account",
             style: ElegantTheme.textTheme.headlineMedium
-                ?.copyWith(color: ElegantTheme.primaryColor),
+                ?.copyWith(color: ElegantTheme.primaryColor, fontSize: 24.sp),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Text(
             "to get Started Now.",
-            style: ElegantTheme.textTheme.titleMedium,
+            style:
+                ElegantTheme.textTheme.titleMedium?.copyWith(fontSize: 16.sp),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           Obx(() => LinearProgressIndicator(
                 value: (controller.currentPage.value + 1) / 5,
                 backgroundColor: ElegantTheme.primaryColor.withOpacity(0.2),
                 valueColor:
                     AlwaysStoppedAnimation<Color>(ElegantTheme.primaryColor),
               )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    bool isObscure = false,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 15.h),
+      child: TextField(
+        controller: controller,
+        obscureText: isObscure,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon, color: ElegantTheme.primaryColor, size: 20.sp),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.r),
+            borderSide: BorderSide(color: ElegantTheme.primaryColor),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.r),
+            borderSide:
+                BorderSide(color: ElegantTheme.primaryColor, width: 2.w),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavigationButtons() {
+    return Obx(() => Padding(
+          padding: EdgeInsets.all(20.0.w),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                onPressed: controller.currentPage.value > 0
+                    ? () {
+                        controller.previousPage();
+                        print(
+                            "Previous page called. Current page: ${controller.currentPage.value}");
+                      }
+                    : null,
+                child: Text("Previous", style: TextStyle(fontSize: 14.sp)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: controller.currentPage.value > 0
+                      ? ElegantTheme.secondaryColor
+                      : ElegantTheme.secondaryColor.withOpacity(0.5),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: controller.currentPage.value == 4
+                    ? controller.register
+                    : () {
+                        controller.nextPage();
+                        print(
+                            "Next page called. Current page: ${controller.currentPage.value}");
+                      },
+                child: Text(
+                  controller.currentPage.value == 4 ? "Register" : "Next",
+                  style: TextStyle(fontSize: 14.sp),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ElegantTheme.primaryColor,
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+
+  void _showTermsAndConditions() {
+    Get.dialog(
+      AlertDialog(
+        title: Text('Terms and Conditions'),
+        content: SingleChildScrollView(
+          child: Text(controller.termsAndConditions),
+        ),
+        actions: [
+          TextButton(
+            child: Text('Close'),
+            onPressed: () => Get.back(),
+          ),
+          TextButton(
+            child: Text('Accept'),
+            onPressed: () {
+              Get.back();
+              _showPrivacyPolicy();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPrivacyPolicy() {
+    Get.dialog(
+      AlertDialog(
+        title: Text('Privacy Policy'),
+        content: SingleChildScrollView(
+          child: Text(controller.privacyPolicy),
+        ),
+        actions: [
+          TextButton(
+            child: Text('Close'),
+            onPressed: () {
+              controller.termsAccepted.value = false;
+              Get.back();
+            },
+          ),
+          TextButton(
+            child: Text('Accept'),
+            onPressed: () {
+              controller.termsAccepted.value = true;
+              Get.back();
+            },
+          ),
         ],
       ),
     );
@@ -282,6 +409,26 @@ class RegistrationScreen extends GetView<AuthController> {
     );
   }
 
+  Widget _buildCheckbox(
+    String label,
+    IconData icon,
+    Function(bool) onChanged,
+  ) {
+    return Obx(() => CheckboxListTile(
+          title: Text(label),
+          value: controller.termsAccepted.value,
+          onChanged: (bool? value) {
+            if (value == true) {
+              _showTermsAndConditions();
+            } else {
+              onChanged(false);
+            }
+          },
+          secondary: Icon(icon, color: ElegantTheme.primaryColor),
+          activeColor: ElegantTheme.primaryColor,
+        ));
+  }
+
   Widget _buildProfileImagePicker() {
     return Obx(() => Column(
           children: [
@@ -319,34 +466,6 @@ class RegistrationScreen extends GetView<AuthController> {
             const SizedBox(height: 30),
           ],
         ));
-  }
-
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label,
-    IconData icon, {
-    bool isObscure = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
-      child: TextField(
-        controller: controller,
-        obscureText: isObscure,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon, color: ElegantTheme.primaryColor),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: ElegantTheme.primaryColor),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide:
-                const BorderSide(color: ElegantTheme.primaryColor, width: 2),
-          ),
-        ),
-      ),
-    );
   }
 
   Widget _buildDropdown(
@@ -407,60 +526,6 @@ class RegistrationScreen extends GetView<AuthController> {
         ],
       ),
     );
-  }
-
-  Widget _buildCheckbox(
-    String label,
-    IconData icon,
-    Function(bool) onChanged,
-  ) {
-    return Obx(() => CheckboxListTile(
-          title: Text(label),
-          value: controller.termsAccepted.value,
-          onChanged: (bool? value) => onChanged(value!),
-          secondary: Icon(icon, color: ElegantTheme.primaryColor),
-          activeColor: ElegantTheme.primaryColor,
-        ));
-  }
-
-  Widget _buildNavigationButtons() {
-    return Obx(() => Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              ElevatedButton(
-                onPressed: controller.currentPage.value > 0
-                    ? () {
-                        controller.previousPage();
-                        print(
-                            "Previous page called. Current page: ${controller.currentPage.value}");
-                      }
-                    : null,
-                child: Text("Previous"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: controller.currentPage.value > 0
-                      ? ElegantTheme.secondaryColor
-                      : ElegantTheme.secondaryColor.withOpacity(0.5),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: controller.currentPage.value == 4
-                    ? controller.register
-                    : () {
-                        controller.nextPage();
-                        print(
-                            "Next page called. Current page: ${controller.currentPage.value}");
-                      },
-                child: Text(
-                    controller.currentPage.value == 4 ? "Register" : "Next"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ElegantTheme.primaryColor,
-                ),
-              ),
-            ],
-          ),
-        ));
   }
 
   Widget _buildProgressIndicator() {
