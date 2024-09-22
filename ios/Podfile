@@ -37,20 +37,34 @@ target 'Runner' do
   end
 end
 
+
+
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     
+    # BoringSSL-GRPC için özel işlem
+    if target.name == 'BoringSSL-GRPC'
+      target.source_build_phase.files.each do |file|
+        if file.settings && file.settings['COMPILER_FLAGS']
+          flags = file.settings['COMPILER_FLAGS'].split
+          flags.reject! { |flag| flag == '-GCC_WARN_INHIBIT_ALL_WARNINGS' }
+          file.settings['COMPILER_FLAGS'] = flags.join(' ')
+        end
+      end
+    end
+    
+    # İzinler ve diğer ön işlemci tanımlamaları
     target.build_configurations.each do |config|
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
-        ## Permission options
+        ## İzin seçenekleri
         'PERMISSION_CAMERA=1',
         'PERMISSION_MICROPHONE=1',
         'PERMISSION_PHOTOS=1',
-        # 'PERMISSION_LOCATION=1',
         'PERMISSION_NOTIFICATIONS=1',
         'PERMISSION_MEDIA_LIBRARY=1',
+        # 'PERMISSION_LOCATION=1', # Gerekirse yorum işaretini kaldırın
       ]
     end
   end

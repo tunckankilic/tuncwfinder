@@ -31,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     // 3 saniye sonra ana sayfaya yönlendir
     Future.delayed(const Duration(seconds: 3), () {
-      Get.offNamed('/home'); // Ana sayfa route'unuzu buraya ekleyin
+      Get.offNamed('/login'); // Ana sayfa route'unuzu buraya ekleyin
     });
   }
 

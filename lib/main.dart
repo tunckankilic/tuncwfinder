@@ -1,14 +1,10 @@
 import 'dart:developer';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tuncforwork/service/service.dart';
-import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
-import 'package:tuncforwork/views/screens/home/home_bindings.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'firebase_options.dart';
