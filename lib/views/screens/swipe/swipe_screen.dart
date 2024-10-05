@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
@@ -13,28 +14,34 @@ class SwipeScreen extends GetView<SwipeController> {
     Get.lazyPut(() => SwipeController());
     return SafeArea(
       child: Scaffold(
-        body: Obx(() => PageView.builder(
-              pageSnapping: true,
-              physics: const BouncingScrollPhysics(),
-              itemCount: controller.allUsersProfileList.length,
-              controller: controller.pageController.value,
-              scrollDirection: Axis.vertical,
-              itemBuilder: (context, index) {
-                final eachProfile = controller.allUsersProfileList[index];
-                return _buildUserCard(context, eachProfile);
-              },
-            )),
+        body: Obx(() {
+          final filteredProfiles = controller.allUsersProfileList
+              .where((profile) => profile.uid != controller.currentUserId)
+              .toList();
+          return PageView.builder(
+            pageSnapping: true,
+            physics: const BouncingScrollPhysics(),
+            itemCount: filteredProfiles.length,
+            controller: controller.pageController.value,
+            scrollDirection: Axis.vertical,
+            itemBuilder: (context, index) {
+              final eachProfile = filteredProfiles[index];
+              return _buildUserCard(context, eachProfile);
+            },
+          );
+        }),
       ),
     );
   }
 
-  Widget _buildUserCard(BuildContext context, dynamic eachProfile) {
+  Widget _buildUserCard(BuildContext context, Person eachProfile) {
     return GestureDetector(
-      onDoubleTap: () => Get.to(() => UserDetails(userId: eachProfile["uid"])),
+      onDoubleTap: () =>
+          Get.to(() => UserDetails(userId: eachProfile.uid ?? '')),
       child: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: NetworkImage(eachProfile['imageProfile']?.toString() ?? ''),
+            image: NetworkImage(eachProfile.imageProfile ?? ''),
             fit: BoxFit.cover,
           ),
         ),
@@ -84,12 +91,12 @@ class SwipeScreen extends GetView<SwipeController> {
     );
   }
 
-  Widget _buildUserInfo(BuildContext context, dynamic eachProfile) {
+  Widget _buildUserInfo(BuildContext context, Person eachProfile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          eachProfile["name"].toString(),
+          eachProfile.name ?? '',
           style: ElegantTheme.textTheme.headlineMedium!.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -98,7 +105,7 @@ class SwipeScreen extends GetView<SwipeController> {
         ),
         SizedBox(height: 8.h),
         Text(
-          "${eachProfile["age"] ?? "XX"} • ${eachProfile["city"] ?? "XX"}",
+          "${eachProfile.age ?? 'XX'} • ${eachProfile.city ?? 'XX'}",
           style: ElegantTheme.textTheme.titleMedium!.copyWith(
             color: Colors.white70,
             fontSize: 16.sp,
@@ -110,25 +117,21 @@ class SwipeScreen extends GetView<SwipeController> {
     );
   }
 
-  Widget _buildInfoChips(dynamic eachProfile) {
+  Widget _buildInfoChips(Person eachProfile) {
     return Column(
       children: [
         Row(
           children: [
-            _buildInfoChip(eachProfile["profession"].toString()),
-            SizedBox(
-              width: 5.w,
-            ),
-            _buildInfoChip(eachProfile["religion"].toString()),
+            _buildInfoChip(eachProfile.profession ?? ''),
+            SizedBox(width: 5.w),
+            _buildInfoChip(eachProfile.religion ?? ''),
           ],
         ),
         Row(
           children: [
-            _buildInfoChip(eachProfile["country"].toString()),
-            SizedBox(
-              width: 5.w,
-            ),
-            _buildInfoChip(eachProfile["ethnicity"].toString()),
+            _buildInfoChip(eachProfile.country ?? ''),
+            SizedBox(width: 5.w),
+            _buildInfoChip(eachProfile.ethnicity ?? ''),
           ],
         )
       ],
@@ -147,51 +150,51 @@ class SwipeScreen extends GetView<SwipeController> {
     );
   }
 
-  Widget _buildActionButtons(dynamic eachProfile) {
+  Widget _buildActionButtons(Person eachProfile) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildActionButton(
           "assets/favorite.png",
           () => controller.favoriteSentAndFavoriteReceived(
-            toUserID: eachProfile["uid"].toString(),
+            toUserID: eachProfile.uid ?? '',
             senderName: controller.senderName.value,
           ),
         ),
         SocialActionButtons(
-          instagramUsername: eachProfile["instagram"],
-          linkedInUsername: eachProfile["linkedIn"],
-          whatsappNumber: eachProfile["phoneNo"],
-          gitHub: eachProfile["github"],
+          instagramUsername: eachProfile.instagramUrl ?? '',
+          linkedInUsername: eachProfile.linkedInUrl ?? '',
+          whatsappNumber: eachProfile.phoneNo ?? '',
+          gitHub: eachProfile.githubUrl ?? '',
         ),
         _buildActionButton(
           "assets/like.png",
           () => controller.likeSentAndLikeReceived(
-            toUserId: eachProfile["uid"].toString(),
+            toUserId: eachProfile.uid ?? '',
             senderName: controller.senderName.value,
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildActionButton(String asset, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 60.w,
-        height: 60.h,
-        decoration: BoxDecoration(
-          color: ElegantTheme.primaryColor.withOpacity(0.8),
-          shape: BoxShape.circle,
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(12.w),
-          child: Image.asset(asset),
-        ),
+Widget _buildActionButton(String asset, VoidCallback onTap) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: 60.w,
+      height: 60.h,
+      decoration: BoxDecoration(
+        color: ElegantTheme.primaryColor.withOpacity(0.8),
+        shape: BoxShape.circle,
       ),
-    );
-  }
+      child: Padding(
+        padding: EdgeInsets.all(12.w),
+        child: Image.asset(asset),
+      ),
+    ),
+  );
 }
 
 class SocialActionButtons extends GetView<SwipeController> {

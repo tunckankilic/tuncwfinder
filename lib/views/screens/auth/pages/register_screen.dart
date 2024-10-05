@@ -19,7 +19,7 @@ class RegistrationScreen extends GetView<AuthController> {
               child: PageView.builder(
                 controller: controller.pageController,
                 itemCount: 5,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (index) {
                   controller.currentPage.value = index;
                 },
@@ -57,8 +57,8 @@ class RegistrationScreen extends GetView<AuthController> {
           Obx(() => LinearProgressIndicator(
                 value: (controller.currentPage.value + 1) / 5,
                 backgroundColor: ElegantTheme.primaryColor.withOpacity(0.2),
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(ElegantTheme.primaryColor),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                    ElegantTheme.primaryColor),
               )),
         ],
       ),
@@ -81,7 +81,7 @@ class RegistrationScreen extends GetView<AuthController> {
           prefixIcon: Icon(icon, color: ElegantTheme.primaryColor, size: 20.sp),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.r),
-            borderSide: BorderSide(color: ElegantTheme.primaryColor),
+            borderSide: const BorderSide(color: ElegantTheme.primaryColor),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.r),
@@ -107,7 +107,6 @@ class RegistrationScreen extends GetView<AuthController> {
                             "Previous page called. Current page: ${controller.currentPage.value}");
                       }
                     : null,
-                child: Text("Previous", style: TextStyle(fontSize: 14.sp)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: controller.currentPage.value > 0
                       ? ElegantTheme.secondaryColor
@@ -115,6 +114,7 @@ class RegistrationScreen extends GetView<AuthController> {
                   padding:
                       EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                 ),
+                child: Text("Previous", style: TextStyle(fontSize: 14.sp)),
               ),
               ElevatedButton(
                 onPressed: controller.currentPage.value == 4
@@ -124,14 +124,14 @@ class RegistrationScreen extends GetView<AuthController> {
                         print(
                             "Next page called. Current page: ${controller.currentPage.value}");
                       },
-                child: Text(
-                  controller.currentPage.value == 4 ? "Register" : "Next",
-                  style: TextStyle(fontSize: 14.sp),
-                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ElegantTheme.primaryColor,
                   padding:
                       EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                ),
+                child: Text(
+                  controller.currentPage.value == 4 ? "Register" : "Next",
+                  style: TextStyle(fontSize: 14.sp),
                 ),
               ),
             ],
@@ -142,17 +142,17 @@ class RegistrationScreen extends GetView<AuthController> {
   void _showTermsAndConditions() {
     Get.dialog(
       AlertDialog(
-        title: Text('Terms and Conditions'),
+        title: const Text('Terms and Conditions'),
         content: SingleChildScrollView(
           child: Text(controller.termsAndConditions),
         ),
         actions: [
           TextButton(
-            child: Text('Close'),
+            child: const Text('Close'),
             onPressed: () => Get.back(),
           ),
           TextButton(
-            child: Text('Accept'),
+            child: const Text('Accept'),
             onPressed: () {
               Get.back();
               _showPrivacyPolicy();
@@ -166,20 +166,20 @@ class RegistrationScreen extends GetView<AuthController> {
   void _showPrivacyPolicy() {
     Get.dialog(
       AlertDialog(
-        title: Text('Privacy Policy'),
+        title: const Text('Privacy Policy'),
         content: SingleChildScrollView(
           child: Text(controller.privacyPolicy),
         ),
         actions: [
           TextButton(
-            child: Text('Close'),
+            child: const Text('Close'),
             onPressed: () {
               controller.termsAccepted.value = false;
               Get.back();
             },
           ),
           TextButton(
-            child: Text('Accept'),
+            child: const Text('Accept'),
             onPressed: () {
               controller.termsAccepted.value = true;
               Get.back();
@@ -208,15 +208,15 @@ class RegistrationScreen extends GetView<AuthController> {
           _buildDropdown(
             "Gender",
             Icons.person_outlined,
-            ["Male", "Female", "Other"],
+            gender,
             (value) => controller.genderController.text = value,
           ),
           _buildTextField(
               controller.phoneNoController, "Phone", Icons.phone_outlined),
+          _buildDropdown("Country", Icons.flag_outlined, countries,
+              (value) => controller.countryController.text = value),
           _buildTextField(
               controller.cityController, "City", Icons.location_city_outlined),
-          _buildTextField(
-              controller.countryController, "Country", Icons.flag_outlined),
           _buildTextField(controller.profileHeadingController,
               "Profile Heading", Icons.text_fields_outlined),
         ],
@@ -237,7 +237,7 @@ class RegistrationScreen extends GetView<AuthController> {
           _buildDropdown(
             "Body Type",
             Icons.accessibility_new_outlined,
-            ["Slim", "Athletic", "Average", "Curvy", "Plus-size"],
+            bodyTypes,
             (value) => controller.bodyTypeController.text = value,
           ),
         ],
@@ -254,19 +254,19 @@ class RegistrationScreen extends GetView<AuthController> {
           _buildDropdown(
             "Drinking Habits",
             Icons.local_bar_outlined,
-            ["Never", "Socially", "Regularly"],
+            drinkingHabits,
             (value) => controller.drinkController.text = value,
           ),
           _buildDropdown(
             "Smoking Habits",
             Icons.smoking_rooms_outlined,
-            ["Non-smoker", "Occasionally", "Regularly"],
+            smokingHabits,
             (value) => controller.smokeController.text = value,
           ),
           _buildDropdown(
             "Marital Status",
             Icons.people_outline,
-            ["Single", "Divorced", "Widowed"],
+            maritalStatuses,
             (value) => controller.martialStatusController.text = value,
           ),
           _buildCheckboxGroup(
@@ -278,19 +278,12 @@ class RegistrationScreen extends GetView<AuthController> {
           ),
           _buildTextField(controller.noOfChildrenController,
               "Number of Children", Icons.child_friendly_outlined),
-          _buildTextField(controller.professionController, "Profession",
-              Icons.work_outline),
+          _buildDropdown("Profession", Icons.work_outline, itJobs,
+              (value) => controller.professionController.text = value),
           _buildDropdown(
             "Employment Status",
             Icons.business_center_outlined,
-            [
-              "Full-time",
-              "Part-time",
-              "Self-employed",
-              "Student",
-              "Retired",
-              "Unemployed"
-            ],
+            employmentStatuses,
             (value) => controller.employmentStatusController.text = value,
           ),
           _buildTextField(controller.incomeController, "Annual Income",
@@ -298,7 +291,7 @@ class RegistrationScreen extends GetView<AuthController> {
           _buildDropdown(
             "Living Situation",
             Icons.home_outlined,
-            ["Alone", "With family", "With roommates", "Other"],
+            livingSituations,
             (value) => controller.livingSituationController.text = value,
           ),
           _buildCheckboxGroup(
@@ -356,32 +349,28 @@ class RegistrationScreen extends GetView<AuthController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTextField(controller.nationalityController, "Nationality",
-              Icons.public_outlined),
+          _buildDropdown("Nationality", Icons.public_outlined, nationalities,
+              (value) => controller.nationalityController.text = value),
           _buildDropdown(
             "Highest Education",
             Icons.school_outlined,
-            ["High School", "Bachelor's", "Master's", "Doctorate", "Other"],
+            highSchool,
             (value) => controller.educationController.text = value,
           ),
-          _buildTextField(controller.languageSpokenController,
-              "Languages Spoken", Icons.language_outlined),
+          _buildDropdown("Languages", Icons.language_outlined, languages,
+              (value) => controller.languageSpokenController.text = value),
           _buildDropdown(
             "Religion",
             Icons.church_outlined,
-            [
-              "Christianity",
-              "Islam",
-              "Hinduism",
-              "Buddhism",
-              "Judaism",
-              "Other",
-              "None"
-            ],
+            religion,
             (value) => controller.religionController.text = value,
           ),
-          _buildTextField(controller.ethnicityController, "Ethnicity",
-              Icons.people_outline),
+          _buildDropdown(
+            "Ethnicity",
+            Icons.people_outline,
+            ethnicities,
+            (value) => controller.ethnicityController.text = value,
+          ),
         ],
       ),
     );
@@ -478,7 +467,7 @@ class RegistrationScreen extends GetView<AuthController> {
       padding: const EdgeInsets.only(bottom: 15),
       child: DropdownButtonFormField<String>(
         value: items.first,
-        onChanged: (newValue) => onChanged(newValue!),
+        onChanged: (newValue) => onChanged(newValue ?? items[0]),
         items: items.map((String value) {
           return DropdownMenuItem<String>(
             value: value,

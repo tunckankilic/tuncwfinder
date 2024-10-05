@@ -187,4 +187,48 @@ class UserDetailsController extends GetxController {
       binding: AuthBindings(),
     );
   }
+
+  Future<void> deleteAccountAndData(BuildContext context) async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        String uid = user.uid;
+
+        // 1. Firestore'dan kullanıcıya ait verileri sil
+        await _deleteUserData(uid);
+
+        // 2. Kullanıcı hesabını sil
+        await user.delete();
+
+        // 3. Kullanıcıyı oturumdan çıkar
+        await FirebaseAuth.instance.signOut();
+        Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
+      } else {
+        print('Kullanıcı oturum açmamış.');
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        print(
+            'Bu işlem için yakın zamanda oturum açılması gerekiyor. Lütfen tekrar oturum açın ve işlemi tekrarlayın.');
+      } else {
+        print('Hesap silme hatası: ${e.message}');
+      }
+    } catch (e) {
+      print('Beklenmeyen bir hata oluştu: $e');
+    }
+  }
+
+  Future<void> _deleteUserData(String uid) async {
+    await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+
+    QuerySnapshot cardSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('userId', isEqualTo: uid)
+        .get();
+
+    for (var doc in cardSnapshot.docs) {
+      await doc.reference.delete();
+    }
+  }
 }

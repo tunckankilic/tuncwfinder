@@ -39,7 +39,11 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
   }
 
   Widget _buildBody() {
-    return controller.favoritesList.isEmpty
+    final filteredFavorites = controller.favoritesList
+        .where((user) => user["uid"] != currentUserId)
+        .toList();
+
+    return filteredFavorites.isEmpty
         ? Center(
             child: Icon(
               Icons.favorite_border,
@@ -56,7 +60,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
                 mainAxisSpacing: 8.h,
               ),
               padding: EdgeInsets.all(8.w),
-              itemCount: controller.favoritesList.length,
+              itemCount: filteredFavorites.length,
               itemBuilder: (context, index) =>
                   AnimationConfiguration.staggeredGrid(
                 position: index,
@@ -64,7 +68,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
                 columnCount: 2,
                 child: ScaleAnimation(
                   child: FadeInAnimation(
-                    child: _buildFavoriteCard(controller.favoritesList[index]),
+                    child: _buildFavoriteCard(filteredFavorites[index]),
                   ),
                 ),
               ),

@@ -10,6 +10,7 @@ class ViewSentViewReceive extends GetView<VsvrController> {
 
   @override
   Widget build(BuildContext context) {
+    Get.lazyPut(() => VsvrController());
     return Scaffold(
       appBar: _buildAppBar(),
       body: Obx(() => _buildBody()),
@@ -42,7 +43,11 @@ class ViewSentViewReceive extends GetView<VsvrController> {
   }
 
   Widget _buildBody() {
-    return controller.viewsList.isEmpty
+    final filteredViews = controller.viewsList
+        .where((user) => user["uid"] != currentUserId)
+        .toList();
+
+    return filteredViews.isEmpty
         ? Center(
             child: Icon(
               Icons.person_off_sharp,
@@ -56,14 +61,14 @@ class ViewSentViewReceive extends GetView<VsvrController> {
               padding: EdgeInsets.all(8.w),
               childAspectRatio: 0.75,
               children: List.generate(
-                controller.viewsList.length,
+                filteredViews.length,
                 (index) => AnimationConfiguration.staggeredGrid(
                   position: index,
                   duration: const Duration(milliseconds: 375),
                   columnCount: 2,
                   child: ScaleAnimation(
                     child: FadeInAnimation(
-                      child: _buildGridTile(controller.viewsList[index]),
+                      child: _buildGridTile(filteredViews[index]),
                     ),
                   ),
                 ),

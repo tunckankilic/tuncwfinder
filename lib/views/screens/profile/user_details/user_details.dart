@@ -56,7 +56,11 @@ class UserDetails extends GetView<UserDetailsController> {
       pinned: true,
       automaticallyImplyLeading: false,
       leading: controller.isMainProfilePage.value
-          ? SizedBox.shrink()
+          ? IconButton(
+              onPressed: () => controller.deleteAccountAndData(context),
+              icon: Icon(Icons.delete),
+              color: ElegantTheme.backgroundColor,
+            )
           : IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
               onPressed: () => Navigator.of(context).pop(),
@@ -76,11 +80,19 @@ class UserDetails extends GetView<UserDetailsController> {
       actions: [
         if (controller.isMainProfilePage.value) ...[
           IconButton(
-            icon: Icon(Icons.settings, size: 24.sp),
+            icon: Icon(
+              Icons.settings,
+              size: 24.sp,
+              color: ElegantTheme.backgroundColor,
+            ),
             onPressed: controller.navigateToAccountSettings,
           ),
           IconButton(
-            icon: Icon(Icons.exit_to_app, size: 24.sp),
+            icon: Icon(
+              Icons.exit_to_app,
+              size: 24.sp,
+              color: ElegantTheme.backgroundColor,
+            ),
             onPressed: controller.signOut,
           ),
         ],

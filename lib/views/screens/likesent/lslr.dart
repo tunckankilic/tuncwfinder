@@ -39,7 +39,11 @@ class LikeSentLikeReceived extends GetView<LslrController> {
   }
 
   Widget _buildBody() {
-    return controller.likedList.isEmpty
+    final filteredLikes = controller.likedList
+        .where((user) => user["uid"] != currentUserId)
+        .toList();
+
+    return filteredLikes.isEmpty
         ? Center(
             child: Icon(
               Icons.favorite_border,
@@ -56,7 +60,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
                 mainAxisSpacing: 8.h,
               ),
               padding: EdgeInsets.all(8.w),
-              itemCount: controller.likedList.length,
+              itemCount: filteredLikes.length,
               itemBuilder: (context, index) =>
                   AnimationConfiguration.staggeredGrid(
                 position: index,
@@ -64,7 +68,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
                 columnCount: 2,
                 child: ScaleAnimation(
                   child: FadeInAnimation(
-                    child: _buildLikedCard(controller.likedList[index]),
+                    child: _buildLikedCard(filteredLikes[index]),
                   ),
                 ),
               ),
