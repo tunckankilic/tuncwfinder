@@ -16,51 +16,50 @@ class PushNotificationSystem extends GetxController {
     });
   }
 
-  //notification arrived/received
-  Future whenNotificationReceived(BuildContext context) async {
-    //1. Terminated
-    //When the app is completely closed and opened directly from the push notification
-    FirebaseMessaging.instance
-        .getInitialMessage()
-        .then((RemoteMessage? remoteMessage) {
-      if (remoteMessage != null) {
-        //open app and show notification data
-        openAppAndShowNotificationData(
-          remoteMessage.data["userID"],
-          remoteMessage.data["senderID"],
+  Future<void> whenNotificationReceived(BuildContext context) async {
+    try {
+      // 1. Terminated
+      RemoteMessage? initialMessage =
+          await FirebaseMessaging.instance.getInitialMessage();
+      if (initialMessage != null) {
+        await openAppAndShowNotificationData(
+          initialMessage.data["userID"],
+          initialMessage.data["senderID"],
           context,
         );
       }
-    });
 
-    //2. Foreground
-    //When the app is open and it receives a push notification
-    FirebaseMessaging.onMessage.listen((RemoteMessage? remoteMessage) {
-      if (remoteMessage != null) {
-        //open app and show notification data
-        openAppAndShowNotificationData(
-          remoteMessage.data["userID"],
-          remoteMessage.data["senderID"],
+      // 2. Foreground
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+        await openAppAndShowNotificationData(
+          message.data["userID"],
+          message.data["senderID"],
           context,
         );
-      }
-    });
+      });
 
-    //3. Background
-    //When the app is in the background and opened directly from the push notification.
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage? remoteMessage) {
-      if (remoteMessage != null) {
-        //open app and show notification data
-        openAppAndShowNotificationData(
-          remoteMessage.data["userID"],
-          remoteMessage.data["senderID"],
+      // 3. Background
+      FirebaseMessaging.onMessageOpenedApp
+          .listen((RemoteMessage message) async {
+        await openAppAndShowNotificationData(
+          message.data["userID"],
+          message.data["senderID"],
           context,
         );
-      }
-    });
+      });
+    } catch (e) {
+      print('Error in whenNotificationReceived: $e');
+      // You might want to show an error message to the user here
+    }
   }
 
-  openAppAndShowNotificationData(receiverID, senderID, context) async {
+  Future<void> openAppAndShowNotificationData(
+      String? receiverID, String? senderID, BuildContext context) async {
+    if (senderID == null) {
+      print('Sender ID is null');
+      return;
+    }
+
     try {
       DocumentSnapshot snapshot = await FirebaseFirestore.instance
           .collection("users")
@@ -69,12 +68,12 @@ class PushNotificationSystem extends GetxController {
 
       if (snapshot.exists && snapshot.data() != null) {
         Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-        String profileImage = data["imageProfile"]?.toString() ?? "";
-        String name = data["name"]?.toString() ?? "";
+        String profileImage = data["imageProfile"] ?? "";
+        String name = data["name"] ?? "";
         String age = data["age"]?.toString() ?? "";
-        String city = data["city"]?.toString() ?? "";
-        String country = data["country"]?.toString() ?? "";
-        String profession = data["profession"]?.toString() ?? "";
+        String city = data["city"] ?? "";
+        String country = data["country"] ?? "";
+        String profession = data["profession"] ?? "";
 
         if (context.mounted) {
           showDialog(
@@ -98,103 +97,93 @@ class PushNotificationSystem extends GetxController {
       }
     } catch (e) {
       print('Error fetching user data: $e');
+      // You might want to show an error message to the user here
     }
   }
 
-  notificationDialogBox(
-      senderID, profileImage, name, age, city, country, profession, context) {
-    return Get.dialog(
-      Dialog(
-        child: GridTile(
-          child: Padding(
-            padding: const EdgeInsets.all(2.0),
-            child: SizedBox(
-              height: 300,
-              child: Card(
-                color: Colors.blue.shade200,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                    image: NetworkImage(profileImage),
-                    fit: BoxFit.cover,
-                  )),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          //name - age
-                          Text(
-                            name + " ● " + age.toString(),
-                            style: const TextStyle(
+  Widget notificationDialogBox(
+      String senderID,
+      String profileImage,
+      String name,
+      String age,
+      String city,
+      String country,
+      String profession,
+      BuildContext context) {
+    return Dialog(
+      child: GridTile(
+        child: Padding(
+          padding: const EdgeInsets.all(2.0),
+          child: SizedBox(
+            height: 300,
+            child: Card(
+              color: Colors.blue.shade200,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                  image: NetworkImage(profileImage),
+                  fit: BoxFit.cover,
+                )),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "$name ● $age",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on_outlined,
                               color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                              size: 16,
                             ),
-                          ),
-
-                          const SizedBox(
-                            height: 8,
-                          ),
-
-                          //icon - city country location
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.location_on_outlined,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                              const SizedBox(
-                                width: 2,
-                              ),
-                              Expanded(
-                                child: Text(
-                                  city + ", " + country.toString(),
-                                  maxLines: 4,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
+                            const SizedBox(width: 2),
+                            Expanded(
+                              child: Text(
+                                "$city, $country",
+                                maxLines: 4,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
                                 ),
                               ),
-                            ],
-                          ),
-
-                          const Spacer(),
-
-                          // 2 button
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Center(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    Get.back();
-
-                                    Get.to(() => UserDetails(userId: senderID));
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                  ),
-                                  child: const Text("View Profile"),
-                                ),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Get.back();
+                                Get.to(() => UserDetails(userId: senderID));
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
                               ),
-                              Center(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    Get.back();
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.redAccent),
-                                  child: const Text("Close"),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                              child: const Text("View Profile"),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Get.back();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.redAccent),
+                              child: const Text("Close"),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -206,16 +195,25 @@ class PushNotificationSystem extends GetxController {
     );
   }
 
-  Future generateDeviceRegistrationToken() async {
-    String? deviceToken = await messaging.getToken();
-    String? userId = currentUserId;
+  Future<void> generateDeviceRegistrationToken() async {
+    try {
+      String? deviceToken = await messaging.getToken();
+      String? userId = currentUserId;
 
-    if (userId != null) {
-      await FirebaseFirestore.instance.collection("users").doc(userId).update({
-        "userDeviceToken": deviceToken,
-      });
-    } else {
-      print('User not logged in, cannot update device token');
+      if (userId != null && deviceToken != null) {
+        await FirebaseFirestore.instance
+            .collection("users")
+            .doc(userId)
+            .update({
+          "userDeviceToken": deviceToken,
+        });
+      } else {
+        print(
+            'User not logged in or device token is null, cannot update device token');
+      }
+    } catch (e) {
+      print('Error generating device registration token: $e');
+      // You might want to show an error message to the user here
     }
   }
 }

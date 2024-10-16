@@ -6,7 +6,7 @@ class RouteGenerator {
     switch (settings.name) {
       case SplashScreen.routeName:
         return MaterialPageRoute(
-          builder: (_) => SplashScreen(),
+          builder: (_) => const SplashScreen(),
         );
       case LoginScreen.routeName:
         return MaterialPageRoute(
@@ -20,18 +20,11 @@ class RouteGenerator {
             builder: (_) {
               return const RegistrationScreen();
             });
-
       case HomeScreen.routeName:
         return MaterialPageRoute(
             settings: settings,
             builder: (_) {
               return const HomeScreen();
-            });
-      case SplashScreen.routeName:
-        return MaterialPageRoute(
-            settings: settings,
-            builder: (_) {
-              return const SplashScreen();
             });
       case UserDetails.routeName:
         var userID = settings.arguments as String;

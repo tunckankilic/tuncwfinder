@@ -10,7 +10,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'firebase_options.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
   await initializeApp();
   runApp(const MyApp());
 }
