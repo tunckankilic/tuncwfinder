@@ -96,7 +96,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
 
   Widget _buildFavoriteCard(Map<String, dynamic> user) {
     return GestureDetector(
-      onTap: () => Get.to(() => UserDetails(userId: user["uid"])),
+      onTap: () => Get.to(() => UserDetails()),
       child: Card(
         elevation: 5,
         shape: RoundedRectangleBorder(

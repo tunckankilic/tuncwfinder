@@ -7,21 +7,15 @@ import 'package:tuncforwork/views/screens/profile/user_details/user_details_cont
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 
 class UserDetails extends GetView<UserDetailsController> {
-  static const routeName = "/user";
-
-  const UserDetails({
-    super.key,
-    required this.userId,
-  });
-  final String userId;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ElegantTheme.backgroundColor,
       body: GetX<UserDetailsController>(
-        init: UserDetailsController(userId: userId),
         builder: (controller) {
+          if (controller.isLoading.value) {
+            return Center(child: CircularProgressIndicator());
+          }
           return CustomScrollView(
             slivers: [
               _buildSliverAppBar(context),
@@ -67,14 +61,14 @@ class UserDetails extends GetView<UserDetailsController> {
             ),
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
-          controller.name.value,
+          controller.name.value.isNotEmpty ? controller.name.value : 'No Name',
           style: ElegantTheme.textTheme.titleLarge?.copyWith(
             color: Colors.white,
             fontSize: 18.sp,
           ),
         ),
-        background: controller.imageUrls.isNotEmpty
-            ? Image.network(controller.imageUrls[0], fit: BoxFit.cover)
+        background: (controller.imageUrls?.isNotEmpty ?? false)
+            ? Image.network(controller.imageUrls.first, fit: BoxFit.cover)
             : Container(color: ElegantTheme.primaryColor),
       ),
       actions: [
@@ -103,21 +97,25 @@ class UserDetails extends GetView<UserDetailsController> {
   Widget _buildImageCarousel() {
     return SizedBox(
       height: 200.0.h,
-      child: PageView.builder(
-        itemCount: controller.imageUrls.length,
-        itemBuilder: (context, index) {
-          return Container(
-            margin: EdgeInsets.symmetric(horizontal: 5.0.w),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8.0.r),
-              image: DecorationImage(
-                image: NetworkImage(controller.imageUrls[index]),
-                fit: BoxFit.cover,
-              ),
+      child: controller.imageUrls != null && controller.imageUrls.isNotEmpty
+          ? PageView.builder(
+              itemCount: controller.imageUrls.length,
+              itemBuilder: (context, index) {
+                return Container(
+                  margin: EdgeInsets.symmetric(horizontal: 5.0.w),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0.r),
+                    image: DecorationImage(
+                      image: NetworkImage(controller.imageUrls[index]),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                );
+              },
+            )
+          : Center(
+              child: Text('No images available'),
             ),
-          );
-        },
-      ),
     );
   }
 
@@ -147,7 +145,6 @@ class UserDetails extends GetView<UserDetailsController> {
         _buildInfoRow("Gender", controller.gender),
         _buildInfoRow("City", controller.city),
         _buildInfoRow("Country", controller.country),
-        _buildInfoRow("Looking for", controller.lookingForInaPartner),
       ],
     );
   }
@@ -189,10 +186,19 @@ class UserDetails extends GetView<UserDetailsController> {
 
   Widget _buildConnections() {
     return ProfileActionButtons(
-        phoneNo: controller.phoneNo.value,
-        instagramUsername: controller.instagramUrl.value,
-        linkedInUsername: controller.linkedInUrl.value,
-        github: controller.githubUrl.value);
+      phoneNo: controller.phoneNo.value.isNotEmpty
+          ? controller.phoneNo.value
+          : 'Not Provided',
+      instagramUsername: controller.instagramUrl.value.isNotEmpty
+          ? controller.instagramUrl.value
+          : 'Not Provided',
+      linkedInUsername: controller.linkedInUrl.value.isNotEmpty
+          ? controller.linkedInUrl.value
+          : 'Not Provided',
+      github: controller.githubUrl.value.isNotEmpty
+          ? controller.githubUrl.value
+          : 'Not Provided',
+    );
   }
 
   Widget _buildInfoRow(String label, RxString value) {
@@ -213,7 +219,7 @@ class UserDetails extends GetView<UserDetailsController> {
           Expanded(
             flex: 3,
             child: Text(
-              value.value,
+              value.value.isNotEmpty ? value.value : 'Not Provided',
               style:
                   ElegantTheme.textTheme.bodyLarge?.copyWith(fontSize: 14.sp),
               textAlign: TextAlign.end,

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 
@@ -12,14 +13,17 @@ class AccountSettingsController extends GetxController {
   RxList<String> urlsList = <String>[].obs;
   RxDouble uploadProgress = 0.0.obs;
 
+  // Profile Image
+  Rx<File?> pickedImage = Rx<File?>(null);
+
   // Personal Info
   final nameController = TextEditingController();
+  final emailController = TextEditingController();
   final ageController = TextEditingController();
   final phoneNoController = TextEditingController();
   final cityController = TextEditingController();
   final countryController = TextEditingController();
   final profileHeadingController = TextEditingController();
-  final lookingForInaPartnerController = TextEditingController();
   final genderController = TextEditingController();
 
   // Appearance
@@ -31,14 +35,13 @@ class AccountSettingsController extends GetxController {
   final drinkController = TextEditingController();
   final smokeController = TextEditingController();
   final martialStatusController = TextEditingController();
-  final haveChildrenController = TextEditingController();
+  final childrenSelection = ''.obs;
   final noOfChildrenController = TextEditingController();
   final professionController = TextEditingController();
   final employmentStatusController = TextEditingController();
   final incomeController = TextEditingController();
   final livingSituationController = TextEditingController();
-  final willingToRelocateController = TextEditingController();
-  final relationshipYouAreLookingForController = TextEditingController();
+  final relationshipSelection = ''.obs;
 
   // Background - Cultural Values
   final nationalityController = TextEditingController();
@@ -51,6 +54,16 @@ class AccountSettingsController extends GetxController {
   final instagramController = TextEditingController();
   final linkedInController = TextEditingController();
   final gitHubController = TextEditingController();
+
+  // Options for checkbox groups
+  List<String> childrenOptions = ['Yes', 'No'];
+  List<String> relationshipOptions = [
+    'Single',
+    'In a relationship',
+    'Married',
+    'Divorced',
+    'Widowed'
+  ];
 
   @override
   void onInit() {
@@ -69,12 +82,12 @@ class AccountSettingsController extends GetxController {
 
       // Personal Info
       nameController.text = data['name'] ?? '';
+      emailController.text = data['email'] ?? '';
       ageController.text = data['age']?.toString() ?? '';
       phoneNoController.text = data['phoneNo'] ?? '';
       cityController.text = data['city'] ?? '';
       countryController.text = data['country'] ?? '';
       profileHeadingController.text = data['profileHeading'] ?? '';
-      lookingForInaPartnerController.text = data['lookingForInaPartner'] ?? '';
       genderController.text = data['gender'] ?? '';
 
       // Appearance
@@ -86,15 +99,13 @@ class AccountSettingsController extends GetxController {
       drinkController.text = data['drink'] ?? '';
       smokeController.text = data['smoke'] ?? '';
       martialStatusController.text = data['martialStatus'] ?? '';
-      haveChildrenController.text = data['haveChildren'] ?? '';
+      childrenSelection.value = data['haveChildren'] ?? '';
       noOfChildrenController.text = data['noOfChildren'] ?? '';
       professionController.text = data['profession'] ?? '';
       employmentStatusController.text = data['employmentStatus'] ?? '';
       incomeController.text = data['income'] ?? '';
       livingSituationController.text = data['livingSituation'] ?? '';
-      willingToRelocateController.text = data['willingToRelocate'] ?? '';
-      relationshipYouAreLookingForController.text =
-          data['relationshipYouAreLookingFor'] ?? '';
+      relationshipSelection.value = data['relationshipStatus'] ?? '';
 
       // Background - Cultural Values
       nationalityController.text = data['nationality'] ?? '';
@@ -107,6 +118,12 @@ class AccountSettingsController extends GetxController {
       instagramController.text = data['instagram'] ?? '';
       linkedInController.text = data['linkedIn'] ?? '';
       gitHubController.text = data['github'] ?? '';
+
+      // Profile Image
+      String? profileImageUrl = data['profileImageUrl'];
+      if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
+        // You might want to download and set the image file here
+      }
 
       // Mevcut fotoğrafları yükle
       images.clear();
@@ -122,113 +139,133 @@ class AccountSettingsController extends GetxController {
   }
 
   Future<void> updateUserDataToFirestore() async {
-    if (allFieldsValid()) {
-      uploading.value = true;
-      await uploadImages();
+    uploading.value = true;
+    await uploadImages();
 
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(currentUserId)
-          .update({
-        // Personal Info
-        'name': nameController.text,
-        'age': int.parse(ageController.text),
-        'phoneNo': phoneNoController.text,
-        'city': cityController.text,
-        'country': countryController.text,
-        'profileHeading': profileHeadingController.text,
-        'lookingForInaPartner': lookingForInaPartnerController.text,
-        'gender': genderController.text,
+    String? profileImageUrl;
+    if (pickedImage.value != null) {
+      profileImageUrl = await uploadProfileImage(pickedImage.value!);
+    }
 
-        // Appearance
-        'height': heightController.text,
-        'weight': weightController.text,
-        'bodyType': bodyTypeController.text,
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(currentUserId)
+        .update({
+      // Personal Info
+      'name': nameController.text,
+      'email': emailController.text,
+      'age': int.parse(ageController.text),
+      'phoneNo': phoneNoController.text,
+      'city': cityController.text,
+      'country': countryController.text,
+      'profileHeading': profileHeadingController.text,
+      'gender': genderController.text,
 
-        // Life style
-        'drink': drinkController.text,
-        'smoke': smokeController.text,
-        'martialStatus': martialStatusController.text,
-        'haveChildren': haveChildrenController.text,
-        'noOfChildren': noOfChildrenController.text,
-        'profession': professionController.text,
-        'employmentStatus': employmentStatusController.text,
-        'income': incomeController.text,
-        'livingSituation': livingSituationController.text,
-        'willingToRelocate': willingToRelocateController.text,
-        'relationshipYouAreLookingFor':
-            relationshipYouAreLookingForController.text,
+      // Appearance
+      'height': heightController.text,
+      'weight': weightController.text,
+      'bodyType': bodyTypeController.text,
 
-        // Background - Cultural Values
-        'nationality': nationalityController.text,
-        'education': educationController.text,
-        'languageSpoken': languageSpokenController.text,
-        'religion': religionController.text,
-        'ethnicity': ethnicityController.text,
+      // Life style
+      'drink': drinkController.text,
+      'smoke': smokeController.text,
+      'martialStatus': martialStatusController.text,
+      'haveChildren': childrenSelection.value,
+      'noOfChildren': noOfChildrenController.text,
+      'profession': professionController.text,
+      'employmentStatus': employmentStatusController.text,
+      'income': incomeController.text,
+      'livingSituation': livingSituationController.text,
+      'relationshipStatus': relationshipSelection.value,
 
-        // Connections
-        'instagram': instagramController.text,
-        'linkedIn': linkedInController.text,
-        'github': gitHubController.text,
+      // Background - Cultural Values
+      'nationality': nationalityController.text,
+      'education': educationController.text,
+      'languageSpoken': languageSpokenController.text,
+      'religion': religionController.text,
+      'ethnicity': ethnicityController.text,
 
-        // Images
-        'urlImage1': urlsList.isNotEmpty ? urlsList[0] : '',
-        'urlImage2': urlsList.length > 1 ? urlsList[1] : '',
-        'urlImage3': urlsList.length > 2 ? urlsList[2] : '',
-        'urlImage4': urlsList.length > 3 ? urlsList[3] : '',
-        'urlImage5': urlsList.length > 4 ? urlsList[4] : '',
-      });
+      // Connections
+      'instagram': instagramController.text,
+      'linkedIn': linkedInController.text,
+      'github': gitHubController.text,
 
-      Get.snackbar("Updated", "Your account has been updated successfully.");
-      Get.offAll(() => const HomeScreen());
+      // Profile Image
+      if (profileImageUrl != null) 'profileImageUrl': profileImageUrl,
 
-      uploading.value = false;
-      images.clear();
-      urlsList.clear();
-    } else {
-      Get.snackbar("Error", "Please fill all required fields");
+      // Images
+      'urlImage1': urlsList.isNotEmpty ? urlsList[0] : '',
+      'urlImage2': urlsList.length > 1 ? urlsList[1] : '',
+      'urlImage3': urlsList.length > 2 ? urlsList[2] : '',
+      'urlImage4': urlsList.length > 3 ? urlsList[3] : '',
+      'urlImage5': urlsList.length > 4 ? urlsList[4] : '',
+    });
+
+    Get.snackbar("Updated", "Your account has been updated successfully.");
+    Get.offAll(() => const HomeScreen());
+
+    uploading.value = false;
+    images.clear();
+    urlsList.clear();
+  }
+
+  // bool allFieldsValid() {
+  //   return nameController.text.isNotEmpty &&
+  //       emailController.text.isNotEmpty &&
+  //       ageController.text.isNotEmpty &&
+  //       phoneNoController.text.isNotEmpty &&
+  //       cityController.text.isNotEmpty &&
+  //       countryController.text.isNotEmpty &&
+  //       profileHeadingController.text.isNotEmpty &&
+  //       genderController.text.isNotEmpty &&
+  //       heightController.text.isNotEmpty &&
+  //       weightController.text.isNotEmpty &&
+  //       bodyTypeController.text.isNotEmpty &&
+  //       drinkController.text.isNotEmpty &&
+  //       smokeController.text.isNotEmpty &&
+  //       martialStatusController.text.isNotEmpty &&
+  //       childrenSelection.value.isNotEmpty &&
+  //       noOfChildrenController.text.isNotEmpty &&
+  //       professionController.text.isNotEmpty &&
+  //       employmentStatusController.text.isNotEmpty &&
+  //       incomeController.text.isNotEmpty &&
+  //       livingSituationController.text.isNotEmpty &&
+  //       relationshipSelection.value.isNotEmpty &&
+  //       nationalityController.text.isNotEmpty &&
+  //       educationController.text.isNotEmpty &&
+  //       languageSpokenController.text.isNotEmpty &&
+  //       religionController.text.isNotEmpty &&
+  //       ethnicityController.text.isNotEmpty;
+  // }
+
+  Future<void> pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      pickedImage.value = File(pickedFile.path);
     }
   }
 
-  bool allFieldsValid() {
-    return nameController.text.isNotEmpty &&
-        ageController.text.isNotEmpty &&
-        phoneNoController.text.isNotEmpty &&
-        cityController.text.isNotEmpty &&
-        countryController.text.isNotEmpty &&
-        profileHeadingController.text.isNotEmpty &&
-        lookingForInaPartnerController.text.isNotEmpty &&
-        genderController.text.isNotEmpty &&
-        heightController.text.isNotEmpty &&
-        weightController.text.isNotEmpty &&
-        bodyTypeController.text.isNotEmpty &&
-        drinkController.text.isNotEmpty &&
-        smokeController.text.isNotEmpty &&
-        martialStatusController.text.isNotEmpty &&
-        haveChildrenController.text.isNotEmpty &&
-        noOfChildrenController.text.isNotEmpty &&
-        professionController.text.isNotEmpty &&
-        employmentStatusController.text.isNotEmpty &&
-        incomeController.text.isNotEmpty &&
-        livingSituationController.text.isNotEmpty &&
-        willingToRelocateController.text.isNotEmpty &&
-        relationshipYouAreLookingForController.text.isNotEmpty &&
-        nationalityController.text.isNotEmpty &&
-        educationController.text.isNotEmpty &&
-        languageSpokenController.text.isNotEmpty &&
-        religionController.text.isNotEmpty &&
-        ethnicityController.text.isNotEmpty;
+  Future<void> captureImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      pickedImage.value = File(pickedFile.path);
+    }
   }
 
-  Future<void> chooseImage() async {
-    if (images.length < 5) {
-      XFile? pickedFile =
-          await ImagePicker().pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        images.add(File(pickedFile.path));
-      }
-    } else {
-      Get.snackbar("Maximum Images", "You can only select up to 5 images");
+  Future<String?> uploadProfileImage(File imageFile) async {
+    try {
+      String fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      Reference storageReference =
+          FirebaseStorage.instance.ref().child('profile_images/$fileName');
+      UploadTask uploadTask = storageReference.putFile(imageFile);
+      await uploadTask.whenComplete(() => null);
+      String downloadUrl = await storageReference.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print('Error uploading profile image: $e');
+      return null;
     }
   }
 
@@ -237,12 +274,17 @@ class AccountSettingsController extends GetxController {
       var img = images[i];
       uploadProgress.value = i / images.length;
 
-      var refImages = FirebaseStorage.instance
-          .ref()
-          .child("images/${DateTime.now().millisecondsSinceEpoch}.jpg");
-      await refImages.putFile(img);
-      var downloadUrl = await refImages.getDownloadURL();
-      urlsList.add(downloadUrl);
+      if (img is File) {
+        var refImages = FirebaseStorage.instance
+            .ref()
+            .child("images/${DateTime.now().millisecondsSinceEpoch}.jpg");
+        await refImages.putFile(img);
+        var downloadUrl = await refImages.getDownloadURL();
+        urlsList.add(downloadUrl);
+      } else if (img is String) {
+        // If it's already a URL, just add it to the list
+        urlsList.add(img);
+      }
     }
   }
 
@@ -263,16 +305,24 @@ class AccountSettingsController extends GetxController {
     }
   }
 
+  void updateChildrenOption(String option) {
+    childrenSelection.value = option;
+  }
+
+  void updateRelationshipOption(String option) {
+    relationshipSelection.value = option;
+  }
+
   @override
   void onClose() {
     // Dispose all controllers
     nameController.dispose();
+    emailController.dispose();
     ageController.dispose();
     phoneNoController.dispose();
     cityController.dispose();
     countryController.dispose();
     profileHeadingController.dispose();
-    lookingForInaPartnerController.dispose();
     genderController.dispose();
     heightController.dispose();
     weightController.dispose();
@@ -280,14 +330,11 @@ class AccountSettingsController extends GetxController {
     drinkController.dispose();
     smokeController.dispose();
     martialStatusController.dispose();
-    haveChildrenController.dispose();
     noOfChildrenController.dispose();
     professionController.dispose();
     employmentStatusController.dispose();
     incomeController.dispose();
     livingSituationController.dispose();
-    willingToRelocateController.dispose();
-    relationshipYouAreLookingForController.dispose();
     nationalityController.dispose();
     educationController.dispose();
     languageSpokenController.dispose();

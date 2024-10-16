@@ -97,7 +97,7 @@ class ViewSentViewReceive extends GetView<VsvrController> {
 
   Widget _buildGridTile(Map<String, dynamic> user) {
     return GestureDetector(
-      onTap: () => Get.to(() => UserDetails(userId: user["uid"])),
+      onTap: () => Get.to(() => UserDetails()),
       child: Card(
         elevation: 5,
         shape: RoundedRectangleBorder(

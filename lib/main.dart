@@ -27,14 +27,15 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: ElegantTheme.themeData,
           initialBinding: InitialBindings(),
-          onGenerateRoute: (settings) => RouteGenerator.generateRoute(settings),
+          getPages: AppRoutes.routes,
+          unknownRoute: AppRoutes.unknownRoute,
           home: StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return HomeScreen();
+                return const HomeScreen();
               } else {
-                return LoginScreen(); // or whatever your auth screen is
+                return const LoginScreen();
               }
             },
           ),

@@ -1,8 +1,8 @@
 import 'dart:developer';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
 import 'package:tuncforwork/views/screens/auth/pages/screens.dart';
@@ -11,10 +11,11 @@ import 'package:tuncforwork/views/screens/profile/account_settings/pages/photo_s
 import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 
 class UserDetailsController extends GetxController {
-  final String? userId;
-  UserDetailsController({this.userId});
+  late String userId;
+  UserDetailsController();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final currentUser = FirebaseAuth.instance.currentUser;
 
   // RxVariables for reactive UI
   RxString name = ''.obs;
@@ -53,19 +54,22 @@ class UserDetailsController extends GetxController {
   RxString githubUrl = ''.obs;
 
   RxList<String> imageUrls = <String>[].obs;
-  final isMainProfilePage = true.obs;
+  final isMainProfilePage = false.obs;
+  RxBool isLoading = true.obs;
+  @override
   @override
   void onInit() {
     super.onInit();
-    retrieveUserInfo();
+    userId = Get.arguments?['userId'] ?? FirebaseAuth.instance.currentUser?.uid;
+    retrieveUserInfo(userId);
+    checkIfMainProfile();
   }
 
-  Future<void> retrieveUserInfo() async {
+  Future<void> retrieveUserInfo(String userId) async {
     try {
-      DocumentSnapshot snapshot = await _firestore
-          .collection("users")
-          .doc(userId ?? currentUserId)
-          .get();
+      isLoading.value = true;
+      DocumentSnapshot snapshot =
+          await _firestore.collection("users").doc(userId).get();
 
       if (snapshot.exists) {
         var data = snapshot.data() as Map<String, dynamic>;
@@ -119,11 +123,13 @@ class UserDetailsController extends GetxController {
       }
     } catch (e) {
       log("Error retrieving user info: $e");
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  bool isCurrentUser() {
-    return userId == currentUserId;
+  void checkIfMainProfile() {
+    isMainProfilePage.value = userId == FirebaseAuth.instance.currentUser?.uid;
   }
 
   void navigateToAccountSettings() {
@@ -143,7 +149,7 @@ class UserDetailsController extends GetxController {
                 Get.back();
                 Get.to(
                   () => const PhotoSettingsScreen(),
-                  binding: ProfileBindings(),
+                  binding: ProfileBindings(userId: currentUser!.uid),
                 );
               },
             ),
@@ -155,7 +161,7 @@ class UserDetailsController extends GetxController {
                 Get.back();
                 Get.to(
                   () => const ProfileInfoScreen(),
-                  binding: ProfileBindings(),
+                  binding: ProfileBindings(userId: currentUser!.uid),
                 );
               },
             ),
@@ -174,10 +180,6 @@ class UserDetailsController extends GetxController {
 
   void updateImageUrls(List<String> newUrls) {
     imageUrls.assignAll(newUrls);
-  }
-
-  void setIsMainProfilePage(bool value) {
-    isMainProfilePage.value = value;
   }
 
   void signOut() {
@@ -203,7 +205,7 @@ class UserDetailsController extends GetxController {
 
         // 3. Kullanıcıyı oturumdan çıkar
         await FirebaseAuth.instance.signOut();
-        Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
+        Get.offAllNamed(LoginScreen.routeName);
       } else {
         print('Kullanıcı oturum açmamış.');
       }

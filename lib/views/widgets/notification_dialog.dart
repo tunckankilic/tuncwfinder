@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 
 class NotificationDialog extends StatelessWidget {
@@ -82,7 +83,11 @@ class NotificationDialog extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         Get.back();
-                        Get.toNamed(UserDetails.routeName, arguments: senderId);
+                        Get.to(
+                          () => UserDetails(),
+                          binding: ProfileBindings(userId: senderId),
+                          arguments: {'userId': senderId},
+                        );
                       },
                       child: Text('View Profile',
                           style: TextStyle(fontSize: 14.sp)),

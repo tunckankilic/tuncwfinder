@@ -1,9 +1,13 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
+import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 
 class SwipeScreen extends GetView<SwipeController> {
@@ -36,8 +40,20 @@ class SwipeScreen extends GetView<SwipeController> {
 
   Widget _buildUserCard(BuildContext context, Person eachProfile) {
     return GestureDetector(
-      onDoubleTap: () =>
-          Get.to(() => UserDetails(userId: eachProfile.uid ?? '')),
+      onTap: () {
+        if (eachProfile.uid != null) {
+          log(eachProfile.uid.toString());
+          Get.to(
+            () => UserDetails(),
+            binding: BindingsBuilder(() {
+              Get.lazyPut(() => UserDetailsController());
+            }),
+            arguments: {'userId': eachProfile.uid},
+          );
+        } else {
+          print("Invalid user ID");
+        }
+      },
       child: Container(
         decoration: BoxDecoration(
           image: DecorationImage(

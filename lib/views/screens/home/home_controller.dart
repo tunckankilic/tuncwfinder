@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/service/service.dart';
@@ -19,9 +20,10 @@ class HomeController extends GetxController {
   late final UserDetailsController userDetailsController;
   final List<GetPage> tabScreensList = [
     GetPage(
-        name: '/swipe',
-        page: () => const SwipeScreen(),
-        binding: SwipeBindings()),
+      name: '/swipe',
+      page: () => const SwipeScreen(),
+      binding: SwipeBindings(),
+    ),
     GetPage(
       name: '/views',
       page: () => ViewSentViewReceive(),
@@ -45,13 +47,13 @@ class HomeController extends GetxController {
     ),
     GetPage(
       name: '/profile',
-      page: () => UserDetails(userId: currentUserId!),
+      page: () => UserDetails(),
       binding: BindingsBuilder(() {
-        Get.lazyPut(() => ProfileController());
+        Get.lazyPut(() => UserDetailsController());
       }),
+      arguments: {'userId': FirebaseAuth.instance.currentUser?.uid ?? ''},
     ),
   ];
-
   Widget get currentScreen => tabScreensList[screenIndex.value].page();
 
   @override
@@ -62,7 +64,8 @@ class HomeController extends GetxController {
     fsfrController = Get.put(FsfrController());
     lslrController = Get.put(LslrController());
     profileController = Get.put(ProfileController());
-    userDetailsController = Get.put(UserDetailsController());
+    //Next on: Make a UserDetailsController update between profile passing
+    // userDetailsController = Get.put(UserDetailsController());
   }
 
   void changeScreen(int index) {

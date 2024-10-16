@@ -166,7 +166,7 @@ class PushNotificationSystem extends GetxController {
                             ElevatedButton(
                               onPressed: () {
                                 Get.back();
-                                Get.to(() => UserDetails(userId: senderID));
+                                Get.to(() => UserDetails());
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
