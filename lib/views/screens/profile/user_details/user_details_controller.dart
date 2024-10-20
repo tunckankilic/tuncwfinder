@@ -11,8 +11,9 @@ import 'package:tuncforwork/views/screens/profile/account_settings/pages/photo_s
 import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 
 class UserDetailsController extends GetxController {
-  late String userId;
-  UserDetailsController();
+  final String userId;
+
+  UserDetailsController({required this.userId});
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final currentUser = FirebaseAuth.instance.currentUser;
@@ -56,15 +57,8 @@ class UserDetailsController extends GetxController {
   RxList<String> imageUrls = <String>[].obs;
   final isMainProfilePage = false.obs;
   RxBool isLoading = true.obs;
-  @override
-  @override
-  void onInit() {
-    super.onInit();
-    userId = Get.arguments?['userId'] ?? FirebaseAuth.instance.currentUser?.uid;
-    retrieveUserInfo(userId);
-    checkIfMainProfile();
-  }
 
+  @override
   Future<void> retrieveUserInfo(String userId) async {
     try {
       isLoading.value = true;
@@ -72,57 +66,65 @@ class UserDetailsController extends GetxController {
           await _firestore.collection("users").doc(userId).get();
 
       if (snapshot.exists) {
-        var data = snapshot.data() as Map<String, dynamic>;
+        var data = snapshot.data() as Map<String, dynamic>?;
+        if (data != null) {
+          name.value = data['name'] as String? ?? '';
+          age.value = (data['age'] as int?)?.toString() ?? '';
+          phoneNo.value = data['phoneNo'] as String? ?? '';
+          city.value = data['city'] as String? ?? '';
+          country.value = data['country'] as String? ?? '';
+          profileHeading.value = data['profileHeading'] as String? ?? '';
+          lookingForInaPartner.value =
+              data['lookingForInaPartner'] as String? ?? '';
+          gender.value = data['gender'] as String? ?? '';
 
-        name.value = data['name'] ?? '';
-        age.value = data['age']?.toString() ?? '';
-        phoneNo.value = data['phoneNo'] ?? '';
-        city.value = data['city'] ?? '';
-        country.value = data['country'] ?? '';
-        profileHeading.value = data['profileHeading'] ?? '';
-        lookingForInaPartner.value = data['lookingForInaPartner'] ?? '';
-        gender.value = data['gender'] ?? '';
+          height.value = data['height'] as String? ?? '';
+          weight.value = data['weight'] as String? ?? '';
+          bodyType.value = data['bodyType'] as String? ?? '';
 
-        height.value = data['height'] ?? '';
-        weight.value = data['weight'] ?? '';
-        bodyType.value = data['bodyType'] ?? '';
+          drink.value = data['drink'] as String? ?? '';
+          smoke.value = data['smoke'] as String? ?? '';
+          martialStatus.value = data['martialStatus'] as String? ?? '';
+          haveChildren.value = data['haveChildren'] as String? ?? '';
+          noOfChildren.value = data['noOfChildren'] as String? ?? '';
+          profession.value = data['profession'] as String? ?? '';
+          employmentStatus.value = data['employmentStatus'] as String? ?? '';
+          income.value = data['income'] as String? ?? '';
+          livingSituation.value = data['livingSituation'] as String? ?? '';
+          willingToRelocate.value = data['willingToRelocate'] as String? ?? '';
+          relationshipYouAreLookingFor.value =
+              data['relationshipYouAreLookingFor'] as String? ?? '';
 
-        drink.value = data['drink'] ?? '';
-        smoke.value = data['smoke'] ?? '';
-        martialStatus.value = data['martialStatus'] ?? '';
-        haveChildren.value = data['haveChildren'] ?? '';
-        noOfChildren.value = data['noOfChildren'] ?? '';
-        profession.value = data['profession'] ?? '';
-        employmentStatus.value = data['employmentStatus'] ?? '';
-        income.value = data['income'] ?? '';
-        livingSituation.value = data['livingSituation'] ?? '';
-        willingToRelocate.value = data['willingToRelocate'] ?? '';
-        relationshipYouAreLookingFor.value =
-            data['relationshipYouAreLookingFor'] ?? '';
+          nationality.value = data['nationality'] as String? ?? '';
+          education.value = data['education'] as String? ?? '';
+          languageSpoken.value = data['languageSpoken'] as String? ?? '';
+          religion.value = data['religion'] as String? ?? '';
+          ethnicity.value = data['ethnicity'] as String? ?? '';
 
-        nationality.value = data['nationality'] ?? '';
-        education.value = data['education'] ?? '';
-        languageSpoken.value = data['languageSpoken'] ?? '';
-        religion.value = data['religion'] ?? '';
-        ethnicity.value = data['ethnicity'] ?? '';
+          linkedInUrl.value = data['linkedIn'] as String? ?? '';
+          instagramUrl.value = data['instagram'] as String? ?? '';
+          githubUrl.value = data['github'] as String? ?? '';
 
-        linkedInUrl.value = data['linkedIn'] ?? '';
-        instagramUrl.value = data['instagram'] ?? '';
-        githubUrl.value = data['github'] ?? '';
+          imageUrls.value = [
+            data['urlImage1'] as String?,
+            data['urlImage2'] as String?,
+            data['urlImage3'] as String?,
+            data['urlImage4'] as String?,
+            data['urlImage5'] as String?,
+          ]
+              .where((url) => url != null && url.isNotEmpty)
+              .map((url) => url!)
+              .toList();
 
-        imageUrls.value = [
-          data['urlImage1'],
-          data['urlImage2'],
-          data['urlImage3'],
-          data['urlImage4'],
-          data['urlImage5'],
-        ]
-            .where((url) => url != null && url is String && url.isNotEmpty)
-            .map((url) => url as String)
-            .toList();
+          log("User data retrieved successfully for user: $userId");
+        } else {
+          log("User data is null for user: $userId");
+        }
+      } else {
+        log("User document does not exist for user: $userId");
       }
     } catch (e) {
-      log("Error retrieving user info: $e");
+      log("Error retrieving user info for user $userId: $e");
     } finally {
       isLoading.value = false;
     }
@@ -130,6 +132,7 @@ class UserDetailsController extends GetxController {
 
   void checkIfMainProfile() {
     isMainProfilePage.value = userId == FirebaseAuth.instance.currentUser?.uid;
+    log("Is main profile page: ${isMainProfilePage.value}");
   }
 
   void navigateToAccountSettings() {
@@ -197,40 +200,62 @@ class UserDetailsController extends GetxController {
       if (user != null) {
         String uid = user.uid;
 
-        // 1. Firestore'dan kullanıcıya ait verileri sil
+        // 1. Delete user data from Firestore
         await _deleteUserData(uid);
 
-        // 2. Kullanıcı hesabını sil
+        // 2. Delete user account
         await user.delete();
 
-        // 3. Kullanıcıyı oturumdan çıkar
+        // 3. Sign out the user
         await FirebaseAuth.instance.signOut();
         Get.offAllNamed(LoginScreen.routeName);
       } else {
-        print('Kullanıcı oturum açmamış.');
+        log('User is not signed in.');
+        Get.snackbar('Error', 'User is not signed in.');
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'requires-recent-login') {
-        print(
-            'Bu işlem için yakın zamanda oturum açılması gerekiyor. Lütfen tekrar oturum açın ve işlemi tekrarlayın.');
+        log('This operation requires recent authentication. Please log in again.');
+        Get.snackbar('Error', 'Please log in again to delete your account.');
       } else {
-        print('Hesap silme hatası: ${e.message}');
+        log('Account deletion error: ${e.message}');
+        Get.snackbar('Error', 'Failed to delete account: ${e.message}');
       }
     } catch (e) {
-      print('Beklenmeyen bir hata oluştu: $e');
+      log('Unexpected error occurred: $e');
+      Get.snackbar('Error', 'An unexpected error occurred.');
     }
   }
 
   Future<void> _deleteUserData(String uid) async {
-    await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).delete();
 
-    QuerySnapshot cardSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('userId', isEqualTo: uid)
-        .get();
+      QuerySnapshot cardSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('userId', isEqualTo: uid)
+          .get();
 
-    for (var doc in cardSnapshot.docs) {
-      await doc.reference.delete();
+      for (var doc in cardSnapshot.docs) {
+        await doc.reference.delete();
+      }
+      log('User data deleted successfully for user: $uid');
+    } catch (e) {
+      log('Error deleting user data: $e');
+      rethrow; // Re-throw the error to be caught in the calling function
+    }
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    if (userId.isNotEmpty) {
+      retrieveUserInfo(userId);
+      checkIfMainProfile();
+    } else {
+      log('User ID is missing');
+      Get.snackbar('Error', 'User ID is missing');
+      Get.back();
     }
   }
 }

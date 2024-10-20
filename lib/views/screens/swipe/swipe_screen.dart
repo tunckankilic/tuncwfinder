@@ -44,9 +44,12 @@ class SwipeScreen extends GetView<SwipeController> {
         if (eachProfile.uid != null) {
           log(eachProfile.uid.toString());
           Get.to(
-            () => UserDetails(),
+            () => UserDetails(
+              userId: eachProfile.uid!,
+            ),
             binding: BindingsBuilder(() {
-              Get.lazyPut(() => UserDetailsController());
+              Get.lazyPut(() => UserDetailsController(userId: eachProfile.uid!),
+                  tag: eachProfile.uid);
             }),
             arguments: {'userId': eachProfile.uid},
           );

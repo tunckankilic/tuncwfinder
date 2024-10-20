@@ -18,7 +18,6 @@ class HomeBindings extends Bindings {
     Get.lazyPut(() => LslrController());
     Get.lazyPut(() => ProfileController());
     Get.lazyPut(() => VsvrController());
-    Get.lazyPut(() => UserDetailsController());
     Get.lazyPut(() => AccountSettingsController());
   }
 }

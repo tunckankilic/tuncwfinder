@@ -80,11 +80,23 @@ class AppRoutes {
     ),
     GetPage(
       name: '/profile',
-      page: () => UserDetails(),
+      page: () {
+        final arguments = Get.arguments as Map<String, dynamic>?;
+        final userId = arguments?['userId'] as String? ??
+            FirebaseAuth.instance.currentUser?.uid ??
+            '';
+        return UserDetails(userId: userId);
+      },
       binding: BindingsBuilder(() {
-        Get.lazyPut(() => UserDetailsController());
+        final arguments = Get.arguments as Map<String, dynamic>?;
+        final userId = arguments?['userId'] as String? ??
+            FirebaseAuth.instance.currentUser?.uid ??
+            '';
+        Get.lazyPut(
+          () => UserDetailsController(userId: userId),
+          tag: userId,
+        );
       }),
-      arguments: {'userId': FirebaseAuth.instance.currentUser?.uid ?? ''},
     ),
   ];
 

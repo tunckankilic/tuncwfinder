@@ -1,12 +1,36 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 
-class UserDetails extends GetView<UserDetailsController> {
+class UserDetails extends StatefulWidget {
+  final String userId;
+  UserDetails({
+    Key? key,
+    required this.userId,
+  }) : super(key: key);
+
+  @override
+  State<UserDetails> createState() => _UserDetailsState();
+}
+
+class _UserDetailsState extends State<UserDetails> {
+  late final UserDetailsController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(UserDetailsController(userId: widget.userId));
+    controller.retrieveUserInfo(widget.userId);
+    controller.checkIfMainProfile();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,7 +91,7 @@ class UserDetails extends GetView<UserDetailsController> {
             fontSize: 18.sp,
           ),
         ),
-        background: (controller.imageUrls?.isNotEmpty ?? false)
+        background: controller.imageUrls.isNotEmpty
             ? Image.network(controller.imageUrls.first, fit: BoxFit.cover)
             : Container(color: ElegantTheme.primaryColor),
       ),
@@ -97,7 +121,7 @@ class UserDetails extends GetView<UserDetailsController> {
   Widget _buildImageCarousel() {
     return SizedBox(
       height: 200.0.h,
-      child: controller.imageUrls != null && controller.imageUrls.isNotEmpty
+      child: controller.imageUrls.isNotEmpty
           ? PageView.builder(
               itemCount: controller.imageUrls.length,
               itemBuilder: (context, index) {

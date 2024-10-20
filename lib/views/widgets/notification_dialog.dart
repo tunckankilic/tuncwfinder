@@ -84,7 +84,9 @@ class NotificationDialog extends StatelessWidget {
                       onPressed: () {
                         Get.back();
                         Get.to(
-                          () => UserDetails(),
+                          () => UserDetails(
+                            userId: senderId,
+                          ),
                           binding: ProfileBindings(userId: senderId),
                           arguments: {'userId': senderId},
                         );

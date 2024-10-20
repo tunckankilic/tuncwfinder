@@ -96,7 +96,9 @@ class LikeSentLikeReceived extends GetView<LslrController> {
 
   Widget _buildLikedCard(Map<String, dynamic> user) {
     return GestureDetector(
-      onTap: () => Get.to(() => UserDetails()),
+      onTap: () => Get.to(() => UserDetails(
+            userId: user["uid"],
+          )),
       child: Card(
         elevation: 5,
         shape: RoundedRectangleBorder(

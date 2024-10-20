@@ -10,7 +10,6 @@ class ProfileBindings extends Bindings {
 
   @override
   void dependencies() {
-    Get.lazyPut(() => UserDetailsController());
     Get.lazyPut(() => AccountSettingsController());
   }
 }
