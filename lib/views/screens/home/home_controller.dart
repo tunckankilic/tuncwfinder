@@ -18,18 +18,12 @@ class HomeController extends GetxController {
   late final ProfileController profileController;
   late final LslrController lslrController;
   late final UserDetailsController userDetailsController;
+
   final List<GetPage> tabScreensList = [
     GetPage(
       name: '/swipe',
       page: () => const SwipeScreen(),
       binding: SwipeBindings(),
-    ),
-    GetPage(
-      name: '/views',
-      page: () => ViewSentViewReceive(),
-      binding: BindingsBuilder(() {
-        Get.lazyPut(() => VsvrController());
-      }),
     ),
     GetPage(
       name: '/favorites',
@@ -63,6 +57,7 @@ class HomeController extends GetxController {
       }),
     ),
   ];
+
   Widget get currentScreen => tabScreensList[screenIndex.value].page();
 
   @override
@@ -73,14 +68,12 @@ class HomeController extends GetxController {
     fsfrController = Get.put(FsfrController());
     lslrController = Get.put(LslrController());
     profileController = Get.put(ProfileController());
-    //Next on: Make a UserDetailsController update between profile passing
-    // userDetailsController = Get.put(UserDetailsController());
   }
 
   void changeScreen(int index) {
     screenIndex.value = index;
-    if (index == 2) {
-      // Index of the favorites screen
+    if (index == 1) {
+      // Favorites screen
       fsfrController.getFavoriteListKeys();
     }
   }

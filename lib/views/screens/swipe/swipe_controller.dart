@@ -12,7 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SwipeController extends GetxController {
-  RxList<dynamic> allUsersProfileList = [].obs;
+  RxList<Person> allUsersProfileList = <Person>[].obs;
   RxString senderName = "".obs;
   Rx<PageController> pageController =
       PageController(initialPage: 0, viewportFraction: 1).obs;
@@ -208,6 +208,55 @@ class SwipeController extends GetxController {
         ),
       ),
     );
+  }
+
+  Future<bool> isUserBlocked(String userId) async {
+    DocumentSnapshot doc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(currentUserId)
+        .collection("blockedUsers")
+        .doc(userId)
+        .get();
+    return doc.exists;
+  }
+
+  Future<bool> hasUserBlockedMe(String userId) async {
+    DocumentSnapshot doc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(userId)
+        .collection("blockedUsers")
+        .doc(currentUserId)
+        .get();
+    return doc.exists;
+  }
+
+  void removeTopProfile() {
+    if (allUsersProfileList.isNotEmpty) {
+      allUsersProfileList.removeAt(0);
+    }
+  }
+
+  Future<void> blockUser(String blockedUserId) async {
+    try {
+      // Kullanıcıyı engelle
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(currentUserId)
+          .collection("blockedUsers")
+          .doc(blockedUserId)
+          .set({
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      // Engellenen kullanıcıyı listeden kaldır
+      allUsersProfileList
+          .removeWhere((profile) => profile.uid == blockedUserId);
+
+      Get.snackbar('Success', 'User blocked successfully');
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to block user: $e');
+      print("Error in blockUser: $e");
+    }
   }
 
   Widget _buildDropdownListTile({
@@ -420,6 +469,9 @@ class SwipeController extends GetxController {
       if (_isValidInput(chosenReligion.value)) {
         query = query.where("religion", isEqualTo: chosenReligion.value);
       }
+      if (_isValidInput(chosenProfession.value)) {
+        query = query.where("profession", isEqualTo: chosenProfession.value);
+      }
 
       // Apply range filter last
       if (_isValidInput(chosenAge.value)) {
@@ -442,14 +494,35 @@ class SwipeController extends GetxController {
         return;
       }
 
-      allUsersProfileList.value = querySnapshot.docs
-          .map((doc) => Person.fromDataSnapshot(doc))
-          .toList();
+      // Engellenmiş ve engelleyen kullanıcıları filtrele
+      List<Person> filteredUsers = [];
+      for (var doc in querySnapshot.docs) {
+        String userId = doc.id;
+        if (userId != currentUserId) {
+          bool isBlocked = await isUserBlocked(userId);
+          bool hasBlockedMe = await hasUserBlockedMe(userId);
+
+          if (!isBlocked && !hasBlockedMe) {
+            filteredUsers.add(Person.fromDataSnapshot(doc));
+          }
+        }
+      }
+
+      allUsersProfileList.value = filteredUsers;
+
+      if (allUsersProfileList.isEmpty) {
+        Get.snackbar(
+          'No Results',
+          'No unblocked users found matching your criteria.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
 
       // Implement pagination
-      DocumentSnapshot lastVisible =
-          querySnapshot.docs[querySnapshot.docs.length - 1];
-      // Store lastVisible for next page query
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot lastVisible = querySnapshot.docs.last;
+        // Store lastVisible for next page query
+      }
     } catch (e) {
       Get.snackbar(
         'Error',

@@ -106,6 +106,31 @@ class AuthController extends GetxController {
     radioRelationshipStatusController.value = value;
   }
 
+  final String eula = '''
+TuncForWork End User License Agreement (EULA)
+
+1. Acceptance of Terms
+By using the TuncForWork application ("Application"), you agree to comply with and be bound by this End User License Agreement ("EULA").
+
+2. User Accounts
+You must create an account to use certain features of the Application. You are responsible for maintaining the confidentiality of your account information.
+
+3. User Conduct
+You agree not to use the Application for any unlawful purpose or to harass, abuse, or harm other users.
+
+4. Intellectual Property
+All content in the Application, unless user-generated, is the property of TuncForWork and is protected by copyright and other intellectual property laws.
+
+5. Disclaimer of Warranties
+THE APPLICATION IS PROVIDED "AS IS" WITHOUT ANY WARRANTIES, EXPRESS OR IMPLIED.
+
+6. Limitation of Liability
+TO THE FULLEST EXTENT PERMITTED BY LAW, TUNCFORWORK SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.
+
+7. Changes to Terms
+We reserve the right to modify this EULA at any time. Your continued use of the Application after any changes indicates your acceptance of the modified EULA.
+  ''';
+
   final String termsAndConditions = '''
 TuncForWork Terms and Conditions
 
@@ -228,6 +253,17 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
   }
 
   Future<void> register() async {
+    // Form validasyonu
+    if (!_validateAllFields()) {
+      Get.snackbar(
+        'Error',
+        'Please fill all required fields correctly',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     if (!termsAccepted.value) {
       Get.snackbar('Error', 'Please accept the terms and conditions');
       return;
@@ -237,46 +273,87 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
     try {
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
-        email: emailController.text,
-        password: passwordController.text,
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
       );
 
       String photoUrl = await _uploadProfilePicture(userCredential.user!.uid);
 
+      // Default değerler atama
       pM.Person newUser = pM.Person(
         uid: userCredential.user!.uid,
         imageProfile: photoUrl,
-        email: emailController.text,
+        email: emailController.text.trim(),
         password: passwordController.text,
-        name: nameController.text,
-        age: int.parse(ageController.text),
-        phoneNo: phoneNoController.text,
-        city: cityController.text,
-        country: countryController.text,
-        profileHeading: profileHeadingController.text,
-        gender: genderController.text,
+        name: nameController.text.trim(),
+        age: int.tryParse(ageController.text.trim()) ?? 0,
+        phoneNo: phoneNoController.text.trim(),
+        city: cityController.text.trim(),
+        country: countryController.text.trim(),
+        profileHeading: profileHeadingController.text.trim().isNotEmpty
+            ? profileHeadingController.text.trim()
+            : "Hey there! I'm new here",
+        gender: genderController.text.trim().isNotEmpty
+            ? genderController.text.trim()
+            : "Not Specified",
         publishedDateTime: DateTime.now().millisecondsSinceEpoch,
-        height: heightController.text,
-        weight: weightController.text,
-        bodyType: bodyTypeController.text,
-        drink: drinkController.text,
-        smoke: smokeController.text,
-        martialStatus: martialStatusController.text,
-        haveChildren: haveChildrenController.text,
-        noOfChildren: noOfChildrenController.text,
-        profession: professionController.text,
-        employmentStatus: employmentStatusController.text,
-        income: incomeController.text,
-        livingSituation: livingSituationController.text,
-        willingToRelocate: willingToRelocateController.text,
-        nationality: nationalityController.text,
-        education: educationController.text,
-        languageSpoken: languageSpokenController.text,
-        religion: religionController.text,
-        ethnicity: ethnicityController.text,
-        linkedInUrl: linkedInController.text,
-        instagramUrl: instagramController.text,
-        githubUrl: githubController.text,
+        height: heightController.text.trim().isNotEmpty
+            ? heightController.text.trim()
+            : "Not Specified",
+        weight: weightController.text.trim().isNotEmpty
+            ? weightController.text.trim()
+            : "Not Specified",
+        bodyType: bodyTypeController.text.trim().isNotEmpty
+            ? bodyTypeController.text.trim()
+            : "Not Specified",
+        drink: drinkController.text.trim().isNotEmpty
+            ? drinkController.text.trim()
+            : "Not Specified",
+        smoke: smokeController.text.trim().isNotEmpty
+            ? smokeController.text.trim()
+            : "Not Specified",
+        martialStatus: martialStatusController.text.trim().isNotEmpty
+            ? martialStatusController.text.trim()
+            : "Not Specified",
+        haveChildren: haveChildrenController.text.trim().isNotEmpty
+            ? haveChildrenController.text.trim()
+            : "No",
+        noOfChildren: noOfChildrenController.text.trim().isNotEmpty
+            ? noOfChildrenController.text.trim()
+            : "0",
+        profession: professionController.text.trim().isNotEmpty
+            ? professionController.text.trim()
+            : "Not Specified",
+        employmentStatus: employmentStatusController.text.trim().isNotEmpty
+            ? employmentStatusController.text.trim()
+            : "Not Specified",
+        income: incomeController.text.trim().isNotEmpty
+            ? incomeController.text.trim()
+            : "Not Specified",
+        livingSituation: livingSituationController.text.trim().isNotEmpty
+            ? livingSituationController.text.trim()
+            : "Not Specified",
+        willingToRelocate: willingToRelocateController.text.trim().isNotEmpty
+            ? willingToRelocateController.text.trim()
+            : "Not Specified",
+        nationality: nationalityController.text.trim().isNotEmpty
+            ? nationalityController.text.trim()
+            : "Not Specified",
+        education: educationController.text.trim().isNotEmpty
+            ? educationController.text.trim()
+            : "Not Specified",
+        languageSpoken: languageSpokenController.text.trim().isNotEmpty
+            ? languageSpokenController.text.trim()
+            : "Not Specified",
+        religion: religionController.text.trim().isNotEmpty
+            ? religionController.text.trim()
+            : "Not Specified",
+        ethnicity: ethnicityController.text.trim().isNotEmpty
+            ? ethnicityController.text.trim()
+            : "Not Specified",
+        linkedInUrl: linkedInController.text.trim(),
+        instagramUrl: instagramController.text.trim(),
+        githubUrl: githubController.text.trim(),
       );
 
       await _firestore
@@ -291,6 +368,31 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
     } finally {
       showProgressBar.value = false;
     }
+  }
+
+  bool _validateAllFields() {
+    // Zorunlu alanların kontrolü
+    if (emailController.text.trim().isEmpty ||
+        passwordController.text.trim().isEmpty ||
+        nameController.text.trim().isEmpty ||
+        ageController.text.trim().isEmpty) {
+      return false;
+    }
+
+    // Email format kontrolü
+    if (!GetUtils.isEmail(emailController.text.trim())) {
+      Get.snackbar('Error', 'Please enter a valid email address');
+      return false;
+    }
+
+    // Yaş kontrolü
+    int? age = int.tryParse(ageController.text.trim());
+    if (age == null || age < 18 || age > 100) {
+      Get.snackbar('Error', 'Please enter a valid age between 18 and 100');
+      return false;
+    }
+
+    return true;
   }
 
   Future<void> login() async {
@@ -357,27 +459,6 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
       isLoading.value = false;
     }
   }
-
-  // Future<void> signInWithFacebook() async {
-  //   try {
-  //     isLoading.value = true;
-  //     final LoginResult result = await FacebookAuth.instance.login();
-  //     if (result.status == LoginStatus.success) {
-  //       final AccessToken accessToken = result.accessToken!;
-  //       final OAuthCredential credential =
-  //           FacebookAuthProvider.credential(accessToken.tokenString);
-  //       await _handleSignIn(() => _auth.signInWithCredential(credential));
-  //     } else {
-  //       Get.snackbar('Error', 'Facebook login failed or was cancelled');
-  //     }
-  //   } on FirebaseAuthException catch (e) {
-  //     await handleSignInError(e);
-  //   } catch (e) {
-  //     Get.snackbar('Error', 'Failed to sign in with Facebook: $e');
-  //   } finally {
-  //     isLoading.value = false;
-  //   }
-  // }
 
   Future<void> signInWithApple() async {
     try {
@@ -495,7 +576,7 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
     ethnicityController.text = '';
 
     // Ek bilgiler için Firebase Auth provider data'sını kullanabiliriz
-    user.providerData.forEach((userInfo) {
+    for (var userInfo in user.providerData) {
       if (userInfo.providerId == 'facebook.com') {
         // Facebook'tan ek bilgiler alınabilir
       } else if (userInfo.providerId == 'google.com') {
@@ -503,7 +584,7 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
       } else if (userInfo.providerId == 'apple.com') {
         // Apple'dan ek bilgiler alınabilir
       }
-    });
+    }
 
     // Kullanıcı verilerini Firestore'dan almayı deneyelim (eğer varsa)
     try {
@@ -585,37 +666,6 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
 
     return true;
   }
-
-  // bool _validateSignupFields() {
-  //   return emailController.text.isNotEmpty &&
-  //       passwordController.text.isNotEmpty &&
-  //       nameController.text.isNotEmpty &&
-  //       ageController.text.isNotEmpty &&
-  //       phoneNoController.text.isNotEmpty &&
-  //       cityController.text.isNotEmpty &&
-  //       countryController.text.isNotEmpty &&
-  //       profileHeadingController.text.isNotEmpty &&
-  //       genderController.text.isNotEmpty &&
-  //       heightController.text.isNotEmpty &&
-  //       weightController.text.isNotEmpty &&
-  //       bodyTypeController.text.isNotEmpty &&
-  //       drinkController.text.isNotEmpty &&
-  //       smokeController.text.isNotEmpty &&
-  //       martialStatusController.text.isNotEmpty &&
-  //       haveChildrenController.text.isNotEmpty &&
-  //       noOfChildrenController.text.isNotEmpty &&
-  //       professionController.text.isNotEmpty &&
-  //       employmentStatusController.text.isNotEmpty &&
-  //       incomeController.text.isNotEmpty &&
-  //       livingSituationController.text.isNotEmpty &&
-  //       willingToRelocateController.text.isNotEmpty &&
-  //       nationalityController.text.isNotEmpty &&
-  //       educationController.text.isNotEmpty &&
-  //       languageSpokenController.text.isNotEmpty &&
-  //       religionController.text.isNotEmpty &&
-  //       ethnicityController.text.isNotEmpty &&
-  //       termsAccepted.value;
-  // }
 
   Future<void> sendEmailVerification() async {
     try {

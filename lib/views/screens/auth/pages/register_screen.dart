@@ -42,10 +42,19 @@ class RegistrationScreen extends GetView<AuthController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Create Account",
-            style: ElegantTheme.textTheme.headlineMedium
-                ?.copyWith(color: ElegantTheme.primaryColor, fontSize: 24.sp),
+          Row(
+            children: [
+              IconButton(
+                  onPressed: () {
+                    Get.back();
+                  },
+                  icon: Icon(Icons.arrow_back_ios)),
+              Text(
+                "Create Account",
+                style: ElegantTheme.textTheme.headlineMedium?.copyWith(
+                    color: ElegantTheme.primaryColor, fontSize: 24.sp),
+              ),
+            ],
           ),
           SizedBox(height: 10.h),
           Text(
@@ -142,9 +151,9 @@ class RegistrationScreen extends GetView<AuthController> {
   void _showTermsAndConditions() {
     Get.dialog(
       AlertDialog(
-        title: const Text('Terms and Conditions'),
+        title: const Text('End User Licence Agreement'),
         content: SingleChildScrollView(
-          child: Text(controller.termsAndConditions),
+          child: Text(controller.eula),
         ),
         actions: [
           TextButton(
@@ -403,19 +412,21 @@ class RegistrationScreen extends GetView<AuthController> {
     IconData icon,
     Function(bool) onChanged,
   ) {
-    return Obx(() => CheckboxListTile(
-          title: Text(label),
-          value: controller.termsAccepted.value,
-          onChanged: (bool? value) {
-            if (value == true) {
-              _showTermsAndConditions();
-            } else {
-              onChanged(false);
-            }
-          },
-          secondary: Icon(icon, color: ElegantTheme.primaryColor),
-          activeColor: ElegantTheme.primaryColor,
-        ));
+    return Obx(
+      () => CheckboxListTile(
+        title: Text(label),
+        value: controller.termsAccepted.value,
+        onChanged: (bool? value) {
+          if (value == true) {
+            _showTermsAndConditions();
+          } else {
+            onChanged(false);
+          }
+        },
+        secondary: Icon(icon, color: ElegantTheme.primaryColor),
+        activeColor: ElegantTheme.primaryColor,
+      ),
+    );
   }
 
   Widget _buildProfileImagePicker() {

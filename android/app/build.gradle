@@ -43,7 +43,7 @@ android {
 
     defaultConfig {
         applicationId "site.tunckankilic.tuncforwork"
-        minSdkVersion 21 // Firebase için minimum SDK sürümü 21 olmalı
+        minSdkVersion 23 // Firebase için minimum SDK sürümü 21 olmalı
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

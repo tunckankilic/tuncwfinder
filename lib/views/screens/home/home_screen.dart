@@ -12,18 +12,14 @@ class HomeScreen extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     PushNotificationSystem().whenNotificationReceived(context);
-    return GetBuilder<HomeController>(
-      init: HomeController(),
-      builder: (controller) {
-        return Scaffold(
-          body: Obx(() => controller.currentScreen),
-          bottomNavigationBar: _buildBottomNavigationBar(controller),
-        );
-      },
+    Get.put(HomeController());
+    return Scaffold(
+      body: Obx(() => controller.currentScreen),
+      bottomNavigationBar: Obx(() => _buildBottomNavigationBar()),
     );
   }
 
-  Widget _buildBottomNavigationBar(HomeController controller) {
+  Widget _buildBottomNavigationBar() {
     return Container(
       decoration: BoxDecoration(
         boxShadow: [
@@ -43,7 +39,6 @@ class HomeScreen extends GetView<HomeController> {
         currentIndex: controller.screenIndex.value,
         items: [
           _buildNavItem(Icons.home, "Home"),
-          _buildNavItem(Icons.remove_red_eye, "Views"),
           _buildNavItem(Icons.star, "Favorites"),
           _buildNavItem(Icons.favorite, "Likes"),
           _buildNavItem(Icons.person, "Profile"),
