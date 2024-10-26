@@ -520,6 +520,7 @@ class SwipeController extends GetxController {
 
       // Implement pagination
       if (querySnapshot.docs.isNotEmpty) {
+        // ignore: unused_local_variable
         DocumentSnapshot lastVisible = querySnapshot.docs.last;
         // Store lastVisible for next page query
       }

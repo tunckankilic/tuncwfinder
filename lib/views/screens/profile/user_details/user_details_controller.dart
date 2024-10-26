@@ -58,7 +58,6 @@ class UserDetailsController extends GetxController {
   final isMainProfilePage = false.obs;
   RxBool isLoading = true.obs;
 
-  @override
   Future<void> retrieveUserInfo(String userId) async {
     try {
       isLoading.value = true;
