@@ -35,12 +35,13 @@ class _SwipeCardsState extends State<SwipeCards>
       AlignmentTween(
         begin: _dragAlignment,
         end: _dragAlignment.y < -0.2
-            ? Alignment(0, -1)
+            ? const Alignment(0, -1)
             : _dragAlignment.x > 0.2
-                ? Alignment(1, 0)
-                : Alignment(-1, 0),
+                ? const Alignment(1, 0)
+                : const Alignment(-1, 0),
       ),
     );
+
     final unitsPerSecondX = pixelsPerSecond.dx / size.width;
     final unitsPerSecondY = pixelsPerSecond.dy / size.height;
     final unitsPerSecond = Offset(unitsPerSecondX, unitsPerSecondY);
@@ -71,8 +72,10 @@ class _SwipeCardsState extends State<SwipeCards>
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: Duration(seconds: 1));
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    );
     _controller.addListener(() {
       setState(() {
         _dragAlignment = _animation.value;
@@ -91,165 +94,248 @@ class _SwipeCardsState extends State<SwipeCards>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    return GestureDetector(
-      onPanDown: (details) {
-        _controller.stop();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = MediaQuery.of(context).size;
+        final isTablet = size.shortestSide >= 600;
+
+        return Center(
+          child: GestureDetector(
+            onPanDown: (details) {
+              _controller.stop();
+            },
+            onPanUpdate: (details) {
+              setState(() {
+                _dragAlignment += Alignment(
+                  details.delta.dx / (constraints.maxWidth / 2),
+                  details.delta.dy / (constraints.maxHeight / 2),
+                );
+              });
+            },
+            onPanEnd: (details) {
+              _runAnimation(details.velocity.pixelsPerSecond, size);
+            },
+            child: SwipeCardContent(
+              dragAlignment: _dragAlignment,
+              currentProfile: _currentProfile,
+              isTablet: isTablet,
+              constraints: constraints,
+            ),
+          ),
+        );
       },
-      onPanUpdate: (details) {
-        setState(() {
-          _dragAlignment += Alignment(
-            details.delta.dx / (size.width / 2),
-            details.delta.dy / (size.height / 2),
-          );
-        });
-      },
-      onPanEnd: (details) {
-        _runAnimation(details.velocity.pixelsPerSecond, size);
-      },
-      child: Align(
-        alignment: _dragAlignment,
-        child: Card(
-          child: SizedBox(
-            width: size.width * 0.9,
-            height: size.height * 0.7,
-            child: _currentProfile != null
-                ? _buildUserCard(_currentProfile!)
-                : Container(),
+    );
+  }
+}
+
+class SwipeCardContent extends StatelessWidget {
+  final Alignment dragAlignment;
+  final Person? currentProfile;
+  final bool isTablet;
+  final BoxConstraints constraints;
+
+  const SwipeCardContent({
+    Key? key,
+    required this.dragAlignment,
+    required this.currentProfile,
+    required this.isTablet,
+    required this.constraints,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (currentProfile == null) return const SizedBox.shrink();
+
+    final cardWidth =
+        isTablet ? constraints.maxWidth * 0.7 : constraints.maxWidth * 0.9;
+    final cardHeight =
+        isTablet ? constraints.maxHeight * 0.8 : constraints.maxHeight * 0.7;
+
+    return Align(
+      alignment: dragAlignment,
+      child: Card(
+        elevation: 8.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
+        ),
+        child: SizedBox(
+          width: cardWidth,
+          height: cardHeight,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _buildProfileImage(currentProfile!),
+                ),
+                _buildProfileInfo(context, currentProfile!),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildUserCard(Person person) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildProfileImage(Person person) {
+    return Stack(
+      fit: StackFit.expand,
       children: [
-        Expanded(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.network(
-                person.imageProfile ?? '',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    Center(child: Icon(Icons.error)),
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(child: CircularProgressIndicator());
-                },
-              ),
-              Positioned(
-                bottom: 10,
-                right: 10,
-                child: SocialActionButtons(
-                  instagramUsername: person.instagramUrl ?? '',
-                  linkedInUsername: person.linkedInUrl ?? '',
-                  whatsappNumber: person.phoneNo ?? '',
-                  gitHub: person.githubUrl ?? '',
-                ),
-              ),
-            ],
-          ),
+        Image.network(
+          person.imageProfile ?? '',
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              const Center(child: Icon(Icons.error, size: 48)),
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return const Center(child: CircularProgressIndicator());
+          },
         ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(person.name ?? '',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              Text('${person.age ?? ''} • ${person.city ?? ''}'),
-              SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  _buildInfoChip(person.profession ?? ''),
-                  _buildInfoChip(person.religion ?? ''),
-                  _buildInfoChip(person.country ?? ''),
-                  _buildInfoChip(person.ethnicity ?? ''),
-                ],
-              ),
-            ],
+        Positioned(
+          bottom: isTablet ? 20 : 10,
+          right: isTablet ? 20 : 10,
+          child: ResponsiveSocialButtons(
+            person: person,
+            isTablet: isTablet,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildInfoChip(String label) {
+  Widget _buildProfileInfo(BuildContext context, Person person) {
+    final theme = Theme.of(context);
+    final padding = isTablet ? 16.0 : 8.0;
+
+    return Padding(
+      padding: EdgeInsets.all(padding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            person.name ?? '',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: isTablet ? 28 : 24,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${person.age ?? ''} • ${person.city ?? ''}',
+            style: theme.textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 8),
+          _buildInfoChips(person),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoChips(Person person) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      children: [
+        if (person.profession?.isNotEmpty ?? false)
+          _buildChip(person.profession!),
+        if (person.religion?.isNotEmpty ?? false) _buildChip(person.religion!),
+        if (person.country?.isNotEmpty ?? false) _buildChip(person.country!),
+        if (person.ethnicity?.isNotEmpty ?? false)
+          _buildChip(person.ethnicity!),
+      ],
+    );
+  }
+
+  Widget _buildChip(String label) {
     return Chip(
-      label: Text(label, style: TextStyle(fontSize: 12)),
+      label: Text(
+        label,
+        style: TextStyle(fontSize: isTablet ? 14 : 12),
+      ),
       backgroundColor: Colors.grey[200],
+      padding: EdgeInsets.symmetric(
+        horizontal: isTablet ? 12.0 : 8.0,
+        vertical: isTablet ? 8.0 : 4.0,
+      ),
     );
   }
 }
 
-class SocialActionButtons extends GetView<SwipeController> {
-  final String instagramUsername;
-  final String linkedInUsername;
-  final String whatsappNumber;
-  final String gitHub;
+class ResponsiveSocialButtons extends GetView<SwipeController> {
+  final Person person;
+  final bool isTablet;
 
-  const SocialActionButtons({
+  const ResponsiveSocialButtons({
     Key? key,
-    required this.instagramUsername,
-    required this.linkedInUsername,
-    required this.whatsappNumber,
-    required this.gitHub,
+    required this.person,
+    required this.isTablet,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(8),
+      padding: EdgeInsets.all(isTablet ? 12.0 : 8.0),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(isTablet ? 30 : 20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (instagramUsername.isNotEmpty)
+          if (person.instagramUrl?.isNotEmpty ?? false)
             _buildSocialButton(
-                'assets/instagram.svg',
-                () => controller.openInstagramProfile(
-                    instagramUsername: instagramUsername, context: context)),
-          if (linkedInUsername.isNotEmpty)
+              'assets/instagram.svg',
+              () => controller.openInstagramProfile(
+                instagramUsername: person.instagramUrl!,
+                context: context,
+              ),
+            ),
+          if (person.linkedInUrl?.isNotEmpty ?? false)
             _buildSocialButton(
-                'assets/linkedin.svg',
-                () => controller.openLinkedInProfile(
-                    linkedInUsername: linkedInUsername, context: context)),
-          if (whatsappNumber.isNotEmpty)
+              'assets/linkedin.svg',
+              () => controller.openLinkedInProfile(
+                linkedInUsername: person.linkedInUrl!,
+                context: context,
+              ),
+            ),
+          if (person.phoneNo?.isNotEmpty ?? false)
             _buildSocialButton(
-                'assets/whatsapp.svg',
-                () => controller.startChattingInWhatsApp(
-                    receiverPhoneNumber: whatsappNumber, context: context)),
-          if (gitHub.isNotEmpty)
+              'assets/whatsapp.svg',
+              () => controller.startChattingInWhatsApp(
+                receiverPhoneNumber: person.phoneNo!,
+                context: context,
+              ),
+            ),
+          if (person.githubUrl?.isNotEmpty ?? false)
             _buildSocialButton(
-                'assets/github.svg',
-                () => controller.openGitHubProfile(
-                    gitHubUsername: gitHub, context: context)),
+              'assets/github.svg',
+              () => controller.openGitHubProfile(
+                gitHubUsername: person.githubUrl!,
+                context: context,
+              ),
+            ),
         ],
       ),
     );
   }
 
   Widget _buildSocialButton(String asset, VoidCallback onTap) {
+    final buttonSize = isTablet ? 50.0 : 40.0;
+    final iconPadding = isTablet ? 10.0 : 8.0;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40,
-        height: 40,
-        margin: EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
+        width: buttonSize,
+        height: buttonSize,
+        margin: EdgeInsets.symmetric(horizontal: isTablet ? 6.0 : 4.0),
+        decoration: const BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
         ),
         child: Padding(
-          padding: EdgeInsets.all(8),
+          padding: EdgeInsets.all(iconPadding),
           child: SvgPicture.asset(
             asset,
             color: Colors.black,

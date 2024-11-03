@@ -37,8 +37,6 @@ target 'Runner' do
   end
 end
 
-
-
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
@@ -54,18 +52,81 @@ post_install do |installer|
       end
     end
     
-    # İzinler ve diğer ön işlemci tanımlamaları
     target.build_configurations.each do |config|
+      # Architecture ayarları
+      config.build_settings['ARCHS'] = 'arm64'
+      
+      # Debug modunda simulator için arm64'ü hariç tut
+      if config.name == 'Debug'
+        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+        config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
+      else
+        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = ''
+        config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
+      end
+      
+      # Gerçek cihaz için architecture ayarları
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphoneos*]'] = ''
+      
+      # Temel ayarlar
+      config.build_settings['ENABLE_BITCODE'] = 'NO'
+      config.build_settings['SWIFT_VERSION'] = '5.0'
+      config.build_settings['ENABLE_TESTABILITY'] = 'YES'
+      config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'NO'
+      
+      # Framework ve header ayarları
+      config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
+      config.build_settings['CLANG_WARN_NULLABLE_TO_NONNULL_CONVERSION'] = 'NO'
+      config.build_settings['CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED'] = 'YES'
+      
+      # Framework arama yolları
+      config.build_settings['FRAMEWORK_SEARCH_PATHS'] = [
+        '$(inherited)',
+        '${PODS_ROOT}/../Flutter',
+        '${PODS_XCFRAMEWORKS_BUILD_DIR}/Flutter'
+      ]
+      
+      # Header arama yolları
+      config.build_settings['HEADER_SEARCH_PATHS'] = [
+        '$(inherited)',
+        "${PODS_ROOT}/Headers/Public/Flutter",
+        '${PODS_CONFIGURATION_BUILD_DIR}/Flutter'
+      ]
+      
+      # İzinler ve tanımlamalar
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
-        ## İzin seçenekleri
         'PERMISSION_CAMERA=1',
         'PERMISSION_MICROPHONE=1',
         'PERMISSION_PHOTOS=1',
         'PERMISSION_NOTIFICATIONS=1',
-        'PERMISSION_MEDIA_LIBRARY=1',
-        # 'PERMISSION_LOCATION=1', # Gerekirse yorum işaretini kaldırın
+        'PERMISSION_MEDIA_LIBRARY=1'
       ]
+      
+      # Release optimizasyonları
+      if config.name == 'Release'
+        config.build_settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
+        config.build_settings['GCC_OPTIMIZATION_LEVEL'] = 's'
+        config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-O'
+        config.build_settings['DEAD_CODE_STRIPPING'] = 'YES'
+      end
+      
+      # Deployment ayarları
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+      config.build_settings['SUPPORTED_PLATFORMS'] = 'iphoneos iphonesimulator'
+      config.build_settings['TARGETED_DEVICE_FAMILY'] = '1,2'
+      
+      # Firebase ayarları
+      if ['Firebase', 'FirebaseCore', 'FirebaseFirestore', 'FirebaseAuth'].include? target.name
+        config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+        config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+      end
     end
+  end
+
+  # Pod projesi ayarları
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED'] = 'YES'
+    config.build_settings['CLANG_WARN_DOCUMENTATION_COMMENTS'] = 'NO'
   end
 end

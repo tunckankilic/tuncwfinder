@@ -1,4 +1,6 @@
 import 'dart:developer';
+import 'dart:io';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -48,20 +50,69 @@ class MyApp extends StatelessWidget {
 class InitialBindings extends Bindings {
   @override
   void dependencies() {
-    Get.put(PushNotificationSystem(), permanent: true);
+    // Push Notification System'i bağla
+    final pushNotificationSystem =
+        Get.put(PushNotificationSystem(), permanent: true);
+
+    // Auth Controller'ı bağla
     Get.put(AuthController());
+
+    // Token üretimini gecikmeli olarak başlat
+    Future.delayed(const Duration(seconds: 1), () async {
+      try {
+        await pushNotificationSystem.generateDeviceRegistrationToken();
+      } catch (e, stack) {
+        log('Error in initial token generation: $e');
+        log('Stack trace: $stack');
+      }
+    });
   }
 }
 
 Future<void> initializeApp() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  await requestNotificationPermission();
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    log('Initializing Firebase...');
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    log('Firebase initialized successfully');
+
+    if (Platform.isIOS) {
+      try {
+        await FirebaseMessaging.instance.setAutoInitEnabled(true);
+        final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+        log('Initial APNS token: $apnsToken');
+      } catch (e) {
+        log('Error setting up iOS messaging: $e');
+      }
+    }
+  } catch (e, stack) {
+    log('Error initializing app: $e\n$stack');
+    // Firebase başlatılamazsa bile uygulamanın çalışmasına izin ver
+  }
 }
 
 Future<void> requestNotificationPermission() async {
-  final status = await Permission.notification.request();
-  log('Notification permission status: $status');
+  try {
+    // Permission handler ile izin isteme
+    final status = await Permission.notification.request();
+    print('Notification permission status: $status');
+
+    // Firebase Messaging izinleri
+    final settings = await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+    print(
+        'Firebase Messaging permission status: ${settings.authorizationStatus}');
+  } catch (e) {
+    print('Error requesting notification permissions: $e');
+  }
 }

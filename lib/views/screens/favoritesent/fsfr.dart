@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:get/get.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
@@ -11,74 +9,101 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: Obx(() => _buildBody()),
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      final isTablet = constraints.maxWidth > 768;
+      return Scaffold(
+        appBar: _buildAppBar(context, isTablet),
+        body: Obx(() => _buildBody(context, isTablet)),
+      );
+    });
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(BuildContext context, bool isTablet) {
+    final double fontSize = isTablet ? 18 : 16;
+    final double titleSpacing = isTablet ? 24 : 16;
+
     return AppBar(
       automaticallyImplyLeading: false,
       elevation: 0,
       backgroundColor: ElegantTheme.primaryColor,
+      toolbarHeight: isTablet ? 72 : 56,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildTabButton("My Favorites", true),
-          Text(
-            "   |   ",
-            style:
-                TextStyle(color: ElegantTheme.accentBordeaux, fontSize: 16.sp),
+          _buildTabButton(context, "My Favorites", true, isTablet),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: titleSpacing),
+            child: Text(
+              "|",
+              style: TextStyle(
+                color: ElegantTheme.accentBordeaux,
+                fontSize: fontSize,
+              ),
+            ),
           ),
-          _buildTabButton("I'm their Favorite", false),
+          _buildTabButton(context, "I'm their Favorite", false, isTablet),
         ],
       ),
       centerTitle: true,
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context, bool isTablet) {
     final filteredFavorites = controller.favoritesList
         .where((user) => user["uid"] != currentUserId)
         .toList();
 
-    return filteredFavorites.isEmpty
-        ? Center(
-            child: Icon(
-              Icons.favorite_border,
-              color: ElegantTheme.accentBordeaux,
-              size: 80.sp,
-            ),
-          )
-        : AnimationLimiter(
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 8.w,
-                mainAxisSpacing: 8.h,
+    if (filteredFavorites.isEmpty) {
+      return Center(
+        child: Icon(
+          Icons.favorite_border,
+          color: ElegantTheme.accentBordeaux,
+          size: isTablet ? 100 : 80,
+        ),
+      );
+    }
+
+    return AnimationLimiter(
+      child: GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: isTablet ? 3 : 2,
+          childAspectRatio: isTablet ? 0.85 : 0.75,
+          crossAxisSpacing: isTablet ? 16 : 8,
+          mainAxisSpacing: isTablet ? 16 : 8,
+        ),
+        padding: EdgeInsets.all(isTablet ? 16 : 8),
+        itemCount: filteredFavorites.length,
+        itemBuilder: (context, index) => AnimationConfiguration.staggeredGrid(
+          position: index,
+          duration: const Duration(milliseconds: 375),
+          columnCount: isTablet ? 3 : 2,
+          child: ScaleAnimation(
+            child: FadeInAnimation(
+              child: _buildFavoriteCard(
+                context,
+                filteredFavorites[index],
+                isTablet,
               ),
-              padding: EdgeInsets.all(8.w),
-              itemCount: filteredFavorites.length,
-              itemBuilder: (context, index) =>
-                  AnimationConfiguration.staggeredGrid(
-                position: index,
-                duration: const Duration(milliseconds: 375),
-                columnCount: 2,
-                child: ScaleAnimation(
-                  child: FadeInAnimation(
-                    child: _buildFavoriteCard(filteredFavorites[index]),
-                  ),
-                ),
-              ),
             ),
-          );
+          ),
+        ),
+      ),
+    );
   }
 
-  Widget _buildTabButton(String text, bool isSent) {
+  Widget _buildTabButton(
+      BuildContext context, String text, bool isSent, bool isTablet) {
+    final double buttonFontSize = isTablet ? 16 : 14;
+    final double horizontalPadding = isTablet ? 24 : 16;
+
     return Obx(() => TextButton(
           onPressed: () => controller.toggleFavoriteList(isSent),
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: isTablet ? 16 : 12,
+            ),
+          ),
           child: Text(
             text,
             style: TextStyle(
@@ -88,25 +113,31 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
               fontWeight: controller.isFavoriteSentClicked.value == isSent
                   ? FontWeight.bold
                   : FontWeight.normal,
-              fontSize: 14.sp,
+              fontSize: buttonFontSize,
             ),
           ),
         ));
   }
 
-  Widget _buildFavoriteCard(Map<String, dynamic> user) {
+  Widget _buildFavoriteCard(
+      BuildContext context, Map<String, dynamic> user, bool isTablet) {
+    final double cardElevation = isTablet ? 8 : 5;
+    final double borderRadius = isTablet ? 20 : 15;
+    final double contentPadding = isTablet ? 16 : 12;
+    final double nameFontSize = isTablet ? 18 : 16;
+    final double locationFontSize = isTablet ? 14 : 12;
+    final double iconSize = isTablet ? 20 : 16;
+
     return GestureDetector(
-      onTap: () => Get.to(() => UserDetails(
-            userId: user["uid"],
-          )),
+      onTap: () => Get.to(() => UserDetails(userId: user["uid"])),
       child: Card(
-        elevation: 5,
+        elevation: cardElevation,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.r),
+          borderRadius: BorderRadius.circular(borderRadius),
         ),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15.r),
+            borderRadius: BorderRadius.circular(borderRadius),
             image: DecorationImage(
               image: NetworkImage(user["imageProfile"]),
               fit: BoxFit.cover,
@@ -114,7 +145,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
           ),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15.r),
+              borderRadius: BorderRadius.circular(borderRadius),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -125,7 +156,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
               ),
             ),
             child: Padding(
-              padding: EdgeInsets.all(12.w),
+              padding: EdgeInsets.all(contentPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -137,18 +168,18 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
                     style: ElegantTheme.textTheme.titleMedium!.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16.sp,
+                      fontSize: nameFontSize,
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: isTablet ? 8 : 4),
                   Row(
                     children: [
                       Icon(
                         Icons.location_on_outlined,
                         color: Colors.white70,
-                        size: 16.sp,
+                        size: iconSize,
                       ),
-                      SizedBox(width: 4.w),
+                      SizedBox(width: isTablet ? 8 : 4),
                       Expanded(
                         child: Text(
                           "${user["city"]}, ${user["country"]}",
@@ -156,7 +187,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
                           overflow: TextOverflow.ellipsis,
                           style: ElegantTheme.textTheme.bodySmall!.copyWith(
                             color: Colors.white70,
-                            fontSize: 12.sp,
+                            fontSize: locationFontSize,
                           ),
                         ),
                       ),
@@ -171,3 +202,16 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
     );
   }
 }
+
+// class ResponsiveValues {
+//   static const tabletBreakpoint = 768.0;
+  
+//   static const tabletPadding = 16.0;
+//   static const mobilePadding = 8.0;
+  
+//   static const tabletIconSize = 20.0;
+//   static const mobileIconSize = 16.0;
+  
+//   static const tabletFontSize = 18.0;
+//   static const mobileFontSize = 16.0;
+// }

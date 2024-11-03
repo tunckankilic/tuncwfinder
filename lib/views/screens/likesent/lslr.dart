@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:get/get.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
@@ -12,101 +10,189 @@ class LikeSentLikeReceived extends GetView<LslrController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
-      body: Obx(() => _buildBody()),
+      appBar: _buildResponsiveAppBar(context),
+      body: Obx(() => _buildResponsiveBody(context)),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      elevation: 0,
-      backgroundColor: ElegantTheme.primaryColor,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+  PreferredSizeWidget _buildResponsiveAppBar(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.width >= 768;
+    final height = isTablet ? 70.0 : kToolbarHeight;
+
+    return PreferredSize(
+      preferredSize: Size.fromHeight(height),
+      child: AppBar(
+        automaticallyImplyLeading: false,
+        elevation: 0,
+        backgroundColor: ElegantTheme.primaryColor,
+        title: isTablet
+            ? _buildTabletAppBarTitle(context)
+            : _buildPhoneAppBarTitle(context),
+        centerTitle: true,
+      ),
+    );
+  }
+
+  Widget _buildTabletAppBarTitle(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      decoration: BoxDecoration(
+        color: ElegantTheme.primaryColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildTabButton("My Likes", true),
-          Text(
-            "   |   ",
-            style:
-                TextStyle(color: ElegantTheme.accentBordeaux, fontSize: 16.sp),
+          _buildTabButton("My Likes", true, isTablet: true),
+          const SizedBox(width: 16),
+          Container(
+            height: 30,
+            width: 2,
+            color: ElegantTheme.accentBordeaux,
           ),
-          _buildTabButton("They liked me", false),
+          const SizedBox(width: 16),
+          _buildTabButton("They liked me", false, isTablet: true),
         ],
       ),
-      centerTitle: true,
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildPhoneAppBarTitle(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildTabButton("My Likes", true),
+        Text(
+          "   |   ",
+          style: TextStyle(
+            color: ElegantTheme.accentBordeaux,
+            fontSize: 16,
+          ),
+        ),
+        _buildTabButton("They liked me", false),
+      ],
+    );
+  }
+
+  Widget _buildResponsiveBody(BuildContext context) {
     final filteredLikes = controller.likedList
         .where((user) => user["uid"] != currentUserId)
         .toList();
 
-    return filteredLikes.isEmpty
-        ? Center(
-            child: Icon(
-              Icons.favorite_border,
-              color: ElegantTheme.accentBordeaux,
-              size: 80.sp,
+    if (filteredLikes.isEmpty) {
+      return _buildEmptyState(context);
+    }
+
+    final isTablet = MediaQuery.of(context).size.width >= 768;
+    final crossAxisCount = isTablet ? 4 : 2;
+    final padding = isTablet ? 16.0 : 8.0;
+    final spacing = isTablet ? 16.0 : 8.0;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return AnimationLimiter(
+          child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: 0.75,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: spacing,
             ),
-          )
-        : AnimationLimiter(
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 8.w,
-                mainAxisSpacing: 8.h,
-              ),
-              padding: EdgeInsets.all(8.w),
-              itemCount: filteredLikes.length,
-              itemBuilder: (context, index) =>
-                  AnimationConfiguration.staggeredGrid(
-                position: index,
-                duration: const Duration(milliseconds: 375),
-                columnCount: 2,
-                child: ScaleAnimation(
-                  child: FadeInAnimation(
-                    child: _buildLikedCard(filteredLikes[index]),
+            padding: EdgeInsets.all(padding),
+            itemCount: filteredLikes.length,
+            itemBuilder: (context, index) =>
+                AnimationConfiguration.staggeredGrid(
+              position: index,
+              duration: const Duration(milliseconds: 375),
+              columnCount: crossAxisCount,
+              child: ScaleAnimation(
+                child: FadeInAnimation(
+                  child: _buildLikedCard(
+                    filteredLikes[index],
+                    context,
+                    isTablet,
                   ),
                 ),
               ),
             ),
-          );
+          ),
+        );
+      },
+    );
   }
 
-  Widget _buildTabButton(String text, bool isSent) {
-    return Obx(() => TextButton(
-          onPressed: () => controller.toggleLikeList(isSent),
-          child: Text(
-            text,
+  Widget _buildEmptyState(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.width >= 768;
+    final iconSize = isTablet ? 120.0 : 80.0;
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.favorite_border,
+            color: ElegantTheme.accentBordeaux,
+            size: iconSize,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No likes yet',
             style: TextStyle(
-              color: controller.isLikeSentClicked.value == isSent
-                  ? ElegantTheme.lightGrey
-                  : ElegantTheme.secondaryColor,
-              fontWeight: controller.isLikeSentClicked.value == isSent
-                  ? FontWeight.bold
-                  : FontWeight.normal,
-              fontSize: 14.sp,
+              fontSize: isTablet ? 24.0 : 18.0,
+              color: ElegantTheme.accentBordeaux,
             ),
           ),
-        ));
+        ],
+      ),
+    );
   }
 
-  Widget _buildLikedCard(Map<String, dynamic> user) {
+  Widget _buildTabButton(String text, bool isSent, {bool isTablet = false}) {
+    return Obx(() {
+      final isSelected = controller.isLikeSentClicked.value == isSent;
+      return TextButton(
+        onPressed: () => controller.toggleLikeList(isSent),
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.symmetric(
+            horizontal: isTablet ? 24.0 : 16.0,
+            vertical: isTablet ? 12.0 : 8.0,
+          ),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: isSelected
+                ? ElegantTheme.lightGrey
+                : ElegantTheme.secondaryColor,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontSize: isTablet ? 16.0 : 14.0,
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildLikedCard(
+    Map<String, dynamic> user,
+    BuildContext context,
+    bool isTablet,
+  ) {
+    final double cardElevation = isTablet ? 8.0 : 5.0;
+    final double borderRadius = isTablet ? 20.0 : 15.0;
+    final double padding = isTablet ? 16.0 : 12.0;
+    final double nameSize = isTablet ? 18.0 : 16.0;
+    final double locationSize = isTablet ? 14.0 : 12.0;
+
     return GestureDetector(
-      onTap: () => Get.to(() => UserDetails(
-            userId: user["uid"],
-          )),
+      onTap: () => Get.to(() => UserDetails(userId: user["uid"])),
       child: Card(
-        elevation: 5,
+        elevation: cardElevation,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.r),
+          borderRadius: BorderRadius.circular(borderRadius),
         ),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15.r),
+            borderRadius: BorderRadius.circular(borderRadius),
             image: DecorationImage(
               image: NetworkImage(user["imageProfile"]),
               fit: BoxFit.cover,
@@ -114,7 +200,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
           ),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15.r),
+              borderRadius: BorderRadius.circular(borderRadius),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -125,7 +211,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
               ),
             ),
             child: Padding(
-              padding: EdgeInsets.all(12.w),
+              padding: EdgeInsets.all(padding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -137,18 +223,18 @@ class LikeSentLikeReceived extends GetView<LslrController> {
                     style: ElegantTheme.textTheme.titleMedium!.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16.sp,
+                      fontSize: nameSize,
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: isTablet ? 8.0 : 4.0),
                   Row(
                     children: [
                       Icon(
                         Icons.location_on_outlined,
                         color: Colors.white70,
-                        size: 16.sp,
+                        size: isTablet ? 20.0 : 16.0,
                       ),
-                      SizedBox(width: 4.w),
+                      SizedBox(width: isTablet ? 8.0 : 4.0),
                       Expanded(
                         child: Text(
                           "${user["city"]}, ${user["country"]}",
@@ -156,7 +242,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
                           overflow: TextOverflow.ellipsis,
                           style: ElegantTheme.textTheme.bodySmall!.copyWith(
                             color: Colors.white70,
-                            fontSize: 12.sp,
+                            fontSize: locationSize,
                           ),
                         ),
                       ),

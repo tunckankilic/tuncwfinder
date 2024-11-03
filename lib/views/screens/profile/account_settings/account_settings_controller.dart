@@ -86,6 +86,31 @@ class AccountSettingsController extends GetxController {
     'Widowed'
   ];
 
+  // Active Navigation Check
+  final RxString currentSection = 'personal'.obs;
+
+  final ScrollController scrollController = ScrollController();
+  final Map<String, GlobalKey> sectionKeys = {
+    'personal': GlobalKey(),
+    'appearance': GlobalKey(),
+    'lifestyle': GlobalKey(),
+    'background': GlobalKey(),
+    'connections': GlobalKey(),
+  };
+
+  void scrollToSection(String sectionName) {
+    currentSection.value = sectionName;
+
+    final key = sectionKeys[sectionName];
+    if (key?.currentContext != null) {
+      Scrollable.ensureVisible(
+        key!.currentContext!,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -494,6 +519,7 @@ class AccountSettingsController extends GetxController {
     instagramController.dispose();
     linkedInController.dispose();
     gitHubController.dispose();
+    scrollController.dispose();
     super.onClose();
   }
 }

@@ -10,6 +10,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:tuncforwork/models/person.dart' as pM;
+import 'package:tuncforwork/service/validation.dart';
+import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
 import 'package:tuncforwork/views/screens/home/home_bindings.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 import 'package:http/http.dart' as http;
@@ -21,15 +23,15 @@ class AuthController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+
   Rx<User?> firebaseUser = Rx<User?>(null);
   RxBool isLoading = false.obs;
   RxBool showProgressBar = false.obs;
   RxBool termsAccepted = false.obs;
-  // PageView controller
   late PageController pageController;
   RxInt currentPage = 0.obs;
 
-  // TextEditingControllers for all fields
+  // All existing TextEditingControllers...
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
@@ -39,15 +41,10 @@ class AuthController extends GetxController {
   final TextEditingController countryController = TextEditingController();
   final TextEditingController profileHeadingController =
       TextEditingController();
-
   final TextEditingController genderController = TextEditingController();
-
-  // Appearance
   final TextEditingController heightController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   final TextEditingController bodyTypeController = TextEditingController();
-
-  // Life style
   final TextEditingController drinkController = TextEditingController();
   final TextEditingController smokeController = TextEditingController();
   final TextEditingController martialStatusController = TextEditingController();
@@ -61,13 +58,9 @@ class AuthController extends GetxController {
       TextEditingController();
   final TextEditingController willingToRelocateController =
       TextEditingController();
-
-  // Connections
   final TextEditingController linkedInController = TextEditingController();
   final TextEditingController instagramController = TextEditingController();
   final TextEditingController githubController = TextEditingController();
-
-  // Background - Cultural Values
   final TextEditingController nationalityController = TextEditingController();
   final TextEditingController educationController = TextEditingController();
   final TextEditingController languageSpokenController =
@@ -181,22 +174,6 @@ We may update this Privacy Policy from time to time. We will notify you of any c
 If you have any questions about this Privacy Policy, please contact us at: [Your Contact Email]
   ''';
 
-  // var childrenOptions = {'Yes': false.obs, 'No': false.obs};
-  // var relationshipOptions = {
-  //   'Single': false.obs,
-  //   'In a relationship': false.obs,
-  //   'Married': false.obs,
-  //   "It's complicated": false.obs
-  // };
-
-  // void updateChildrenOption(String key, bool value) {
-  //   childrenOptions[key]?.value = value;
-  // }
-
-  // void updateRelationshipOption(String key, bool value) {
-  //   relationshipOptions[key]?.value = value;
-  // }
-
   @override
   void onInit() {
     super.onInit();
@@ -217,6 +194,121 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
     } else {
       Get.offAll(() => const HomeScreen());
     }
+  }
+
+  void _showError(String message) {
+    Get.snackbar(
+      'Error',
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 3),
+    );
+  }
+
+  bool validateSignupFields() {
+    // Critical field validations
+    Map<String, ValidationRule> validationRules = {
+      'Email': ValidationRule(
+        value: emailController.text,
+        validator: ValidationUtils.isValidEmail,
+        errorMessage: 'Please enter a valid email address',
+      ),
+      'Password': ValidationRule(
+        value: passwordController.text,
+        validator: ValidationUtils.isValidPassword,
+        errorMessage:
+            'Password must be at least 8 characters with uppercase, lowercase, number and special character',
+      ),
+      'Name': ValidationRule(
+        value: nameController.text,
+        validator: (value) => value.length >= 2,
+        errorMessage: 'Name must be at least 2 characters long',
+      ),
+      'Age': ValidationRule(
+        value: ageController.text,
+        validator: ValidationUtils.isValidAge,
+        errorMessage: 'Age must be between 18 and 100',
+      ),
+      'Phone Number': ValidationRule(
+        value: phoneNoController.text,
+        validator: ValidationUtils.isValidPhone,
+        errorMessage: 'Please enter a valid phone number',
+      ),
+      'Height': ValidationRule(
+        value: heightController.text,
+        validator: ValidationUtils.isValidHeight,
+        errorMessage: 'Please enter a valid height',
+      ),
+      'Weight': ValidationRule(
+        value: weightController.text,
+        validator: ValidationUtils.isValidWeight,
+        errorMessage: 'Please enter a valid weight',
+      ),
+    };
+
+    // Required fields that only need presence check
+    Map<String, TextEditingController> requiredFields = {
+      'City': cityController,
+      'Country': countryController,
+      'Profile Heading': profileHeadingController,
+      'Gender': genderController,
+      'Body Type': bodyTypeController,
+      'Drink': drinkController,
+      'Smoke': smokeController,
+      'Marital Status': martialStatusController,
+      'Have Children': haveChildrenController,
+      'Number of Children': noOfChildrenController,
+      'Profession': professionController,
+      'Employment Status': employmentStatusController,
+      'Income': incomeController,
+      'Living Situation': livingSituationController,
+      'Willing to Relocate': willingToRelocateController,
+      'Nationality': nationalityController,
+      'Education': educationController,
+      'Language Spoken': languageSpokenController,
+      'Religion': religionController,
+      'Ethnicity': ethnicityController,
+    };
+
+    // Validate critical fields
+    for (var entry in validationRules.entries) {
+      if (!entry.value.isValid()) {
+        _showError(entry.value.errorMessage);
+        return false;
+      }
+    }
+
+    // Validate required fields
+    for (var entry in requiredFields.entries) {
+      if (entry.value.text.trim().isEmpty) {
+        _showError('Please fill in the ${entry.key} field');
+        return false;
+      }
+    }
+
+    // Validate optional URL fields
+    Map<String, TextEditingController> urlFields = {
+      'LinkedIn': linkedInController,
+      'Instagram': instagramController,
+      'GitHub': githubController,
+    };
+
+    for (var entry in urlFields.entries) {
+      if (!ValidationUtils.isValidUrl(entry.value.text)) {
+        _showError('Please enter a valid ${entry.key} URL or leave it empty');
+        return false;
+      }
+    }
+
+    // Validate terms acceptance
+    if (!termsAccepted.value) {
+      _showError('Please accept the terms and conditions');
+      return false;
+    }
+
+    return true;
   }
 
   Future<void> resetPassword(String email) async {
@@ -253,19 +345,7 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
   }
 
   Future<void> register() async {
-    // Form validasyonu
-    if (!_validateAllFields()) {
-      Get.snackbar(
-        'Error',
-        'Please fill all required fields correctly',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    if (!termsAccepted.value) {
-      Get.snackbar('Error', 'Please accept the terms and conditions');
+    if (!validateSignupFields()) {
       return;
     }
 
@@ -279,7 +359,6 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
 
       String photoUrl = await _uploadProfilePicture(userCredential.user!.uid);
 
-      // Default değerler atama
       pM.Person newUser = pM.Person(
         uid: userCredential.user!.uid,
         imageProfile: photoUrl,
@@ -290,70 +369,30 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
         phoneNo: phoneNoController.text.trim(),
         city: cityController.text.trim(),
         country: countryController.text.trim(),
-        profileHeading: profileHeadingController.text.trim().isNotEmpty
-            ? profileHeadingController.text.trim()
-            : "Hey there! I'm new here",
-        gender: genderController.text.trim().isNotEmpty
-            ? genderController.text.trim()
-            : "Not Specified",
-        publishedDateTime: DateTime.now().millisecondsSinceEpoch,
-        height: heightController.text.trim().isNotEmpty
-            ? heightController.text.trim()
-            : "Not Specified",
-        weight: weightController.text.trim().isNotEmpty
-            ? weightController.text.trim()
-            : "Not Specified",
-        bodyType: bodyTypeController.text.trim().isNotEmpty
-            ? bodyTypeController.text.trim()
-            : "Not Specified",
-        drink: drinkController.text.trim().isNotEmpty
-            ? drinkController.text.trim()
-            : "Not Specified",
-        smoke: smokeController.text.trim().isNotEmpty
-            ? smokeController.text.trim()
-            : "Not Specified",
-        martialStatus: martialStatusController.text.trim().isNotEmpty
-            ? martialStatusController.text.trim()
-            : "Not Specified",
-        haveChildren: haveChildrenController.text.trim().isNotEmpty
-            ? haveChildrenController.text.trim()
-            : "No",
-        noOfChildren: noOfChildrenController.text.trim().isNotEmpty
-            ? noOfChildrenController.text.trim()
-            : "0",
-        profession: professionController.text.trim().isNotEmpty
-            ? professionController.text.trim()
-            : "Not Specified",
-        employmentStatus: employmentStatusController.text.trim().isNotEmpty
-            ? employmentStatusController.text.trim()
-            : "Not Specified",
-        income: incomeController.text.trim().isNotEmpty
-            ? incomeController.text.trim()
-            : "Not Specified",
-        livingSituation: livingSituationController.text.trim().isNotEmpty
-            ? livingSituationController.text.trim()
-            : "Not Specified",
-        willingToRelocate: willingToRelocateController.text.trim().isNotEmpty
-            ? willingToRelocateController.text.trim()
-            : "Not Specified",
-        nationality: nationalityController.text.trim().isNotEmpty
-            ? nationalityController.text.trim()
-            : "Not Specified",
-        education: educationController.text.trim().isNotEmpty
-            ? educationController.text.trim()
-            : "Not Specified",
-        languageSpoken: languageSpokenController.text.trim().isNotEmpty
-            ? languageSpokenController.text.trim()
-            : "Not Specified",
-        religion: religionController.text.trim().isNotEmpty
-            ? religionController.text.trim()
-            : "Not Specified",
-        ethnicity: ethnicityController.text.trim().isNotEmpty
-            ? ethnicityController.text.trim()
-            : "Not Specified",
+        profileHeading: profileHeadingController.text.trim(),
+        gender: genderController.text.trim(),
+        height: heightController.text.trim(),
+        weight: weightController.text.trim(),
+        bodyType: bodyTypeController.text.trim(),
+        drink: drinkController.text.trim(),
+        smoke: smokeController.text.trim(),
+        martialStatus: martialStatusController.text.trim(),
+        haveChildren: haveChildrenController.text.trim(),
+        noOfChildren: noOfChildrenController.text.trim(),
+        profession: professionController.text.trim(),
+        employmentStatus: employmentStatusController.text.trim(),
+        income: incomeController.text.trim(),
+        livingSituation: livingSituationController.text.trim(),
+        willingToRelocate: willingToRelocateController.text.trim(),
+        nationality: nationalityController.text.trim(),
+        education: educationController.text.trim(),
+        languageSpoken: languageSpokenController.text.trim(),
+        religion: religionController.text.trim(),
+        ethnicity: ethnicityController.text.trim(),
         linkedInUrl: linkedInController.text.trim(),
         instagramUrl: instagramController.text.trim(),
         githubUrl: githubController.text.trim(),
+        publishedDateTime: DateTime.now().millisecondsSinceEpoch,
       );
 
       await _firestore
@@ -364,7 +403,7 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
       Get.snackbar('Success', 'Account created successfully');
       Get.offAll(() => const HomeScreen());
     } catch (error) {
-      Get.snackbar('Error', error.toString());
+      _showError(error.toString());
     } finally {
       showProgressBar.value = false;
     }
@@ -393,6 +432,20 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
     }
 
     return true;
+  }
+
+  Future<void> fpSend() async {
+    isLoading.value = true;
+    try {
+      await _auth.sendPasswordResetEmail(
+        email: emailController.text,
+      );
+      Get.offAll(() => const LoginScreen(), binding: AuthBindings());
+    } catch (error) {
+      Get.snackbar('Error', error.toString());
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> login() async {
@@ -514,6 +567,11 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
       Get.snackbar('Error', 'Failed to check user registration: $e');
       return false;
     }
+  }
+
+  void updateTermsAcceptance(bool accepted) {
+    termsAccepted.value = accepted;
+    update(); // GetX'e değişikliği bildir
   }
 
   Future<void> _prefillUserData(User user) async {
@@ -776,6 +834,7 @@ If you have any questions about this Privacy Policy, please contact us at: [Your
   @override
   void onClose() {
     pageController.dispose();
+    // Dispose all controllers
     emailController.dispose();
     passwordController.dispose();
     nameController.dispose();

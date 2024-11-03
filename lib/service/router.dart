@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:tuncforwork/views/screens/auth/pages/forgot_password.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
@@ -10,6 +11,7 @@ class AppRoutes {
   static const String register = '/register';
   static const String home = '/home';
   static const String userDetails = '/user/:id';
+  static const String fpass = FPScreen.routeName;
 
   static final routes = [
     GetPage(
@@ -27,6 +29,10 @@ class AppRoutes {
     GetPage(
       name: home,
       page: () => const HomeScreen(),
+    ),
+    GetPage(
+      name: fpass,
+      page: () => FPScreen(),
     ),
     GetPage(
       name: '/profile',
