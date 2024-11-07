@@ -101,6 +101,11 @@ class _SwipeCardsState extends State<SwipeCards>
 
         return Center(
           child: GestureDetector(
+            onLongPress: () {
+              if (_currentProfile != null) {
+                Get.find<SwipeController>().showReportDialog(_currentProfile!);
+              }
+            },
             onPanDown: (details) {
               _controller.stop();
             },

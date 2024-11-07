@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
@@ -845,14 +846,34 @@ class RegistrationScreen extends GetView<AuthController> {
 
   Widget _buildTermsAndConditions(bool isTablet) {
     return GetBuilder<AuthController>(
-      // GetX yerine GetBuilder kullanıyoruz
       builder: (controller) {
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Ana Checkbox ve EULA linki
             CheckboxListTile(
-              title: Text(
-                "I accept the terms and conditions",
-                style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
+              title: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'I accept the ',
+                      style: TextStyle(
+                        fontSize: isTablet ? 18.0 : 16.0,
+                        color: Colors.black,
+                      ),
+                    ),
+                    TextSpan(
+                      text: 'Terms and Conditions',
+                      style: TextStyle(
+                        fontSize: isTablet ? 18.0 : 16.0,
+                        color: ElegantTheme.primaryColor,
+                        decoration: TextDecoration.underline,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () => _showTermsAndConditions(),
+                    ),
+                  ],
+                ),
               ),
               value: controller.termsAccepted.value,
               onChanged: (value) {
@@ -866,6 +887,82 @@ class RegistrationScreen extends GetView<AuthController> {
               contentPadding: EdgeInsets.symmetric(
                 horizontal: isTablet ? 20.0 : 16.0,
                 vertical: isTablet ? 12.0 : 8.0,
+              ),
+            ),
+            // Kullanıcı İçeriği Politikası Bildirimi
+            Container(
+              padding: EdgeInsets.all(isTablet ? 20.0 : 16.0),
+              margin: EdgeInsets.symmetric(
+                vertical: isTablet ? 16.0 : 12.0,
+                horizontal: isTablet ? 20.0 : 16.0,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Content Guidelines',
+                    style: TextStyle(
+                      fontSize: isTablet ? 18.0 : 16.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red.shade900,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    '• No offensive or inappropriate content\n'
+                    '• No harassment or hate speech\n'
+                    '• No sharing of personal information\n'
+                    '• Reports are reviewed within 24 hours\n'
+                    '• Violations result in account termination',
+                    style: TextStyle(
+                      fontSize: isTablet ? 16.0 : 14.0,
+                      color: Colors.red.shade900,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Moderasyon Bildirimi
+            Container(
+              padding: EdgeInsets.all(isTablet ? 20.0 : 16.0),
+              margin: EdgeInsets.symmetric(
+                horizontal: isTablet ? 20.0 : 16.0,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Content Moderation',
+                    style: TextStyle(
+                      fontSize: isTablet ? 18.0 : 16.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade900,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    '• All content is subject to moderation\n'
+                    '• Report inappropriate content using 🚩\n'
+                    '• Block abusive users using ⛔\n'
+                    '• 24-hour moderation response time',
+                    style: TextStyle(
+                      fontSize: isTablet ? 16.0 : 14.0,
+                      color: Colors.blue.shade900,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

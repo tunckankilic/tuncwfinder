@@ -9,14 +9,24 @@ class SwipeScreen extends GetView<SwipeController> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.shortestSide >= 600;
     Get.put(SwipeController());
     return Scaffold(
       appBar: AppBar(
         title: Text('Discover'),
         actions: [
           IconButton(
+            icon: Icon(Icons.report_problem),
+            onPressed: () {
+              if (controller.allUsersProfileList.isNotEmpty) {
+                controller.showReportDialog(controller.allUsersProfileList[0]);
+              }
+            },
+          ),
+          IconButton(
             icon: Icon(Icons.filter_list),
-            onPressed: controller.applyFilter,
+            onPressed: () => controller.applyFilter(isTablet),
           ),
         ],
       ),

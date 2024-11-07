@@ -103,51 +103,69 @@ class AuthController extends GetxController {
 TuncForWork End User License Agreement (EULA)
 
 1. Acceptance of Terms
-By using the TuncForWork application ("Application"), you agree to comply with and be bound by this End User License Agreement ("EULA").
+By using the TuncForWork application ("Application"), you agree to comply with and be bound by this End User License Agreement ("EULA") and explicitly acknowledge our zero-tolerance policy for objectionable content and abusive behavior.
 
-2. User Accounts
-You must create an account to use certain features of the Application. You are responsible for maintaining the confidentiality of your account information.
+2. User Accounts and Content Moderation
+- You must create an account to use certain features of the Application
+- You are responsible for maintaining the confidentiality of your account information
+- All user-generated content is subject to moderation
+- Content moderation responses will be provided within 24 hours
+- Users must report objectionable content using the provided reporting tools
+- Users can block abusive users through the application interface
+- Violations of these terms will result in immediate account termination
 
-3. User Conduct
-You agree not to use the Application for any unlawful purpose or to harass, abuse, or harm other users.
+3. Prohibited Content and Behavior
+Users are strictly prohibited from:
+- Posting offensive, inappropriate, or objectionable content
+- Engaging in harassment, hate speech, or discriminatory behavior
+- Sharing explicit, violent, or disturbing material
+- Impersonating others or creating misleading profiles
+- Spamming or distributing malicious content
+- Sharing personal information of others without consent
 
-4. Intellectual Property
+4. Content Moderation and Enforcement
+- All user-generated content is subject to review
+- Reported content will be reviewed within 24 hours
+- Multiple violations will result in permanent account termination
+- Users can appeal moderation decisions through support channels
+- TuncForWork reserves the right to remove any content at its discretion
+
+5. User Rights and Responsibilities
+Users agree to:
+- Report inappropriate content and behavior
+- Respect other users' privacy and rights
+- Maintain accurate profile information
+- Follow community guidelines
+- Block users they find offensive or inappropriate
+
+6. Intellectual Property
 All content in the Application, unless user-generated, is the property of TuncForWork and is protected by copyright and other intellectual property laws.
 
-5. Disclaimer of Warranties
+7. Safety and Privacy
+- Personal information is protected under our Privacy Policy
+- Users control their visibility settings
+- Security concerns should be reported immediately
+- Safe communication guidelines must be followed
+
+8. Disclaimer of Warranties
 THE APPLICATION IS PROVIDED "AS IS" WITHOUT ANY WARRANTIES, EXPRESS OR IMPLIED.
 
-6. Limitation of Liability
+9. Limitation of Liability
 TO THE FULLEST EXTENT PERMITTED BY LAW, TUNCFORWORK SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.
 
-7. Changes to Terms
+10. Changes to Terms
 We reserve the right to modify this EULA at any time. Your continued use of the Application after any changes indicates your acceptance of the modified EULA.
-  ''';
 
-  final String termsAndConditions = '''
-TuncForWork Terms and Conditions
+11. Content Filtering and Moderation Process
+TuncForWork employs the following moderation mechanisms:
+- Automated content filtering
+- User reporting system
+- 24-hour moderation response time
+- User blocking capabilities
+- Account suspension and termination procedures
 
-1. Acceptance of Terms
-By using the TuncForWork application ("Application"), you agree to comply with and be bound by these Terms and Conditions.
-
-2. User Accounts
-You must create an account to use certain features of the Application. You are responsible for maintaining the confidentiality of your account information.
-
-3. User Conduct
-You agree not to use the Application for any unlawful purpose or to harass, abuse, or harm other users.
-
-4. Intellectual Property
-All content in the Application, unless user-generated, is the property of TuncForWork and is protected by copyright and other intellectual property laws.
-
-5. Disclaimer of Warranties
-THE APPLICATION IS PROVIDED "AS IS" WITHOUT ANY WARRANTIES, EXPRESS OR IMPLIED.
-
-6. Limitation of Liability
-TO THE FULLEST EXTENT PERMITTED BY LAW, TUNCFORWORK SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.
-
-7. Changes to Terms
-We reserve the right to modify these Terms at any time. Your continued use of the Application after any changes indicates your acceptance of the modified Terms.
-  ''';
+By accepting this EULA, you acknowledge and agree that any violation of these terms, especially regarding objectionable content or abusive behavior, will result in immediate action, including possible permanent account termination.
+''';
 
   final String privacyPolicy = '''
 TuncForWork Privacy Policy

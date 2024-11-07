@@ -11,6 +11,8 @@ import 'package:tuncforwork/service/global.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+enum ReportReason { inappropriate, harassment, fakeProfile, spamming, others }
+
 class SwipeController extends GetxController {
   RxList<Person> allUsersProfileList = <Person>[].obs;
   RxString senderName = "".obs;
@@ -32,6 +34,8 @@ class SwipeController extends GetxController {
   RxString chosenEthnicity = "".obs;
   RxString chosenReligion = "".obs;
   RxString chosenProfession = "".obs;
+  final Map<String, DateTime> _lastBlockTimes = {};
+  final RxBool _isProcessing = false.obs;
   Rx<DateTime> _lastQueryTime = DateTime.now().obs;
   RxInt _queryCount = 0.obs;
   String currentUserId = '';
@@ -96,7 +100,169 @@ class SwipeController extends GetxController {
     return false;
   }
 
-  void applyFilter() {
+// Rapor fonksiyonları
+  Future<void> reportUser(String reportedUserId, ReportReason reason,
+      [String? details]) async {
+    try {
+      await FirebaseFirestore.instance.collection('reports').add({
+        'reportedUserId': reportedUserId,
+        'reporterId': currentUserId,
+        'reason': reason.toString(),
+        'details': details,
+        'timestamp': FieldValue.serverTimestamp(),
+        'status': 'pending',
+        'reviewedAt': null,
+      });
+
+      // Kullanıcıyı otomatik olarak engelle
+      await blockUser(reportedUserId);
+
+      Get.snackbar(
+        'Report Submitted',
+        'Thank you for reporting. We will review this within 24 hours.',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to submit report. Please try again.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+// Rapor dialogunu gösteren fonksiyon
+  void showReportDialog(Person person) {
+    final TextEditingController detailsController = TextEditingController();
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Report User',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Divider(),
+            _buildReportOption(
+              'Inappropriate Content',
+              'Content that violates our guidelines',
+              Icons.warning,
+              () => _submitReport(person.uid!, ReportReason.inappropriate),
+            ),
+            _buildReportOption(
+              'Harassment',
+              'Bullying or aggressive behavior',
+              Icons.person_off,
+              () => _submitReport(person.uid!, ReportReason.harassment),
+            ),
+            _buildReportOption(
+              'Fake Profile',
+              'Suspicious or misleading profile',
+              Icons.face,
+              () => _submitReport(person.uid!, ReportReason.fakeProfile),
+            ),
+            _buildReportOption(
+              'Spam',
+              'Unwanted commercial content',
+              Icons.error,
+              () => _submitReport(person.uid!, ReportReason.spamming),
+            ),
+            _buildReportOption(
+              'Other',
+              'Other concerns',
+              Icons.more_horiz,
+              () => _showDetailedReportDialog(person.uid!),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReportOption(
+      String title, String subtitle, IconData icon, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.red),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      onTap: () {
+        Get.back();
+        onTap();
+      },
+    );
+  }
+
+  void _submitReport(String userId, ReportReason reason) {
+    reportUser(userId, reason);
+  }
+
+  void _showDetailedReportDialog(String userId) {
+    final TextEditingController detailsController = TextEditingController();
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Provide Details',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 16),
+              TextField(
+                controller: detailsController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Please describe your concern...',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Get.back();
+                      reportUser(
+                        userId,
+                        ReportReason.others,
+                        detailsController.text,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    child: Text('Submit'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void applyFilter(bool isTablet) {
     Get.bottomSheet(
       Container(
         color: Colors.white,
@@ -104,94 +270,96 @@ class SwipeController extends GetxController {
           child: Column(
             children: <Widget>[
               _buildDropdownListTile(
-                icon: Icons.person,
-                title: 'Gender',
-                value: chosenGender,
-                items: gender,
-              ),
+                  icon: Icons.person,
+                  title: 'Gender',
+                  value: chosenGender,
+                  items: gender,
+                  isTablet: isTablet),
               _buildDropdownListTile(
-                icon: Icons.location_city,
-                title: 'Country',
-                value: chosenCountry,
-                items: countries,
-              ),
+                  icon: Icons.location_city,
+                  title: 'Country',
+                  value: chosenCountry,
+                  items: countries,
+                  isTablet: isTablet),
               _buildDropdownListTile(
-                icon: Icons.cake,
-                title: 'Minimum Age',
-                value: chosenAge,
-                items: ageRangeList,
-              ),
+                  icon: Icons.cake,
+                  title: 'Minimum Age',
+                  value: chosenAge,
+                  items: ageRangeList,
+                  isTablet: isTablet),
               _buildDropdownListTile(
-                icon: Icons.person_outline,
-                title: "Body Type",
-                value: chosenBodyType,
-                items: bodyTypes,
-              ),
+                  icon: Icons.person_outline,
+                  title: "Body Type",
+                  value: chosenBodyType,
+                  items: bodyTypes,
+                  isTablet: isTablet),
               _buildDropdownListTile(
-                icon: Icons.language,
-                title: "Language",
-                value: chosenLanguage,
-                items: languages,
-              ),
+                  icon: Icons.language,
+                  title: "Language",
+                  value: chosenLanguage,
+                  items: languages,
+                  isTablet: isTablet),
               _buildDropdownListTile(
-                icon: Icons.school,
-                title: "Education",
-                value: chosenEducation,
-                items: highSchool,
-              ),
-              _buildDropdownListTile(
-                icon: Icons.work,
-                title: "Employment",
-                value: chosenEmploymentStatus,
-                items: employmentStatuses,
-              ),
-              _buildDropdownListTile(
-                icon: Icons.home,
-                title: "Living Situation",
-                value: chosenLivingSituation,
-                items: livingSituations,
-              ),
-              _buildDropdownListTile(
-                icon: Icons.favorite,
-                title: "Marital Status",
-                value: chosenMaritalStatus,
-                items: maritalStatuses,
-              ),
-              _buildDropdownListTile(
-                icon: Icons.local_drink,
-                title: "Drinking Habit",
-                value: chosenDrinkingHabit,
-                items: drinkingHabits,
-              ),
-              _buildDropdownListTile(
-                icon: Icons.smoking_rooms,
-                title: "Smoking Habit",
-                value: chosenSmokingHabit,
-                items: smokingHabits,
-              ),
-              _buildDropdownListTile(
-                icon: Icons.place,
-                title: "Nationality",
-                value: chosenNationality,
-                items: nationalities,
-              ),
-              _buildDropdownListTile(
-                icon: Icons.people,
-                title: "Ethnicity",
-                value: chosenEthnicity,
-                items: ethnicities,
-              ),
-              _buildDropdownListTile(
-                icon: Icons.church,
-                title: "Religion",
-                value: chosenReligion,
-                items: religion,
-              ),
+                  icon: Icons.school,
+                  title: "Education",
+                  value: chosenEducation,
+                  items: highSchool,
+                  isTablet: isTablet),
               _buildDropdownListTile(
                   icon: Icons.work,
-                  title: "Profession",
-                  value: chosenProfession,
-                  items: itJobs),
+                  title: "Employment",
+                  value: chosenEmploymentStatus,
+                  items: employmentStatuses,
+                  isTablet: isTablet),
+              _buildDropdownListTile(
+                  icon: Icons.home,
+                  title: "Living Situation",
+                  value: chosenLivingSituation,
+                  items: livingSituations,
+                  isTablet: isTablet),
+              _buildDropdownListTile(
+                  icon: Icons.favorite,
+                  title: "Marital Status",
+                  value: chosenMaritalStatus,
+                  items: maritalStatuses,
+                  isTablet: isTablet),
+              _buildDropdownListTile(
+                  icon: Icons.local_drink,
+                  title: "Drinking Habit",
+                  value: chosenDrinkingHabit,
+                  items: drinkingHabits,
+                  isTablet: isTablet),
+              _buildDropdownListTile(
+                  icon: Icons.smoking_rooms,
+                  title: "Smoking Habit",
+                  value: chosenSmokingHabit,
+                  items: smokingHabits,
+                  isTablet: isTablet),
+              _buildDropdownListTile(
+                  icon: Icons.place,
+                  title: "Nationality",
+                  value: chosenNationality,
+                  items: nationalities,
+                  isTablet: isTablet),
+              _buildDropdownListTile(
+                  icon: Icons.people,
+                  title: "Ethnicity",
+                  value: chosenEthnicity,
+                  items: ethnicities,
+                  isTablet: isTablet),
+              _buildDropdownListTile(
+                  icon: Icons.church,
+                  title: "Religion",
+                  value: chosenReligion,
+                  items: religion,
+                  isTablet: isTablet),
+              _buildDropdownListTile(
+                icon: Icons.work,
+                title: "Profession",
+                value: chosenProfession,
+                items: itJobs,
+                isTablet: isTablet,
+              ),
               const SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
@@ -237,25 +405,126 @@ class SwipeController extends GetxController {
   }
 
   Future<void> blockUser(String blockedUserId) async {
+    // Null check
+    if (blockedUserId.isEmpty || currentUserId.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Invalid user information',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // Rate limiting kontrolü
+    if (_isBlockRateLimited(blockedUserId)) {
+      Get.snackbar(
+        'Warning',
+        'Please wait before blocking another user',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // İşlem zaten devam ediyorsa çık
+    if (_isProcessing.value) return;
+    _isProcessing.value = true;
+
     try {
-      // Kullanıcıyı engelle
-      await FirebaseFirestore.instance
-          .collection("users")
+      // Batch operation başlat
+      final batch = FirebaseFirestore.instance.batch();
+      final userRef = FirebaseFirestore.instance.collection("users");
+
+      // Block işlemi için referanslar
+      final blockRef = userRef
           .doc(currentUserId)
           .collection("blockedUsers")
+          .doc(blockedUserId);
+
+      // Clean up için referanslar
+      final likeSentRef =
+          userRef.doc(currentUserId).collection("likeSent").doc(blockedUserId);
+      final likeReceivedRef = userRef
           .doc(blockedUserId)
-          .set({
+          .collection("likeReceived")
+          .doc(currentUserId);
+      final favoriteSentRef = userRef
+          .doc(currentUserId)
+          .collection("favoriteSent")
+          .doc(blockedUserId);
+      final favoriteReceivedRef = userRef
+          .doc(blockedUserId)
+          .collection("favoriteReceived")
+          .doc(currentUserId);
+
+      // Batch operations
+      batch.set(blockRef, {
         'timestamp': FieldValue.serverTimestamp(),
+        'reason': 'user_blocked',
       });
 
-      // Engellenen kullanıcıyı listeden kaldır
+      // Clean up önceki etkileşimleri
+      batch.delete(likeSentRef);
+      batch.delete(likeReceivedRef);
+      batch.delete(favoriteSentRef);
+      batch.delete(favoriteReceivedRef);
+
+      // Batch commit
+      await batch.commit();
+
+      // UI güncelleme
       allUsersProfileList
           .removeWhere((profile) => profile.uid == blockedUserId);
 
-      Get.snackbar('Success', 'User blocked successfully');
+      // Rate limiting güncelleme
+      _lastBlockTimes[blockedUserId] = DateTime.now();
+
+      Get.snackbar(
+        'Success',
+        'User blocked successfully',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+
+      // Analytics logging (isteğe bağlı)
+      await _logBlockAction(blockedUserId);
     } catch (e) {
-      Get.snackbar('Error', 'Failed to block user: $e');
       print("Error in blockUser: $e");
+      Get.snackbar(
+        'Error',
+        'Failed to block user. Please try again.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      _isProcessing.value = false;
+    }
+  }
+
+  bool _isBlockRateLimited(String userId) {
+    final lastBlockTime = _lastBlockTimes[userId];
+    if (lastBlockTime == null) return false;
+
+    // 1 saat içinde aynı kullanıcıyı tekrar engellemesini önle
+    return DateTime.now().difference(lastBlockTime).inHours < 1;
+  }
+
+  Future<void> _logBlockAction(String blockedUserId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("analytics")
+          .doc("blocks")
+          .collection(currentUserId)
+          .add({
+        'blocked_user_id': blockedUserId,
+        'timestamp': FieldValue.serverTimestamp(),
+        'platform': Platform.isIOS ? 'iOS' : 'Android',
+      });
+    } catch (e) {
+      // Analytics hatası kritik değil, sessizce devam et
+      print("Analytics error: $e");
     }
   }
 
@@ -264,12 +533,14 @@ class SwipeController extends GetxController {
     required String title,
     required RxString value,
     required List<String> items,
+    required bool isTablet,
   }) {
     return Obx(() => Column(
           children: [
             Text(
               title,
-              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: isTablet ? 22 : 14, fontWeight: FontWeight.bold),
             ),
             ListTile(
               leading: Icon(icon),
