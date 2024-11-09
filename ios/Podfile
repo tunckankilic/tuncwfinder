@@ -1,8 +1,9 @@
-# Uncomment this line to define a global platform for your project
 platform :ios, '16.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+source 'https://github.com/CocoaPods/Specs.git'
 
 project 'Runner', {
   'Debug' => :debug,
@@ -20,7 +21,7 @@ def flutter_root
     matches = line.match(/FLUTTER_ROOT\=(.*)/)
     return matches[1].strip if matches
   end
-  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}"
 end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
@@ -32,6 +33,7 @@ target 'Runner' do
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  
   target 'RunnerTests' do
     inherit! :search_paths
   end
@@ -41,58 +43,28 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     
-    # BoringSSL-GRPC için özel işlem
-    if target.name == 'BoringSSL-GRPC'
-      target.source_build_phase.files.each do |file|
-        if file.settings && file.settings['COMPILER_FLAGS']
-          flags = file.settings['COMPILER_FLAGS'].split
-          flags.reject! { |flag| flag == '-GCC_WARN_INHIBIT_ALL_WARNINGS' }
-          file.settings['COMPILER_FLAGS'] = flags.join(' ')
-        end
-      end
-    end
-    
     target.build_configurations.each do |config|
-      # Architecture ayarları
-      config.build_settings['ARCHS'] = 'arm64'
-      
-      # Debug modunda simulator için arm64'ü hariç tut
-      if config.name == 'Debug'
-        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
-        config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
-      else
-        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = ''
-        config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
-      end
-      
-      # Gerçek cihaz için architecture ayarları
-      config.build_settings['EXCLUDED_ARCHS[sdk=iphoneos*]'] = ''
-      
-      # Temel ayarlar
+      # Basic settings
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
       config.build_settings['ENABLE_BITCODE'] = 'NO'
       config.build_settings['SWIFT_VERSION'] = '5.0'
-      config.build_settings['ENABLE_TESTABILITY'] = 'YES'
-      config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'NO'
       
-      # Framework ve header ayarları
-      config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
-      config.build_settings['CLANG_WARN_NULLABLE_TO_NONNULL_CONVERSION'] = 'NO'
-      config.build_settings['CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED'] = 'YES'
+      # Architecture settings
+      if config.name == 'Debug'
+        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+      end
       
-      # Framework arama yolları
-      config.build_settings['FRAMEWORK_SEARCH_PATHS'] = [
+      # Framework settings
+      config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+      config.build_settings['DEFINES_MODULE'] = 'YES'
+      
+      # Framework search paths
+      config.build_settings['FRAMEWORK_SEARCH_PATHS'] ||= [
         '$(inherited)',
-        '${PODS_ROOT}/../Flutter',
         '${PODS_XCFRAMEWORKS_BUILD_DIR}/Flutter'
       ]
-      
-      # Header arama yolları
-      config.build_settings['HEADER_SEARCH_PATHS'] = [
-        '$(inherited)',
-        "${PODS_ROOT}/Headers/Public/Flutter",
-        '${PODS_CONFIGURATION_BUILD_DIR}/Flutter'
-      ]
-      
+
       # İzinler ve tanımlamalar
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
@@ -103,30 +75,6 @@ post_install do |installer|
         'PERMISSION_MEDIA_LIBRARY=1'
       ]
       
-      # Release optimizasyonları
-      if config.name == 'Release'
-        config.build_settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
-        config.build_settings['GCC_OPTIMIZATION_LEVEL'] = 's'
-        config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-O'
-        config.build_settings['DEAD_CODE_STRIPPING'] = 'YES'
-      end
-      
-      # Deployment ayarları
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
-      config.build_settings['SUPPORTED_PLATFORMS'] = 'iphoneos iphonesimulator'
-      config.build_settings['TARGETED_DEVICE_FAMILY'] = '1,2'
-      
-      # Firebase ayarları
-      if ['Firebase', 'FirebaseCore', 'FirebaseFirestore', 'FirebaseAuth'].include? target.name
-        config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
-        config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
-      end
     end
-  end
-
-  # Pod projesi ayarları
-  installer.pods_project.build_configurations.each do |config|
-    config.build_settings['CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED'] = 'YES'
-    config.build_settings['CLANG_WARN_DOCUMENTATION_COMMENTS'] = 'NO'
   end
 end

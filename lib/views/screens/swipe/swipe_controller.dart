@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/service/global.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 enum ReportReason { inappropriate, harassment, fakeProfile, spamming, others }
 
@@ -135,8 +134,6 @@ class SwipeController extends GetxController {
 
 // Rapor dialogunu gösteren fonksiyon
   void showReportDialog(Person person) {
-    final TextEditingController detailsController = TextEditingController();
-
     Get.dialog(
       Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

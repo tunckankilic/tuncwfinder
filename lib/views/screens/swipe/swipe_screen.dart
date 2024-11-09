@@ -37,7 +37,6 @@ class SwipeScreen extends GetView<SwipeController> {
             : SwipeCards(
                 profiles: profiles,
                 onSwipeLeft: (Person person) {
-                  controller.blockUser(person.uid ?? '');
                   controller.removeTopProfile();
                 },
                 onSwipeRight: (Person person) {

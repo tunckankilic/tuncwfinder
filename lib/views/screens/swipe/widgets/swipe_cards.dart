@@ -320,6 +320,9 @@ class ResponsiveSocialButtons extends GetView<SwipeController> {
                 context: context,
               ),
             ),
+          _buildIgnoreButton(
+            () => controller.blockUser(person.uid!),
+          ),
         ],
       ),
     );
@@ -344,6 +347,31 @@ class ResponsiveSocialButtons extends GetView<SwipeController> {
           child: SvgPicture.asset(
             asset,
             color: Colors.black,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIgnoreButton(VoidCallback onTap) {
+    final buttonSize = isTablet ? 50.0 : 40.0;
+    final iconPadding = isTablet ? 10.0 : 8.0;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: buttonSize,
+        height: buttonSize,
+        margin: EdgeInsets.symmetric(horizontal: isTablet ? 6.0 : 4.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(iconPadding),
+          child: Icon(
+            Icons.delete_forever,
+            color: Colors.red[900],
           ),
         ),
       ),
