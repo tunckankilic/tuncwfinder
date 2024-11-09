@@ -1,11 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tuncdating/service/service.dart';
+import 'package:tuncforwork/service/service.dart';
 
 class VsvrController extends GetxController {
   RxBool isViewSentClicked = true.obs;
   RxList<String> viewSentList = <String>[].obs;
   RxList<String> viewReceivedList = <String>[].obs;
   RxList viewsList = [].obs;
+
+  void switchTab(bool isViewSent) {
+    isViewSentClicked.value = isViewSent;
+    viewSentList.clear();
+    viewReceivedList.clear();
+    viewsList.clear();
+    getViewsListKeys();
+  }
 
   getViewsListKeys() async {
     if (isViewSentClicked.value) {
@@ -16,7 +24,7 @@ class VsvrController extends GetxController {
           .get();
 
       viewSentList.value = viewSentDocument.docs.map((doc) => doc.id).toList();
-      getKeysDataFromUsersCollection(viewSentList);
+      await getKeysDataFromUsersCollection(viewSentList);
     } else {
       var viewReceivedDocument = await FirebaseFirestore.instance
           .collection("users")
@@ -26,7 +34,7 @@ class VsvrController extends GetxController {
 
       viewReceivedList.value =
           viewReceivedDocument.docs.map((doc) => doc.id).toList();
-      getKeysDataFromUsersCollection(viewReceivedList);
+      await getKeysDataFromUsersCollection(viewReceivedList);
     }
   }
 
@@ -38,5 +46,11 @@ class VsvrController extends GetxController {
         .where((doc) => keysList.contains(doc.data()["uid"]))
         .map((doc) => doc.data())
         .toList();
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    getViewsListKeys();
   }
 }

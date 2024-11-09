@@ -1,18 +1,21 @@
 import 'dart:developer';
-
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tuncdating/service/global.dart';
-import 'package:tuncdating/views/screens/auth/controller/auth_bindings.dart';
-import 'package:tuncdating/views/screens/auth/pages/screens.dart';
-import 'package:tuncdating/views/screens/profile/account_settings/account_settings.dart';
+import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
+import 'package:tuncforwork/views/screens/auth/pages/screens.dart';
+import 'package:tuncforwork/views/screens/profile/account_settings/pages/account_info_settings.dart';
+import 'package:tuncforwork/views/screens/profile/account_settings/pages/photo_settings_screen.dart';
+import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 
 class UserDetailsController extends GetxController {
-  final String? userId;
-  UserDetailsController({this.userId});
+  final String userId;
+
+  UserDetailsController({required this.userId});
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final currentUser = FirebaseAuth.instance.currentUser;
 
   // RxVariables for reactive UI
   RxString name = ''.obs;
@@ -51,81 +54,133 @@ class UserDetailsController extends GetxController {
   RxString githubUrl = ''.obs;
 
   RxList<String> imageUrls = <String>[].obs;
+  final isMainProfilePage = false.obs;
+  RxBool isLoading = true.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    retrieveUserInfo();
-  }
-
-  Future<void> retrieveUserInfo() async {
+  Future<void> retrieveUserInfo(String userId) async {
     try {
-      DocumentSnapshot snapshot = await _firestore
-          .collection("users")
-          .doc(userId ?? currentUserId)
-          .get();
+      isLoading.value = true;
+      DocumentSnapshot snapshot =
+          await _firestore.collection("users").doc(userId).get();
 
       if (snapshot.exists) {
-        var data = snapshot.data() as Map<String, dynamic>;
+        var data = snapshot.data() as Map<String, dynamic>?;
+        if (data != null) {
+          name.value = data['name'] as String? ?? '';
+          age.value = (data['age'] as int?)?.toString() ?? '';
+          phoneNo.value = data['phoneNo'] as String? ?? '';
+          city.value = data['city'] as String? ?? '';
+          country.value = data['country'] as String? ?? '';
+          profileHeading.value = data['profileHeading'] as String? ?? '';
+          lookingForInaPartner.value =
+              data['lookingForInaPartner'] as String? ?? '';
+          gender.value = data['gender'] as String? ?? '';
 
-        name.value = data['name'] ?? '';
-        age.value = data['age']?.toString() ?? '';
-        phoneNo.value = data['phoneNo'] ?? '';
-        city.value = data['city'] ?? '';
-        country.value = data['country'] ?? '';
-        profileHeading.value = data['profileHeading'] ?? '';
-        lookingForInaPartner.value = data['lookingForInaPartner'] ?? '';
-        gender.value = data['gender'] ?? '';
+          height.value = data['height'] as String? ?? '';
+          weight.value = data['weight'] as String? ?? '';
+          bodyType.value = data['bodyType'] as String? ?? '';
 
-        height.value = data['height'] ?? '';
-        weight.value = data['weight'] ?? '';
-        bodyType.value = data['bodyType'] ?? '';
+          drink.value = data['drink'] as String? ?? '';
+          smoke.value = data['smoke'] as String? ?? '';
+          martialStatus.value = data['martialStatus'] as String? ?? '';
+          haveChildren.value = data['haveChildren'] as String? ?? '';
+          noOfChildren.value = data['noOfChildren'] as String? ?? '';
+          profession.value = data['profession'] as String? ?? '';
+          employmentStatus.value = data['employmentStatus'] as String? ?? '';
+          income.value = data['income'] as String? ?? '';
+          livingSituation.value = data['livingSituation'] as String? ?? '';
+          willingToRelocate.value = data['willingToRelocate'] as String? ?? '';
+          relationshipYouAreLookingFor.value =
+              data['relationshipYouAreLookingFor'] as String? ?? '';
 
-        drink.value = data['drink'] ?? '';
-        smoke.value = data['smoke'] ?? '';
-        martialStatus.value = data['martialStatus'] ?? '';
-        haveChildren.value = data['haveChildren'] ?? '';
-        noOfChildren.value = data['noOfChildren'] ?? '';
-        profession.value = data['profession'] ?? '';
-        employmentStatus.value = data['employmentStatus'] ?? '';
-        income.value = data['income'] ?? '';
-        livingSituation.value = data['livingSituation'] ?? '';
-        willingToRelocate.value = data['willingToRelocate'] ?? '';
-        relationshipYouAreLookingFor.value =
-            data['relationshipYouAreLookingFor'] ?? '';
+          nationality.value = data['nationality'] as String? ?? '';
+          education.value = data['education'] as String? ?? '';
+          languageSpoken.value = data['languageSpoken'] as String? ?? '';
+          religion.value = data['religion'] as String? ?? '';
+          ethnicity.value = data['ethnicity'] as String? ?? '';
 
-        nationality.value = data['nationality'] ?? '';
-        education.value = data['education'] ?? '';
-        languageSpoken.value = data['languageSpoken'] ?? '';
-        religion.value = data['religion'] ?? '';
-        ethnicity.value = data['ethnicity'] ?? '';
+          linkedInUrl.value = data['linkedIn'] as String? ?? '';
+          instagramUrl.value = data['instagram'] as String? ?? '';
+          githubUrl.value = data['github'] as String? ?? '';
 
-        linkedInUrl.value = data['linkedIn'] ?? '';
-        instagramUrl.value = data['instagram'] ?? '';
-        githubUrl.value = data['github'] ?? '';
+          imageUrls.value = [
+            data['urlImage1'] as String?,
+            data['urlImage2'] as String?,
+            data['urlImage3'] as String?,
+            data['urlImage4'] as String?,
+            data['urlImage5'] as String?,
+          ]
+              .where((url) => url != null && url.isNotEmpty)
+              .map((url) => url!)
+              .toList();
 
-        imageUrls.value = [
-          data['urlImage1'],
-          data['urlImage2'],
-          data['urlImage3'],
-          data['urlImage4'],
-          data['urlImage5'],
-        ]
-            .where((url) => url != null && url is String && url.isNotEmpty)
-            .map((url) => url as String)
-            .toList();
+          log("User data retrieved successfully for user: $userId");
+        } else {
+          log("User data is null for user: $userId");
+        }
+      } else {
+        log("User document does not exist for user: $userId");
       }
     } catch (e) {
-      log("Error retrieving user info: $e");
+      log("Error retrieving user info for user $userId: $e");
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  bool isCurrentUser() {
-    return userId == currentUserId;
+  void checkIfMainProfile() {
+    isMainProfilePage.value = userId == FirebaseAuth.instance.currentUser?.uid;
+    log("Is main profile page: ${isMainProfilePage.value}");
   }
 
   void navigateToAccountSettings() {
-    Get.to(() => AccountSettings());
+    Get.dialog(
+      AlertDialog(
+        title:
+            Text('Profile Settings', style: ElegantTheme.textTheme.titleLarge),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading:
+                  Icon(Icons.photo_library, color: ElegantTheme.primaryColor),
+              title:
+                  Text('Edit Photos', style: ElegantTheme.textTheme.bodyLarge),
+              onTap: () {
+                Get.back();
+                Get.to(
+                  () => const PhotoSettingsScreen(),
+                  binding: ProfileBindings(userId: currentUser!.uid),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.person, color: ElegantTheme.primaryColor),
+              title: Text('Edit Profile Info',
+                  style: ElegantTheme.textTheme.bodyLarge),
+              onTap: () {
+                Get.back();
+                Get.to(
+                  () => const ProfileInfoScreen(),
+                  binding: ProfileBindings(userId: currentUser!.uid),
+                );
+              },
+            ),
+          ],
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        backgroundColor: ElegantTheme.backgroundColor,
+      ),
+      barrierDismissible: true,
+    );
+  }
+
+  void updateName(String newName) {
+    name.value = newName;
+  }
+
+  void updateImageUrls(List<String> newUrls) {
+    imageUrls.assignAll(newUrls);
   }
 
   void signOut() {
@@ -134,5 +189,71 @@ class UserDetailsController extends GetxController {
       () => const LoginScreen(),
       binding: AuthBindings(),
     );
+  }
+
+  Future<void> deleteAccountAndData(BuildContext context) async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        String uid = user.uid;
+
+        // 1. Delete user data from Firestore
+        await _deleteUserData(uid);
+
+        // 2. Delete user account
+        await user.delete();
+
+        // 3. Sign out the user
+        await FirebaseAuth.instance.signOut();
+        Get.offAllNamed(LoginScreen.routeName);
+      } else {
+        log('User is not signed in.');
+        Get.snackbar('Error', 'User is not signed in.');
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        log('This operation requires recent authentication. Please log in again.');
+        Get.snackbar('Error', 'Please log in again to delete your account.');
+      } else {
+        log('Account deletion error: ${e.message}');
+        Get.snackbar('Error', 'Failed to delete account: ${e.message}');
+      }
+    } catch (e) {
+      log('Unexpected error occurred: $e');
+      Get.snackbar('Error', 'An unexpected error occurred.');
+    }
+  }
+
+  Future<void> _deleteUserData(String uid) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+
+      QuerySnapshot cardSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('userId', isEqualTo: uid)
+          .get();
+
+      for (var doc in cardSnapshot.docs) {
+        await doc.reference.delete();
+      }
+      log('User data deleted successfully for user: $uid');
+    } catch (e) {
+      log('Error deleting user data: $e');
+      rethrow; // Re-throw the error to be caught in the calling function
+    }
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    if (userId.isNotEmpty) {
+      retrieveUserInfo(userId);
+      checkIfMainProfile();
+    } else {
+      log('User ID is missing');
+      Get.snackbar('Error', 'User ID is missing');
+      Get.back();
+    }
   }
 }

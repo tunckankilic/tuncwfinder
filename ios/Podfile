@@ -1,8 +1,9 @@
-# Uncomment this line to define a global platform for your project
-# platform :ios, '12.0'
+platform :ios, '16.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+source 'https://github.com/CocoaPods/Specs.git'
 
 project 'Runner', {
   'Debug' => :debug,
@@ -20,7 +21,7 @@ def flutter_root
     matches = line.match(/FLUTTER_ROOT\=(.*)/)
     return matches[1].strip if matches
   end
-  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}"
 end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
@@ -32,6 +33,7 @@ target 'Runner' do
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  
   target 'RunnerTests' do
     inherit! :search_paths
   end
@@ -40,5 +42,39 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    
+    target.build_configurations.each do |config|
+      # Basic settings
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+      config.build_settings['ENABLE_BITCODE'] = 'NO'
+      config.build_settings['SWIFT_VERSION'] = '5.0'
+      
+      # Architecture settings
+      if config.name == 'Debug'
+        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+      end
+      
+      # Framework settings
+      config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+      config.build_settings['DEFINES_MODULE'] = 'YES'
+      
+      # Framework search paths
+      config.build_settings['FRAMEWORK_SEARCH_PATHS'] ||= [
+        '$(inherited)',
+        '${PODS_XCFRAMEWORKS_BUILD_DIR}/Flutter'
+      ]
+
+      # İzinler ve tanımlamalar
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        'PERMISSION_CAMERA=1',
+        'PERMISSION_MICROPHONE=1',
+        'PERMISSION_PHOTOS=1',
+        'PERMISSION_NOTIFICATIONS=1',
+        'PERMISSION_MEDIA_LIBRARY=1'
+      ]
+      
+    end
   end
 end

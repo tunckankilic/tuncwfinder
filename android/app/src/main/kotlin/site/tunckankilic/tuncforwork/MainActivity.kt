@@ -1,4 +1,4 @@
-package site.tunckankilic.tuncwfinder
+package site.tunckankilic.tuncforwork
 
 import io.flutter.embedding.android.FlutterActivity
 

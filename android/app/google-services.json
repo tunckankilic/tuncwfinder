@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "478614026227",
+    "project_id": "tuncdating-ac461",
+    "storage_bucket": "tuncdating-ac461.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:478614026227:android:d4db3ee858c1ac466d8486",
+        "android_client_info": {
+          "package_name": "site.tunckankilic.tuncforwork"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "478614026227-2krlukmq3a3ar6ilqed35j29ak575vfs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "site.tunckankilic.tuncforwork",
+            "certificate_hash": "e6f233ea60f0fb74484ced1929c3f3294f6f6111"
+          }
+        },
+        {
+          "client_id": "478614026227-ep2l1766bnt8me9ef0r2rcv0pvk1bfb3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHnJ_p6_fAEmMW58UQ6ygpAm08mEU4IUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "478614026227-ep2l1766bnt8me9ef0r2rcv0pvk1bfb3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "478614026227-9ldich368blehqdvelf3v3sovh2n02h8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "site.tunckankilic.tuncdating"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

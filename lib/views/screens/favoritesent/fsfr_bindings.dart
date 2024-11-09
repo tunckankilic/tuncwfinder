@@ -1,5 +1,5 @@
-import 'package:tuncdating/service/service.dart';
-import 'package:tuncdating/views/screens/favoritesent/fsfr_controller.dart';
+import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
 
 class FsfrBindings extends Bindings {
   @override
