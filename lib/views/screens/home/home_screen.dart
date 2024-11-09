@@ -5,7 +5,7 @@ import 'package:tuncforwork/views/screens/home/home_controller.dart';
 class HomeScreen extends GetView<HomeController> {
   static const routeName = "/home";
 
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

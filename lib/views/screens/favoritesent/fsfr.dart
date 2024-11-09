@@ -5,7 +5,7 @@ import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 
 class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
-  const FavoriteSendFavoriteReceived({Key? key}) : super(key: key);
+  const FavoriteSendFavoriteReceived({super.key});
 
   @override
   Widget build(BuildContext context) {

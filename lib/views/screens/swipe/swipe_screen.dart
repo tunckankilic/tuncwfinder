@@ -5,7 +5,7 @@ import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 import 'package:tuncforwork/views/screens/swipe/widgets/swipe_cards.dart';
 
 class SwipeScreen extends GetView<SwipeController> {
-  const SwipeScreen({Key? key}) : super(key: key);
+  const SwipeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

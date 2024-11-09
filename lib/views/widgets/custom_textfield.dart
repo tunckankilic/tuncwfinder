@@ -8,13 +8,13 @@ class CustomTField extends StatelessWidget {
   final String? labelText;
   final bool? isObscure;
   const CustomTField({
-    Key? key,
+    super.key,
     required this.textEditingController,
     this.iconData,
     this.assetRef,
     this.labelText,
     this.isObscure,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

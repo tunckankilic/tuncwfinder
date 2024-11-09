@@ -9,7 +9,7 @@ import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 
 class UserDetails extends StatefulWidget {
   final String userId;
-  const UserDetails({Key? key, required this.userId}) : super(key: key);
+  const UserDetails({super.key, required this.userId});
 
   @override
   State<UserDetails> createState() => _UserDetailsState();
@@ -818,13 +818,13 @@ class ProfileActionButtons extends GetView<SwipeController> {
   final bool isTablet;
 
   const ProfileActionButtons({
-    Key? key,
+    super.key,
     required this.instagramUsername,
     required this.linkedInUsername,
     required this.github,
     required this.phoneNo,
     required this.isTablet,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

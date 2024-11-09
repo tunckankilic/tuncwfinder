@@ -4,7 +4,7 @@ import 'package:tuncforwork/views/screens/profile/account_settings/account_setti
 import 'dart:io';
 
 class ProfileInfoScreen extends GetView<AccountSettingsController> {
-  const ProfileInfoScreen({Key? key}) : super(key: key);
+  const ProfileInfoScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

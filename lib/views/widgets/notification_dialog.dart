@@ -14,7 +14,7 @@ class NotificationDialog extends StatelessWidget {
   final String senderId;
 
   const NotificationDialog({
-    Key? key,
+    super.key,
     required this.name,
     required this.age,
     required this.city,
@@ -22,7 +22,7 @@ class NotificationDialog extends StatelessWidget {
     required this.profileImage,
     required this.profession,
     required this.senderId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -91,8 +91,6 @@ class NotificationDialog extends StatelessWidget {
                           arguments: {'userId': senderId},
                         );
                       },
-                      child: Text('View Profile',
-                          style: TextStyle(fontSize: 14.sp)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         shape: RoundedRectangleBorder(
@@ -101,6 +99,8 @@ class NotificationDialog extends StatelessWidget {
                         padding: EdgeInsets.symmetric(
                             horizontal: 16.w, vertical: 8.h),
                       ),
+                      child: Text('View Profile',
+                          style: TextStyle(fontSize: 14.sp)),
                     ),
                   ),
                   Align(

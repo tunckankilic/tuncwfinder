@@ -6,7 +6,7 @@ import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart
 import 'package:tuncforwork/views/screens/viewsent/vsvr_controller.dart';
 
 class ViewSentViewReceive extends GetView<VsvrController> {
-  ViewSentViewReceive({Key? key}) : super(key: key);
+  const ViewSentViewReceive({super.key});
 
   @override
   Widget build(BuildContext context) {

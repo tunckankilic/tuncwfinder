@@ -35,8 +35,8 @@ class SwipeController extends GetxController {
   RxString chosenProfession = "".obs;
   final Map<String, DateTime> _lastBlockTimes = {};
   final RxBool _isProcessing = false.obs;
-  Rx<DateTime> _lastQueryTime = DateTime.now().obs;
-  RxInt _queryCount = 0.obs;
+  final Rx<DateTime> _lastQueryTime = DateTime.now().obs;
+  final RxInt _queryCount = 0.obs;
   String currentUserId = '';
   @override
   void onInit() {

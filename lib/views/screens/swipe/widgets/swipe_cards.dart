@@ -12,12 +12,12 @@ class SwipeCards extends StatefulWidget {
   final Function(Person) onSwipeUp;
 
   const SwipeCards({
-    Key? key,
+    super.key,
     required this.profiles,
     required this.onSwipeLeft,
     required this.onSwipeRight,
     required this.onSwipeUp,
-  }) : super(key: key);
+  });
 
   @override
   _SwipeCardsState createState() => _SwipeCardsState();
@@ -140,12 +140,12 @@ class SwipeCardContent extends StatelessWidget {
   final BoxConstraints constraints;
 
   const SwipeCardContent({
-    Key? key,
+    super.key,
     required this.dragAlignment,
     required this.currentProfile,
     required this.isTablet,
     required this.constraints,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -272,10 +272,10 @@ class ResponsiveSocialButtons extends GetView<SwipeController> {
   final bool isTablet;
 
   const ResponsiveSocialButtons({
-    Key? key,
+    super.key,
     required this.person,
     required this.isTablet,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

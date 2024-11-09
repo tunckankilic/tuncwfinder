@@ -4,7 +4,7 @@ import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 
 class FPScreen extends GetView<AuthController> {
   static const routeName = "/forgotpass";
-  const FPScreen({Key? key}) : super(key: key);
+  const FPScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -5,7 +5,7 @@ import 'package:tuncforwork/views/screens/profile/account_settings/account_setti
 import 'package:tuncforwork/views/screens/profile/account_settings/pages/account_info_settings.dart';
 
 class PhotoSettingsScreen extends GetView<AccountSettingsController> {
-  const PhotoSettingsScreen({Key? key}) : super(key: key);
+  const PhotoSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

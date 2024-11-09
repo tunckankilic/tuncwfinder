@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
 import 'package:tuncforwork/views/screens/profile/controller/profile_controllers.dart';

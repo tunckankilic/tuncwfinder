@@ -5,7 +5,7 @@ import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
 
 class LikeSentLikeReceived extends GetView<LslrController> {
-  const LikeSentLikeReceived({Key? key}) : super(key: key);
+  const LikeSentLikeReceived({super.key});
 
   @override
   Widget build(BuildContext context) {
