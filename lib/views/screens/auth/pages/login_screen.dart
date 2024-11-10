@@ -238,10 +238,10 @@ class LoginScreen extends GetView<AuthController> {
         Text(
           "Did you forget your password?",
           style: ElegantTheme.textTheme.bodyMedium?.copyWith(
-            fontSize: isTablet ? 16.0 : 14.0,
+            fontSize: isTablet ? 14.0 : 12.0,
           ),
         ),
-        SizedBox(width: isTablet ? 15.0 : 10.0),
+        SizedBox(width: isTablet ? 13.0 : 8.0),
         TextButton(
           onPressed: () => Get.toNamed(FPScreen.routeName),
           child: Text(

@@ -28,12 +28,13 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  cloud_firestore: ^5.4.5
   cupertino_icons: ^1.0.2
-  firebase_auth: ^5.3.2
-  firebase_core: ^3.7.0
-  firebase_messaging: ^15.1.4
-  firebase_storage: ^12.3.5
+  # Firebase paketleri - birbiriyle uyumlu versiyonlar
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  cloud_firestore: ^4.13.6
+  firebase_messaging: ^14.7.10 # Güncellenmiş versiyon
+  firebase_storage: ^11.5.6 # Storage eklenmiş
   flutter:
     sdk: flutter
   flutter_launcher_icons: ^0.14.1
