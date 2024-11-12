@@ -119,7 +119,10 @@ class RegistrationScreen extends GetView<AuthController> {
           Row(
             children: [
               IconButton(
-                onPressed: () => Get.back(),
+                onPressed: () {
+                  controller.clearAllFields();
+                  Get.back();
+                },
                 icon: const Icon(Icons.arrow_back_ios),
                 iconSize: isTablet ? 28.0 : 24.0,
                 padding: EdgeInsets.all(isTablet ? 12.0 : 8.0),
@@ -172,7 +175,7 @@ class RegistrationScreen extends GetView<AuthController> {
 
 // Form elemanları için temel stiller
   InputDecoration _getInputDecoration(
-      String label, IconData icon, bool isTablet) {
+      String label, IconData icon, bool isTablet, bool password) {
     return InputDecoration(
       labelText: label,
       labelStyle: TextStyle(
@@ -184,6 +187,13 @@ class RegistrationScreen extends GetView<AuthController> {
         color: ElegantTheme.primaryColor,
         size: isTablet ? 28.0 : 24.0,
       ),
+      suffixIcon: password
+          ? IconButton(
+              onPressed: () {
+                controller.obsPass.value = !controller.obsPass.value;
+              },
+              icon: Icon(Icons.remove_red_eye))
+          : null,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
         borderSide: const BorderSide(color: ElegantTheme.primaryColor),
@@ -223,7 +233,24 @@ class RegistrationScreen extends GetView<AuthController> {
         controller: controller,
         obscureText: isObscure,
         style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
-        decoration: _getInputDecoration(label, icon, isTablet),
+        decoration: _getInputDecoration(label, icon, isTablet, false),
+      ),
+    );
+  }
+
+  Widget _buildPasswordTextField(
+    TextEditingController textedit,
+    String label,
+    IconData icon,
+    bool isTablet,
+  ) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
+      child: TextField(
+        controller: textedit,
+        obscureText: controller.obsPass.value,
+        style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
+        decoration: _getInputDecoration(label, icon, isTablet, true),
       ),
     );
   }
@@ -249,7 +276,7 @@ class RegistrationScreen extends GetView<AuthController> {
             ),
           );
         }).toList(),
-        decoration: _getInputDecoration(label, icon, isTablet),
+        decoration: _getInputDecoration(label, icon, isTablet, false),
         dropdownColor: ElegantTheme.backgroundColor,
         style: TextStyle(fontSize: isTablet ? 18.0 : 16.0, color: Colors.black),
       ),
@@ -395,55 +422,71 @@ class RegistrationScreen extends GetView<AuthController> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (controller.currentPage.value > 0)
-            ElevatedButton(
-              onPressed: controller.previousPage,
+          // Previous Button
+          Obx(() => controller.currentPage.value > 0
+              ? ElevatedButton(
+                  onPressed: controller.previousPage,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ElegantTheme.secondaryColor,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 30.0 : 20.0,
+                      vertical: isTablet ? 15.0 : 10.0,
+                    ),
+                    minimumSize: Size(isTablet ? 120.0 : 100.0, 0),
+                  ),
+                  child: Text(
+                    "Previous",
+                    style: TextStyle(fontSize: isTablet ? 18.0 : 14.0),
+                  ),
+                )
+              : const SizedBox.shrink()),
+
+          // Next/Create Account Button
+          Obx(() {
+            final isLastPage = controller.currentPage.value == 4;
+            final isLoading = controller.showProgressBar.value;
+
+            return ElevatedButton(
+              onPressed: isLoading
+                  ? null
+                  : isLastPage
+                      ? () async {
+                          if (!controller.termsAccepted.value) {
+                            Get.snackbar(
+                              'Error',
+                              'Please accept the terms and conditions',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                            return;
+                          }
+                          await controller.register();
+                        }
+                      : controller.nextPage,
               style: ElevatedButton.styleFrom(
-                backgroundColor: ElegantTheme.secondaryColor,
+                backgroundColor: ElegantTheme.primaryColor,
                 padding: EdgeInsets.symmetric(
                   horizontal: isTablet ? 30.0 : 20.0,
                   vertical: isTablet ? 15.0 : 10.0,
                 ),
                 minimumSize: Size(isTablet ? 120.0 : 100.0, 0),
               ),
-              child: Text(
-                "Previous",
-                style: TextStyle(fontSize: isTablet ? 18.0 : 14.0),
-              ),
-            ),
-          Obx(() => ElevatedButton(
-                onPressed: controller.showProgressBar.value
-                    ? null
-                    : controller.currentPage.value == 4
-                        ? () async {
-                            await controller.register();
-                          }
-                        : controller.nextPage,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ElegantTheme.primaryColor,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 30.0 : 20.0,
-                    vertical: isTablet ? 15.0 : 10.0,
-                  ),
-                  minimumSize: Size(isTablet ? 120.0 : 100.0, 0),
-                ),
-                child: controller.showProgressBar.value &&
-                        controller.currentPage.value == 4
-                    ? SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        controller.currentPage.value == 4
-                            ? "Create Account"
-                            : "Next",
-                        style: TextStyle(fontSize: isTablet ? 18.0 : 14.0),
+              child: isLoading && isLastPage
+                  ? SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
                       ),
-              )),
+                    )
+                  : Text(
+                      isLastPage ? "Create Account" : "Next",
+                      style: TextStyle(fontSize: isTablet ? 18.0 : 14.0),
+                    ),
+            );
+          }),
         ],
       ),
     );
@@ -525,12 +568,17 @@ class RegistrationScreen extends GetView<AuthController> {
                 Icons.email_outlined,
                 isTablet,
               ),
-              _buildTextField(
+              _buildPasswordTextField(
                 controller.passwordController,
                 "Password",
                 Icons.lock_outline,
                 isTablet,
-                isObscure: true,
+              ),
+              _buildPasswordTextField(
+                controller.confirmPasswordController,
+                "Confirm Password",
+                Icons.lock_outline,
+                isTablet,
               ),
               _buildTextField(
                 controller.ageController,

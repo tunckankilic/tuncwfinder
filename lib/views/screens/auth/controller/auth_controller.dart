@@ -33,10 +33,13 @@ class AuthController extends GetxController {
   RxBool termsAccepted = false.obs;
   late PageController pageController;
   RxInt currentPage = 0.obs;
+  RxBool obsPass = false.obs;
 
   // Form Controllers
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
   final TextEditingController phoneNoController = TextEditingController();
@@ -91,11 +94,102 @@ class AuthController extends GetxController {
 
   // EULA and Privacy Policy
   final String eula = '''
-    // Your EULA text here
+   End User License Agreement (EULA)
+Last updated: November 12, 2024
+1. Introduction
+This End User License Agreement ("Agreement" or "EULA") is a legal agreement between you ("User", "you", or "your") and TuncForWork ("we", "us", "our", or "Company") for the use of the TuncForWork mobile application ("App").
+2. Acceptance of Terms
+By downloading, installing, or using the App, you agree to be bound by this Agreement. If you do not agree to these terms, do not use the App.
+3. License Grant
+Subject to your compliance with this Agreement, we grant you a limited, non-exclusive, non-transferable, revocable license to use the App for your personal, non-commercial purposes.
+4. User Registration and Account Security
+4.1. You must be at least 18 years old to use the App.
+4.2. You are responsible for maintaining the confidentiality of your account credentials.
+4.3. You agree to provide accurate, current, and complete information during registration.
+4.4. You are solely responsible for all activities that occur under your account.
+5. User Content and Conduct
+5.1. You retain ownership of content you submit to the App.
+5.2. You grant us a worldwide, non-exclusive license to use, modify, and display your content.
+5.3. You agree not to:
+
+Post illegal, harmful, or offensive content
+Impersonate others
+Use the App for unauthorized commercial purposes
+Attempt to bypass security measures
+Share malware or viruses
+
+6. Privacy
+6.1. Our Privacy Policy explains how we collect, use, and protect your information.
+6.2. By using the App, you consent to our privacy practices.
+7. Data Usage and Storage
+7.1. The App requires access to:
+
+Camera and photo library
+Location services
+Push notifications
+Network connectivity
+7.2. You are responsible for any data charges incurred while using the App.
+
+8. Intellectual Property Rights
+8.1. All rights, title, and interest in the App remain with us.
+8.2. You may not:
+
+Modify or create derivative works
+Reverse engineer the App
+Remove copyright notices
+Use branding without permission
+
+9. Termination
+9.1. We may terminate your access to the App at any time for violations of this Agreement.
+9.2. You may terminate this Agreement by uninstalling the App.
+10. Disclaimer of Warranties
+THE APP IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND.
+11. Limitation of Liability
+WE SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES.
+12. Changes to Agreement
+We reserve the right to modify this Agreement at any time.
+13. Governing Law
+This Agreement is governed by the laws of [Your Jurisdiction].
   ''';
 
   final String privacyPolicy = '''
-    // Your Privacy Policy text here
+   TuncForWork Privacy
+TuncWFinder Privacy Policy
+Last updated: 19/08/2024
+This privacy policy explains how information is collected, used, protected, and disclosed during the use of the TuncWFinder application. By using the application, you agree to the practices described in this policy.
+1. Information Collected
+The application may collect the following information:
+
+Camera and photo library access: For taking profile pictures and sharing content
+Microphone access: For voice messages and video recordings
+Apple Music access: For using music features (when necessary)
+Notification permissions: For sending important updates and information
+
+2. Use of Information
+The collected information is used for the following purposes:
+
+To provide and improve application functionality
+To personalize user experience
+To troubleshoot technical issues and analyze application performance
+To comply with legal obligations
+
+3. Information Sharing
+User information is not shared with third parties except in the following circumstances:
+
+When the user gives explicit permission
+When there is a legal obligation
+When necessary to protect the rights of the application
+
+4. Data Security
+Appropriate technical and organizational measures are taken to ensure the security of user information. However, please note that transmission methods over the internet or electronic storage are not 100% secure.
+5. Children’s Privacy
+The application does not knowingly collect personal information from children under 13 years of age. If you are a parent or guardian and believe that your child has provided us with personal information, please contact us.
+6. Changes to This Policy
+This privacy policy may be updated from time to time. Changes will be posted on this page, and users will be notified in case of significant changes.
+7. Contact
+If you have any questions about this privacy policy, please contact us at:
+email: ismail.tunc.kankilic@gmail.com
+By accepting this privacy policy, you declare that you understand and agree to the terms stated herein.
   ''';
 
   @override
@@ -120,17 +214,17 @@ class AuthController extends GetxController {
     }
   }
 
-  // Error handling
-  void _showError(String message) {
-    Get.snackbar(
-      'Error',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
-  }
+  // // Error handling
+  // void _showError(String message) {
+  //   Get.snackbar(
+  //     'Error',
+  //     message,
+  //     snackPosition: SnackPosition.BOTTOM,
+  //     backgroundColor: Colors.red,
+  //     colorText: Colors.white,
+  //     duration: const Duration(seconds: 3),
+  //   );
+  // }
 
   void _showSuccess(String message) {
     Get.snackbar(
@@ -164,17 +258,6 @@ class AuthController extends GetxController {
   void updateTermsAcceptance(bool accepted) {
     termsAccepted.value = accepted;
     update();
-  }
-
-  // Navigation
-  void nextPage() {
-    if (currentPage.value < 4) {
-      pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-      currentPage.value++;
-    }
   }
 
   void previousPage() {
@@ -254,89 +337,533 @@ class AuthController extends GetxController {
     }
   }
 
-  // Authentication methods
   Future<void> register() async {
-    if (!validateSignupFields()) {
-      return;
-    }
-
-    showProgressBar.value = true;
     try {
-      // Create user account
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      // Step 1: Initial Validation Checks
+      // Check if passwords match
+      if (passwordController.text != confirmPasswordController.text) {
+        _showError('Passwords do not match');
+        return;
+      }
 
-      // Upload profile picture
-      String photoUrl = await _uploadProfilePicture(userCredential.user!.uid);
+      // Check password format
+      if (!ValidationUtils.isValidPassword(passwordController.text)) {
+        _showError(
+            'Password must be at least 8 characters and contain uppercase, lowercase, number and special character');
+        return;
+      }
 
-      // Create user model
-      pM.Person newUser = pM.Person(
-        uid: userCredential.user!.uid,
-        imageProfile: photoUrl,
-        email: emailController.text.trim(),
-        password: passwordController.text,
-        name: nameController.text.trim(),
-        age: int.tryParse(ageController.text.trim()) ?? 0,
-        phoneNo: phoneNoController.text.trim(),
-        city: cityController.text.trim(),
-        country: countryController.text.trim(),
-        profileHeading: profileHeadingController.text.trim(),
-        gender: genderController.text.trim(),
-        height: heightController.text.trim(),
-        weight: weightController.text.trim(),
-        bodyType: bodyTypeController.text.trim(),
-        drink: drinkController.text.trim(),
-        smoke: smokeController.text.trim(),
-        martialStatus: martialStatusController.text.trim(),
-        haveChildren: haveChildrenController.text.trim(),
-        noOfChildren: noOfChildrenController.text.trim(),
-        profession: professionController.text.trim(),
-        employmentStatus: employmentStatusController.text.trim(),
-        income: incomeController.text.trim(),
-        livingSituation: livingSituationController.text.trim(),
-        willingToRelocate: willingToRelocateController.text.trim(),
-        nationality: nationalityController.text.trim(),
-        education: educationController.text.trim(),
-        languageSpoken: languageSpokenController.text.trim(),
-        religion: religionController.text.trim(),
-        ethnicity: ethnicityController.text.trim(),
-        linkedInUrl: linkedInController.text.trim(),
-        instagramUrl: instagramController.text.trim(),
-        githubUrl: githubController.text.trim(),
-        publishedDateTime: DateTime.now().millisecondsSinceEpoch,
-      );
+      // Step 2: Validate all signup fields
+      if (!validateSignupFields()) {
+        return; // validateSignupFields already shows error messages
+      }
 
-      // Save user data to Firestore
-      await _firestore
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .set(newUser.toJson());
+      // Step 3: Terms and Conditions Check
+      if (!termsAccepted.value) {
+        _showError('Please accept the terms and conditions to continue');
+        return;
+      }
 
-      _showSuccess('Account created successfully');
-      Get.offAll(() => const HomeScreen());
+      // Step 4: Start Registration Process
+      showProgressBar.value = true;
+
+      try {
+        // Step 5: Create Firebase Auth Account
+        UserCredential userCredential =
+            await _auth.createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+
+        // Step 6: Upload Profile Picture (if selected)
+        String photoUrl = '';
+        if (pickedImage.value != null) {
+          try {
+            photoUrl = await _uploadProfilePicture(userCredential.user!.uid);
+          } catch (e) {
+            print('Error uploading profile picture: $e');
+            // Continue with registration even if image upload fails
+            _showError(
+                'Failed to upload profile picture, but registration will continue');
+          }
+        }
+
+        // Step 7: Create User Model
+        pM.Person newUser = pM.Person(
+          uid: userCredential.user!.uid,
+          imageProfile: photoUrl,
+          email: emailController.text.trim(),
+          password: passwordController
+              .text, // Note: Consider if you really need to store the password
+          name: nameController.text.trim(),
+          age: int.tryParse(ageController.text.trim()) ?? 0,
+          phoneNo: phoneNoController.text.trim(),
+          city: cityController.text.trim(),
+          country: countryController.text.trim(),
+          profileHeading: profileHeadingController.text.trim(),
+          gender: genderController.text.trim(),
+          height: heightController.text.trim(),
+          weight: weightController.text.trim(),
+          bodyType: bodyTypeController.text.trim(),
+          drink: drinkController.text.trim(),
+          smoke: smokeController.text.trim(),
+          martialStatus: martialStatusController.text.trim(),
+          haveChildren: haveChildrenController.text.trim(),
+          noOfChildren: noOfChildrenController.text.trim(),
+          profession: professionController.text.trim(),
+          employmentStatus: employmentStatusController.text.trim(),
+          income: incomeController.text.trim(),
+          livingSituation: livingSituationController.text.trim(),
+          willingToRelocate: willingToRelocateController.text.trim(),
+          nationality: nationalityController.text.trim(),
+          education: educationController.text.trim(),
+          languageSpoken: languageSpokenController.text.trim(),
+          religion: religionController.text.trim(),
+          ethnicity: ethnicityController.text.trim(),
+          linkedInUrl: linkedInController.text.trim(),
+          instagramUrl: instagramController.text.trim(),
+          githubUrl: githubController.text.trim(),
+          publishedDateTime: DateTime.now().millisecondsSinceEpoch,
+        );
+
+        // Step 8: Save User Data to Firestore
+        await _firestore
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set(newUser.toJson());
+
+        // Step 9: Clear Form and Show Success
+        clearAllFields();
+        _showSuccess('Account created successfully');
+
+        // Step 10: Navigate to Home Screen
+        Get.offAll(() => const HomeScreen());
+      } on FirebaseAuthException catch (e) {
+        // Step 11: Handle Firebase Auth Specific Errors
+        String errorMessage = 'Registration failed';
+
+        switch (e.code) {
+          case 'email-already-in-use':
+            errorMessage = 'An account already exists for this email';
+            break;
+          case 'invalid-email':
+            errorMessage = 'The email address is not valid';
+            break;
+          case 'operation-not-allowed':
+            errorMessage = 'Email/password accounts are not enabled';
+            break;
+          case 'weak-password':
+            errorMessage = 'The password provided is too weak';
+            break;
+          default:
+            errorMessage = e.message ?? 'An unknown error occurred';
+        }
+
+        _showError(errorMessage);
+      }
     } catch (error) {
-      _showError(error.toString());
+      // Step 12: Handle General Errors
+      _showError('Registration failed: ${error.toString()}');
     } finally {
+      // Step 13: Always Reset Loading State
       showProgressBar.value = false;
     }
   }
 
+// Helper method to clear all form fields
+  void clearAllFields() {
+    // Form Controllers
+    emailController.clear();
+    passwordController.clear();
+    confirmPasswordController.clear();
+    nameController.clear();
+    ageController.clear();
+    phoneNoController.clear();
+    cityController.clear();
+    countryController.clear();
+    profileHeadingController.clear();
+    genderController.clear();
+    heightController.clear();
+    weightController.clear();
+    bodyTypeController.clear();
+    drinkController.clear();
+    smokeController.clear();
+    martialStatusController.clear();
+    haveChildrenController.clear();
+    noOfChildrenController.clear();
+    professionController.clear();
+    employmentStatusController.clear();
+    incomeController.clear();
+    livingSituationController.clear();
+    willingToRelocateController.clear();
+    linkedInController.clear();
+    instagramController.clear();
+    githubController.clear();
+    nationalityController.clear();
+    educationController.clear();
+    languageSpokenController.clear();
+    religionController.clear();
+    ethnicityController.clear();
+
+    // Observable Variables
+    childrenSelection.value = 'No';
+    relationshipSelection.value = 'Single';
+    radioHaveChildrenController.value = '';
+    radioRelationshipStatusController.value = '';
+    termsAccepted.value = false;
+    pickedImage.value = null;
+
+    // Reset Page
+    currentPage.value = 0;
+    pageController.jumpToPage(0);
+  }
+
+  // Validate Personal Info Page (Page 0)
+  bool _validatePersonalInfo() {
+    if (pickedImage.value == null) {
+      _showError('Please select a profile picture');
+      return false;
+    }
+    if (nameController.text.trim().isEmpty) {
+      _showError('Name is required');
+      return false;
+    }
+    if (!ValidationUtils.isValidEmail(emailController.text.trim())) {
+      _showError('Please enter a valid email');
+      return false;
+    }
+    if (!ValidationUtils.isValidPassword(passwordController.text)) {
+      _showError(
+          'Password must be at least 8 characters with uppercase, lowercase, number and special character');
+      return false;
+    }
+    if (passwordController.text != confirmPasswordController.text) {
+      _showError('Passwords do not match');
+      return false;
+    }
+    if (!ValidationUtils.isValidAge(ageController.text.trim())) {
+      _showError('Please enter a valid age between 18 and 100');
+      return false;
+    }
+    if (genderController.text.trim().isEmpty) {
+      _showError('Please select your gender');
+      return false;
+    }
+    if (!ValidationUtils.isValidPhone(phoneNoController.text.trim())) {
+      _showError('Please enter a valid phone number');
+      return false;
+    }
+    if (countryController.text.trim().isEmpty) {
+      _showError('Please select your country');
+      return false;
+    }
+    if (cityController.text.trim().isEmpty) {
+      _showError('City is required');
+      return false;
+    }
+    if (profileHeadingController.text.trim().isEmpty) {
+      _showError('Profile heading is required');
+      return false;
+    }
+    return true;
+  }
+
+  // Validate Appearance Page (Page 1)
+  bool _validateAppearance() {
+    if (!ValidationUtils.isValidHeight(heightController.text.trim())) {
+      _showError('Please enter a valid height');
+      return false;
+    }
+    if (!ValidationUtils.isValidWeight(weightController.text.trim())) {
+      _showError('Please enter a valid weight');
+      return false;
+    }
+    if (bodyTypeController.text.trim().isEmpty) {
+      _showError('Please select your body type');
+      return false;
+    }
+    return true;
+  }
+
+  // Validate Lifestyle Page (Page 2)
+  bool _validateLifestyle() {
+    if (drinkController.text.trim().isEmpty) {
+      _showError('Please select your drinking habits');
+      return false;
+    }
+    if (smokeController.text.trim().isEmpty) {
+      _showError('Please select your smoking habits');
+      return false;
+    }
+    if (martialStatusController.text.trim().isEmpty) {
+      _showError('Please select your marital status');
+      return false;
+    }
+    if (childrenSelection.value.isEmpty) {
+      _showError('Please specify if you have children');
+      return false;
+    }
+    if (childrenSelection.value == 'Yes' &&
+        noOfChildrenController.text.trim().isEmpty) {
+      _showError('Please specify number of children');
+      return false;
+    }
+    if (professionController.text.trim().isEmpty) {
+      _showError('Please select your profession');
+      return false;
+    }
+    if (employmentStatusController.text.trim().isEmpty) {
+      _showError('Please select your employment status');
+      return false;
+    }
+    if (incomeController.text.trim().isEmpty) {
+      _showError('Please enter your income');
+      return false;
+    }
+    if (livingSituationController.text.trim().isEmpty) {
+      _showError('Please select your living situation');
+      return false;
+    }
+    if (relationshipSelection.value.isEmpty) {
+      _showError('Please select your relationship status');
+      return false;
+    }
+    return true;
+  }
+
+  // Validate Background Page (Page 3)
+  bool _validateBackground() {
+    if (nationalityController.text.trim().isEmpty) {
+      _showError('Please select your nationality');
+      return false;
+    }
+    if (educationController.text.trim().isEmpty) {
+      _showError('Please select your education level');
+      return false;
+    }
+    if (languageSpokenController.text.trim().isEmpty) {
+      _showError('Please select languages spoken');
+      return false;
+    }
+    if (religionController.text.trim().isEmpty) {
+      _showError('Please select your religion');
+      return false;
+    }
+    if (ethnicityController.text.trim().isEmpty) {
+      _showError('Please select your ethnicity');
+      return false;
+    }
+    return true;
+  }
+
+  // Validate Connections Page (Page 4)
+  bool _validateConnections() {
+    // LinkedIn, Instagram, and GitHub URLs are optional but must be valid if provided
+    if (linkedInController.text.isNotEmpty &&
+        !ValidationUtils.isValidUrl(linkedInController.text)) {
+      _showError('Please enter a valid LinkedIn URL');
+      return false;
+    }
+    if (instagramController.text.isNotEmpty &&
+        !ValidationUtils.isValidUrl(instagramController.text)) {
+      _showError('Please enter a valid Instagram URL');
+      return false;
+    }
+    if (githubController.text.isNotEmpty &&
+        !ValidationUtils.isValidUrl(githubController.text)) {
+      _showError('Please enter a valid GitHub URL');
+      return false;
+    }
+    if (!termsAccepted.value) {
+      _showError('Please accept the terms and conditions');
+      return false;
+    }
+    return true;
+  }
+
+  // Updated nextPage method with validation
+  void nextPage() {
+    bool canProceed = false;
+
+    // Validate current page before proceeding
+    switch (currentPage.value) {
+      case 0:
+        canProceed = _validatePersonalInfo();
+        break;
+      case 1:
+        canProceed = _validateAppearance();
+        break;
+      case 2:
+        canProceed = _validateLifestyle();
+        break;
+      case 3:
+        canProceed = _validateBackground();
+        break;
+      case 4:
+        canProceed = _validateConnections();
+        break;
+      default:
+        canProceed = true;
+    }
+
+    // Only proceed if validation passes
+    if (canProceed && currentPage.value < 4) {
+      pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      currentPage.value++;
+    }
+  }
+
   Future<void> login() async {
+    // Terms and conditions kontrolü
+    if (!termsAccepted.value) {
+      Get.snackbar(
+        'Terms Required',
+        'Please accept the terms and conditions to continue',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(8),
+        borderRadius: 8,
+      );
+      return;
+    }
+
+    // Validation checks
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      _showError('Please fill in all fields');
+      return;
+    }
+
+    if (!GetUtils.isEmail(emailController.text)) {
+      _showError('Please enter a valid email address');
+      return;
+    }
+
     isLoading.value = true;
+
     try {
       await _auth.signInWithEmailAndPassword(
-        email: emailController.text,
+        email: emailController.text.trim(),
         password: passwordController.text,
       );
-      Get.offAll(() => const HomeScreen(), binding: HomeBindings());
+
+      // Başarılı login sonrası
+      await _handleSuccessfulLogin();
     } catch (error) {
-      _showError(error.toString());
+      _handleLoginError(error);
     } finally {
       isLoading.value = false;
     }
+  }
+
+// Başarılı login işlemleri
+  Future<void> _handleSuccessfulLogin() async {
+    try {
+      // Son giriş tarihini güncelle
+      await _updateLastLoginTime();
+
+      // Ana sayfaya yönlendir
+      Get.offAll(
+        () => const HomeScreen(),
+        binding: HomeBindings(),
+        transition: Transition.fadeIn,
+        duration: const Duration(milliseconds: 500),
+      );
+    } catch (error) {
+      print('Post-login operation failed: $error');
+      // Ana sayfaya yine de yönlendir
+      Get.offAll(() => const HomeScreen(), binding: HomeBindings());
+    }
+  }
+
+// Son giriş zamanını güncelle
+  Future<void> _updateLastLoginTime() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .update({'lastLoginAt': DateTime.now()});
+      }
+    } catch (error) {
+      print('Failed to update last login time: $error');
+    }
+  }
+
+// Login hatalarını handle et
+  void _handleLoginError(dynamic error) {
+    String message = 'An error occurred while signing in';
+
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'user-not-found':
+          message = 'No account found with this email';
+          break;
+        case 'wrong-password':
+          message = 'Incorrect password';
+          break;
+        case 'user-disabled':
+          message = 'This account has been disabled';
+          break;
+        case 'too-many-requests':
+          message = 'Too many attempts. Please try again later';
+          break;
+        case 'invalid-email':
+          message = 'Please enter a valid email address';
+          break;
+        case 'network-request-failed':
+          message = 'Please check your internet connection';
+          break;
+        default:
+          message = 'Authentication failed. Please try again';
+      }
+    }
+
+    _showError(message);
+  }
+
+// Hata gösterme
+  void _showError(String message) {
+    Get.snackbar(
+      'Error',
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red.shade50,
+      colorText: Colors.red.shade900,
+      icon: const Icon(
+        Icons.error_outline,
+        color: Colors.red,
+      ),
+      duration: const Duration(seconds: 3),
+      margin: const EdgeInsets.all(8),
+      borderRadius: 8,
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+      forwardAnimationCurve: Curves.easeOutBack,
+    );
+  }
+
+// Başarılı login mesajı (isteğe bağlı)
+  void _showSuccessMessage() {
+    Get.snackbar(
+      'Welcome',
+      'Successfully signed in',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.green.shade50,
+      colorText: Colors.green.shade900,
+      icon: const Icon(
+        Icons.check_circle_outline,
+        color: Colors.green,
+      ),
+      duration: const Duration(seconds: 2),
+      margin: const EdgeInsets.all(8),
+      borderRadius: 8,
+    );
   }
 
   Future<void> logout() async {
@@ -659,6 +1186,7 @@ class AuthController extends GetxController {
   void onClose() {
     // Dispose all controllers
     pageController.dispose();
+    confirmPasswordController.dispose();
     emailController.dispose();
     passwordController.dispose();
     nameController.dispose();
