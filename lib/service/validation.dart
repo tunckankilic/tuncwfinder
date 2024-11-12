@@ -1,108 +1,364 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
-class ValidationUtils {
-  static bool isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
-  }
+import 'service.dart';
 
-  static bool isValidPassword(String password) {
-    if (password.length < 8) return false;
-    if (!password.contains(RegExp(r'[A-Z]'))) return false;
-    if (!password.contains(RegExp(r'[a-z]'))) return false;
-    if (!password.contains(RegExp(r'[0-9]'))) return false;
-    if (!password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) return false;
-    return true;
-  }
+// Create a ValidationResult class to handle validation outcomes
+class ValidationResult {
+  final bool isValid;
+  final String? errorMessage;
 
-  static bool isValidPhone(String phone) {
-    // Accept digits, spaces, dashes, and optional + prefix
-    return RegExp(r'^\+?[\d\s-]{10,}$').hasMatch(phone);
-  }
+  ValidationResult({required this.isValid, this.errorMessage});
+}
 
-  static bool isValidAge(String age) {
-    final ageNum = int.tryParse(age);
-    return ageNum != null && ageNum >= 18 && ageNum <= 100;
-  }
-
-  static bool isValidHeight(String height) {
-    final heightNum = double.tryParse(height);
-    return heightNum != null && heightNum >= 120 && heightNum <= 220;
-  }
-
-  static bool isValidWeight(String weight) {
-    final weightNum = double.tryParse(weight);
-    return weightNum != null && weightNum >= 30 && weightNum <= 300;
-  }
-
-  static bool isValidName(String name) {
-    return name.trim().length >= 2 && name.trim().length <= 50;
-  }
-
-  static bool isValidUrl(String url) {
-    if (url.isEmpty) return true; // Allow empty URLs
-    return Uri.tryParse(url)?.isAbsolute ?? false;
-  }
-
-  static String? validateRegistrationField(String field, String value) {
-    switch (field) {
-      case 'email':
-        return !isValidEmail(value)
-            ? 'Please enter a valid email address'
-            : null;
-      case 'password':
-        return !isValidPassword(value)
-            ? 'Password must be at least 8 characters with uppercase, lowercase, number and special character'
-            : null;
-      case 'phone':
-        return !isValidPhone(value)
-            ? 'Please enter a valid phone number'
-            : null;
-      case 'age':
-        return !isValidAge(value) ? 'Age must be between 18 and 100' : null;
-      case 'height':
-        return !isValidHeight(value)
-            ? 'Please enter a valid height between 120 and 220 cm'
-            : null;
-      case 'weight':
-        return !isValidWeight(value)
-            ? 'Please enter a valid weight between 30 and 300 kg'
-            : null;
-      case 'name':
-        return !isValidName(value)
-            ? 'Name must be between 2 and 50 characters'
-            : null;
-      default:
-        return value.isEmpty ? 'This field is required' : null;
+class RegistrationValidator {
+  // Page 1: Personal Information Validation
+  static ValidationResult validatePersonalInfo({
+    required File? profileImage,
+    required String name,
+    required String email,
+    required String password,
+    required String confirmPassword,
+    required String age,
+    required String gender,
+    required String phone,
+    required String country,
+    required String city,
+    required String profileHeading,
+  }) {
+    // Profile Image Check
+    if (profileImage == null) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select a profile picture',
+      );
     }
+
+    // Name Validation
+    if (name.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Name is required',
+      );
+    }
+
+    if (name.trim().length < 2) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Name must be at least 2 characters long',
+      );
+    }
+
+    // Email Validation
+    if (!GetUtils.isEmail(email.trim())) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter a valid email address',
+      );
+    }
+
+    // Password Validation
+    final passwordStrength = PasswordValidator.validatePassword(password);
+    if (!passwordStrength.isValid) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Password does not meet requirements',
+      );
+    }
+
+    // Confirm Password Validation
+    if (password != confirmPassword) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Passwords do not match',
+      );
+    }
+
+    // Age Validation
+    int? ageNum = int.tryParse(age.trim());
+    if (ageNum == null || ageNum < 18 || ageNum > 100) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter a valid age between 18 and 100',
+      );
+    }
+
+    // Gender Validation
+    if (gender.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your gender',
+      );
+    }
+
+    // Phone Validation
+    if (!GetUtils.isPhoneNumber(phone.trim())) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter a valid phone number',
+      );
+    }
+
+    // Location Validation
+    if (country.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your country',
+      );
+    }
+
+    if (city.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter your city',
+      );
+    }
+
+    // Profile Heading Validation
+    if (profileHeading.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter a profile heading',
+      );
+    }
+
+    if (profileHeading.trim().length < 10) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Profile heading must be at least 10 characters long',
+      );
+    }
+
+    return ValidationResult(isValid: true);
   }
-}
 
-class ValidationRule {
-  final String value;
-  final bool Function(String) validator;
-  final String errorMessage;
+  // Page 2: Appearance Validation
+  static ValidationResult validateAppearance({
+    required String height,
+    required String weight,
+    required String bodyType,
+  }) {
+    // Height Validation
+    double? heightNum = double.tryParse(height.trim());
+    if (heightNum == null || heightNum < 100 || heightNum > 250) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter a valid height between 100cm and 250cm',
+      );
+    }
 
-  ValidationRule({
-    required this.value,
-    required this.validator,
-    required this.errorMessage,
-  });
+    // Weight Validation
+    double? weightNum = double.tryParse(weight.trim());
+    if (weightNum == null || weightNum < 30 || weightNum > 300) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter a valid weight between 30kg and 300kg',
+      );
+    }
 
-  bool isValid() => validator(value.trim());
-}
+    // Body Type Validation
+    if (bodyType.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your body type',
+      );
+    }
 
-class FormValidationState {
-  final Map<String, String?> errors = {};
-  bool get isValid => errors.values.every((error) => error == null);
-
-  void validateField(String field, String value) {
-    errors[field] = ValidationUtils.validateRegistrationField(field, value);
+    return ValidationResult(isValid: true);
   }
 
-  void validateAll(Map<String, String> fields) {
-    fields.forEach((field, value) {
-      validateField(field, value);
-    });
+  // Page 3: Lifestyle Validation
+  static ValidationResult validateLifestyle({
+    required String drink,
+    required String smoke,
+    required String maritalStatus,
+    required String haveChildren,
+    required String numberOfChildren,
+    required String profession,
+    required String employmentStatus,
+    required String income,
+    required String livingSituation,
+    required String relationshipStatus,
+  }) {
+    // Habits Validation
+    if (drink.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your drinking habits',
+      );
+    }
+
+    if (smoke.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your smoking habits',
+      );
+    }
+
+    // Status Validations
+    if (maritalStatus.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your marital status',
+      );
+    }
+
+    // Children Validation
+    if (haveChildren.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please specify if you have children',
+      );
+    }
+
+    if (haveChildren == 'Yes' && numberOfChildren.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please specify number of children',
+      );
+    }
+
+    // Professional Info Validation
+    if (profession.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your profession',
+      );
+    }
+
+    if (employmentStatus.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your employment status',
+      );
+    }
+
+    // Income Validation
+    if (income.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter your income',
+      );
+    }
+
+    double? incomeNum =
+        double.tryParse(income.replaceAll(RegExp(r'[^0-9.]'), ''));
+    if (incomeNum == null || incomeNum < 0) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter a valid income amount',
+      );
+    }
+
+    // Living Situation Validation
+    if (livingSituation.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your living situation',
+      );
+    }
+
+    // Relationship Status Validation
+    if (relationshipStatus.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your relationship status',
+      );
+    }
+
+    return ValidationResult(isValid: true);
+  }
+
+  // Page 4: Background Validation
+  static ValidationResult validateBackground({
+    required String nationality,
+    required String education,
+    required String language,
+    required String religion,
+    required String ethnicity,
+  }) {
+    // Nationality Validation
+    if (nationality.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your nationality',
+      );
+    }
+
+    // Education Validation
+    if (education.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your education level',
+      );
+    }
+
+    // Language Validation
+    if (language.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select languages spoken',
+      );
+    }
+
+    // Religion Validation
+    if (religion.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your religion',
+      );
+    }
+
+    // Ethnicity Validation
+    if (ethnicity.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please select your ethnicity',
+      );
+    }
+
+    return ValidationResult(isValid: true);
+  }
+
+  // Page 5: Social Media Links Validation (Optional fields with URL validation)
+  static ValidationResult validateSocialLinks({
+    required String linkedIn,
+    required String instagram,
+    required String github,
+    required bool termsAccepted,
+  }) {
+    // URL validation for optional social media links
+    if (linkedIn.isNotEmpty && !GetUtils.isURL(linkedIn)) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter a valid LinkedIn URL',
+      );
+    }
+
+    if (instagram.isNotEmpty && !GetUtils.isURL(instagram)) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter a valid Instagram URL',
+      );
+    }
+
+    if (github.isNotEmpty && !GetUtils.isURL(github)) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter a valid GitHub URL',
+      );
+    }
+
+    // Terms acceptance validation
+    if (!termsAccepted) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please accept the terms and conditions',
+      );
+    }
+
+    return ValidationResult(isValid: true);
   }
 }
 

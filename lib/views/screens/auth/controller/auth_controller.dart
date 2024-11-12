@@ -228,11 +228,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
     try {
       showProgressBar.value = true;
 
-      if (!validateSignupFields()) {
-        showProgressBar.value = false;
-        return;
-      }
-
       final UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
@@ -347,7 +342,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     final strength = PasswordValidator.validatePassword(value);
 
     if (!strength.isValid) {
-      passwordError.value = 'Lütfen tüm şifre gereksinimlerini karşılayın';
+      passwordError.value = 'Provide all the password requirements';
     } else {
       passwordError.value = '';
     }
@@ -361,66 +356,66 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
   }
 
-  bool _validatePersonalInfo() {
-    if (pickedImage.value == null) {
-      _showError('Please select a profile picture');
-      return false;
-    }
+  // bool _validatePersonalInfo() {
+  //   if (pickedImage.value == null) {
+  //     _showError('Please select a profile picture');
+  //     return false;
+  //   }
 
-    if (nameController.text.trim().isEmpty) {
-      _showError('Name is required');
-      return false;
-    }
+  //   if (nameController.text.trim().isEmpty) {
+  //     _showError('Name is required');
+  //     return false;
+  //   }
 
-    if (!ValidationUtils.isValidEmail(emailController.text.trim())) {
-      _showError('Please enter a valid email address');
-      return false;
-    }
+  //   if (!ValidationUtils.isValidEmail(emailController.text.trim())) {
+  //     _showError('Please enter a valid email address');
+  //     return false;
+  //   }
 
-    validatePassword(passwordController.text);
-    if (passwordError.value.isNotEmpty) {
-      _showError(passwordError.value);
-      return false;
-    }
+  //   validatePassword(passwordController.text);
+  //   if (passwordError.value.isNotEmpty) {
+  //     _showError(passwordError.value);
+  //     return false;
+  //   }
 
-    validateConfirmPassword(confirmPasswordController.text);
-    if (confirmPasswordError.value.isNotEmpty) {
-      _showError(confirmPasswordError.value);
-      return false;
-    }
+  //   validateConfirmPassword(confirmPasswordController.text);
+  //   if (confirmPasswordError.value.isNotEmpty) {
+  //     _showError(confirmPasswordError.value);
+  //     return false;
+  //   }
 
-    if (!ValidationUtils.isValidAge(ageController.text.trim())) {
-      _showError('Please enter a valid age between 18 and 100');
-      return false;
-    }
+  //   if (!ValidationUtils.isValidAge(ageController.text.trim())) {
+  //     _showError('Please enter a valid age between 18 and 100');
+  //     return false;
+  //   }
 
-    if (genderController.text.trim().isEmpty) {
-      _showError('Please select your gender');
-      return false;
-    }
+  //   if (genderController.text.trim().isEmpty) {
+  //     _showError('Please select your gender');
+  //     return false;
+  //   }
 
-    if (!ValidationUtils.isValidPhone(phoneNoController.text.trim())) {
-      _showError('Please enter a valid phone number');
-      return false;
-    }
+  //   if (!ValidationUtils.isValidPhone(phoneNoController.text.trim())) {
+  //     _showError('Please enter a valid phone number');
+  //     return false;
+  //   }
 
-    if (countryController.text.trim().isEmpty) {
-      _showError('Please select your country');
-      return false;
-    }
+  //   if (countryController.text.trim().isEmpty) {
+  //     _showError('Please select your country');
+  //     return false;
+  //   }
 
-    if (cityController.text.trim().isEmpty) {
-      _showError('City is required');
-      return false;
-    }
+  //   if (cityController.text.trim().isEmpty) {
+  //     _showError('City is required');
+  //     return false;
+  //   }
 
-    if (profileHeadingController.text.trim().isEmpty) {
-      _showError('Profile heading is required');
-      return false;
-    }
+  //   if (profileHeadingController.text.trim().isEmpty) {
+  //     _showError('Profile heading is required');
+  //     return false;
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   void _showSuccess(String message) {
     Get.snackbar(
@@ -887,53 +882,109 @@ By accepting this privacy policy, you declare that you understand and agree to t
   }
 
   void nextPage() {
-    bool canProceed = false;
+    ValidationResult? validationResult;
 
-    // Validate current page before proceeding
     switch (currentPage.value) {
-      case 0:
-        canProceed = _validatePersonalInfo();
+      case 0: // Personal Info
+        validationResult = RegistrationValidator.validatePersonalInfo(
+          profileImage: pickedImage.value,
+          name: nameController.text,
+          email: emailController.text,
+          password: passwordController.text,
+          confirmPassword: confirmPasswordController.text,
+          age: ageController.text,
+          gender: genderController.text,
+          phone: phoneNoController.text,
+          country: countryController.text,
+          city: cityController.text,
+          profileHeading: profileHeadingController.text,
+        );
         break;
-      case 1:
-        canProceed = _validateAppearance();
+
+      case 1: // Appearance
+        validationResult = RegistrationValidator.validateAppearance(
+          height: heightController.text,
+          weight: weightController.text,
+          bodyType: bodyTypeController.text,
+        );
         break;
-      case 2:
-        canProceed = _validateLifestyle();
+
+      case 2: // Lifestyle
+        validationResult = RegistrationValidator.validateLifestyle(
+          drink: drinkController.text,
+          smoke: smokeController.text,
+          maritalStatus: martialStatusController.text,
+          haveChildren: childrenSelection.value,
+          numberOfChildren: noOfChildrenController.text,
+          profession: professionController.text,
+          employmentStatus: employmentStatusController.text,
+          income: incomeController.text,
+          livingSituation: livingSituationController.text,
+          relationshipStatus: relationshipSelection.value,
+        );
         break;
-      case 3:
-        canProceed = _validateBackground();
+
+      case 3: // Background
+        validationResult = RegistrationValidator.validateBackground(
+          nationality: nationalityController.text,
+          education: educationController.text,
+          language: languageSpokenController.text,
+          religion: religionController.text,
+          ethnicity: ethnicityController.text,
+        );
+        break;
+
+      case 4: // Social Links and Terms
+        validationResult = RegistrationValidator.validateSocialLinks(
+          linkedIn: linkedInController.text,
+          instagram: instagramController.text,
+          github: githubController.text,
+          termsAccepted: termsAccepted.value,
+        );
         break;
 
       default:
-        canProceed = true;
+        validationResult = ValidationResult(isValid: true);
     }
 
-    // Only proceed if validation passes
-    if (canProceed && currentPage.value < 4) {
-      pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+    if (validationResult.isValid) {
+      if (currentPage.value < 4) {
+        pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+        currentPage.value++;
+      }
+    } else {
+      Get.snackbar(
+        'Error',
+        validationResult.errorMessage ?? 'Please check your inputs',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(8),
+        borderRadius: 8,
       );
-      currentPage.value++;
     }
   }
 
-  // Validate Appearance Page (Page 1)
-  bool _validateAppearance() {
-    if (!ValidationUtils.isValidHeight(heightController.text.trim())) {
-      _showError('Please enter a valid height');
-      return false;
-    }
-    if (!ValidationUtils.isValidWeight(weightController.text.trim())) {
-      _showError('Please enter a valid weight');
-      return false;
-    }
-    if (bodyTypeController.text.trim().isEmpty) {
-      _showError('Please select your body type');
-      return false;
-    }
-    return true;
-  }
+  // // Validate Appearance Page (Page 1)
+  // bool _validateAppearance() {
+  //   if (!ValidationUtils.isValidHeight(heightController.text.trim())) {
+  //     _showError('Please enter a valid height');
+  //     return false;
+  //   }
+  //   if (!ValidationUtils.isValidWeight(weightController.text.trim())) {
+  //     _showError('Please enter a valid weight');
+  //     return false;
+  //   }
+  //   if (bodyTypeController.text.trim().isEmpty) {
+  //     _showError('Please select your body type');
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
 // AuthController içinde:
   Widget buildPasswordFields() {
@@ -1076,110 +1127,110 @@ By accepting this privacy policy, you declare that you understand and agree to t
     _showError(message);
   }
 
-  bool validateSignupFields() {
-    // Critical field validations
-    Map<String, ValidationRule> validationRules = {
-      'Email': ValidationRule(
-        value: emailController.text,
-        validator: ValidationUtils.isValidEmail,
-        errorMessage: 'Please enter a valid email address',
-      ),
-      'Password': ValidationRule(
-        value: passwordController.text,
-        validator: ValidationUtils.isValidPassword,
-        errorMessage:
-            'Password must be at least 8 characters with uppercase, lowercase, number and special character',
-      ),
-      'Name': ValidationRule(
-        value: nameController.text,
-        validator: (value) => value.length >= 2,
-        errorMessage: 'Name must be at least 2 characters long',
-      ),
-      'Age': ValidationRule(
-        value: ageController.text,
-        validator: ValidationUtils.isValidAge,
-        errorMessage: 'Age must be between 18 and 100',
-      ),
-      'Phone Number': ValidationRule(
-        value: phoneNoController.text,
-        validator: ValidationUtils.isValidPhone,
-        errorMessage: 'Please enter a valid phone number',
-      ),
-      'Height': ValidationRule(
-        value: heightController.text,
-        validator: ValidationUtils.isValidHeight,
-        errorMessage: 'Please enter a valid height',
-      ),
-      'Weight': ValidationRule(
-        value: weightController.text,
-        validator: ValidationUtils.isValidWeight,
-        errorMessage: 'Please enter a valid weight',
-      ),
-    };
+  // bool validateSignupFields() {
+  //   // Critical field validations
+  //   Map<String, ValidationRule> validationRules = {
+  //     'Email': ValidationRule(
+  //       value: emailController.text,
+  //       validator: ValidationUtils.isValidEmail,
+  //       errorMessage: 'Please enter a valid email address',
+  //     ),
+  //     'Password': ValidationRule(
+  //       value: passwordController.text,
+  //       validator: ValidationUtils.isValidPassword,
+  //       errorMessage:
+  //           'Password must be at least 8 characters with uppercase, lowercase, number and special character',
+  //     ),
+  //     'Name': ValidationRule(
+  //       value: nameController.text,
+  //       validator: (value) => value.length >= 2,
+  //       errorMessage: 'Name must be at least 2 characters long',
+  //     ),
+  //     'Age': ValidationRule(
+  //       value: ageController.text,
+  //       validator: ValidationUtils.isValidAge,
+  //       errorMessage: 'Age must be between 18 and 100',
+  //     ),
+  //     'Phone Number': ValidationRule(
+  //       value: phoneNoController.text,
+  //       validator: ValidationUtils.isValidPhone,
+  //       errorMessage: 'Please enter a valid phone number',
+  //     ),
+  //     'Height': ValidationRule(
+  //       value: heightController.text,
+  //       validator: ValidationUtils.isValidHeight,
+  //       errorMessage: 'Please enter a valid height',
+  //     ),
+  //     'Weight': ValidationRule(
+  //       value: weightController.text,
+  //       validator: ValidationUtils.isValidWeight,
+  //       errorMessage: 'Please enter a valid weight',
+  //     ),
+  //   };
 
-    // Required fields that only need presence check
-    Map<String, TextEditingController> requiredFields = {
-      'City': cityController,
-      'Country': countryController,
-      'Profile Heading': profileHeadingController,
-      'Gender': genderController,
-      'Body Type': bodyTypeController,
-      'Drink': drinkController,
-      'Smoke': smokeController,
-      'Marital Status': martialStatusController,
-      'Have Children': haveChildrenController,
-      'Number of Children': noOfChildrenController,
-      'Profession': professionController,
-      'Employment Status': employmentStatusController,
-      'Income': incomeController,
-      'Living Situation': livingSituationController,
-      'Willing to Relocate': willingToRelocateController,
-      'Nationality': nationalityController,
-      'Education': educationController,
-      'Language Spoken': languageSpokenController,
-      'Religion': religionController,
-      'Ethnicity': ethnicityController,
-    };
+  //   // Required fields that only need presence check
+  //   Map<String, TextEditingController> requiredFields = {
+  //     'City': cityController,
+  //     'Country': countryController,
+  //     'Profile Heading': profileHeadingController,
+  //     'Gender': genderController,
+  //     'Body Type': bodyTypeController,
+  //     'Drink': drinkController,
+  //     'Smoke': smokeController,
+  //     'Marital Status': martialStatusController,
+  //     'Have Children': haveChildrenController,
+  //     'Number of Children': noOfChildrenController,
+  //     'Profession': professionController,
+  //     'Employment Status': employmentStatusController,
+  //     'Income': incomeController,
+  //     'Living Situation': livingSituationController,
+  //     'Willing to Relocate': willingToRelocateController,
+  //     'Nationality': nationalityController,
+  //     'Education': educationController,
+  //     'Language Spoken': languageSpokenController,
+  //     'Religion': religionController,
+  //     'Ethnicity': ethnicityController,
+  //   };
 
-    // Validate critical fields
-    for (var entry in validationRules.entries) {
-      if (!entry.value.isValid()) {
-        _showError(entry.value.errorMessage);
-        return false;
-      }
-    }
+  //   // Validate critical fields
+  //   for (var entry in validationRules.entries) {
+  //     if (!entry.value.isValid()) {
+  //       _showError(entry.value.errorMessage);
+  //       return false;
+  //     }
+  //   }
 
-    // Validate required fields
-    for (var entry in requiredFields.entries) {
-      if (entry.value.text.trim().isEmpty) {
-        _showError('Please fill in the ${entry.key} field');
-        return false;
-      }
-    }
+  //   // Validate required fields
+  //   for (var entry in requiredFields.entries) {
+  //     if (entry.value.text.trim().isEmpty) {
+  //       _showError('Please fill in the ${entry.key} field');
+  //       return false;
+  //     }
+  //   }
 
-    // Validate optional URL fields
-    Map<String, TextEditingController> urlFields = {
-      'LinkedIn': linkedInController,
-      'Instagram': instagramController,
-      'GitHub': githubController,
-    };
+  //   // Validate optional URL fields
+  //   Map<String, TextEditingController> urlFields = {
+  //     'LinkedIn': linkedInController,
+  //     'Instagram': instagramController,
+  //     'GitHub': githubController,
+  //   };
 
-    for (var entry in urlFields.entries) {
-      if (entry.value.text.isNotEmpty &&
-          !ValidationUtils.isValidUrl(entry.value.text)) {
-        _showError('Please enter a valid ${entry.key} URL or leave it empty');
-        return false;
-      }
-    }
+  //   for (var entry in urlFields.entries) {
+  //     if (entry.value.text.isNotEmpty &&
+  //         !ValidationUtils.isValidUrl(entry.value.text)) {
+  //       _showError('Please enter a valid ${entry.key} URL or leave it empty');
+  //       return false;
+  //     }
+  //   }
 
-    // Validate terms acceptance
-    if (!termsAccepted.value) {
-      _showError('Please accept the terms and conditions');
-      return false;
-    }
+  //   // Validate terms acceptance
+  //   if (!termsAccepted.value) {
+  //     _showError('Please accept the terms and conditions');
+  //     return false;
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   @override
   void onClose() {

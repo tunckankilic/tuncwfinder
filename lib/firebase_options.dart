@@ -63,7 +63,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '478614026227',
     projectId: 'tuncdating-ac461',
     storageBucket: 'tuncdating-ac461.appspot.com',
-    androidClientId: '478614026227-9jpqttadmm002j80mgghl5qmg69v06ei.apps.googleusercontent.com',
+    androidClientId: '478614026227-2krlukmq3a3ar6ilqed35j29ak575vfs.apps.googleusercontent.com',
     iosClientId: '478614026227-smlink6n5ml74fia9lqrh0js3p7k7mls.apps.googleusercontent.com',
     iosBundleId: 'site.tunckankilic.tuncforwork',
   );
