@@ -86,54 +86,6 @@ class Person {
     this.githubUrl,
   });
 
-  static Person fromDataSnapshot(DocumentSnapshot snapshot) {
-    var dataSnapshot = snapshot.data() as Map<String, dynamic>;
-
-    return Person(
-        //personal info
-        uid: dataSnapshot["uid"],
-        name: dataSnapshot["name"],
-        imageProfile: dataSnapshot["imageProfile"],
-        email: dataSnapshot["email"],
-        password: dataSnapshot["password"],
-        age: dataSnapshot["age"],
-        phoneNo: dataSnapshot["phoneNo"],
-        city: dataSnapshot["city"],
-        country: dataSnapshot["country"],
-        profileHeading: dataSnapshot["profileHeading"],
-        publishedDateTime: dataSnapshot["publishedDateTime"],
-        gender: dataSnapshot["gender"],
-
-        //Appearance
-        height: dataSnapshot["height"],
-        weight: dataSnapshot["weight"],
-        bodyType: dataSnapshot["bodyType"],
-
-        //Life style
-        drink: dataSnapshot["drink"],
-        smoke: dataSnapshot["smoke"],
-        martialStatus: dataSnapshot["martialStatus"],
-        haveChildren: dataSnapshot["haveChildren"],
-        noOfChildren: dataSnapshot["noOfChildren"],
-        profession: dataSnapshot["profession"],
-        employmentStatus: dataSnapshot["employmentStatus"],
-        income: dataSnapshot["income"],
-        livingSituation: dataSnapshot["livingSituation"],
-        willingToRelocate: dataSnapshot["willingToRelocate"],
-
-        //Background - Cultural Values
-        nationality: dataSnapshot["nationality"],
-        education: dataSnapshot["education"],
-        languageSpoken: dataSnapshot["languageSpoken"],
-        religion: dataSnapshot["religion"],
-        ethnicity: dataSnapshot["ethnicity"],
-
-        //Connections
-        linkedInUrl: dataSnapshot["linkedIn"],
-        instagramUrl: dataSnapshot["instagram"],
-        githubUrl: dataSnapshot["github"]);
-  }
-
   Map<String, dynamic> toJson() => {
         //personal info
         "uid": uid,
@@ -173,11 +125,60 @@ class Person {
         "religion": religion,
         "ethnicity": ethnicity,
 
-        //Connections
-        "linkedIn": linkedInUrl,
-        "instagram": instagramUrl,
-        "github": githubUrl,
+        //Connections - Anahtar adları düzeltildi
+        "instagramUrl": instagramUrl, // instagram -> instagramUrl
+        "linkedInUrl": linkedInUrl, // linkedIn -> linkedInUrl
+        "githubUrl": githubUrl, // github -> githubUrl
       };
+
+  static Person fromDataSnapshot(DocumentSnapshot snapshot) {
+    var dataSnapshot = snapshot.data() as Map<String, dynamic>;
+
+    return Person(
+      //personal info
+      uid: dataSnapshot["uid"],
+      imageProfile: dataSnapshot["imageProfile"],
+      email: dataSnapshot["email"],
+      password: dataSnapshot["password"],
+      name: dataSnapshot["name"],
+      age: dataSnapshot["age"],
+      phoneNo: dataSnapshot["phoneNo"],
+      city: dataSnapshot["city"],
+      country: dataSnapshot["country"],
+      profileHeading: dataSnapshot["profileHeading"],
+      publishedDateTime: dataSnapshot["publishedDateTime"],
+      gender: dataSnapshot["gender"],
+
+      //Appearance
+      height: dataSnapshot["height"],
+      weight: dataSnapshot["weight"],
+      bodyType: dataSnapshot["bodyType"],
+
+      //Life style
+      drink: dataSnapshot["drink"],
+      smoke: dataSnapshot["smoke"],
+      martialStatus: dataSnapshot["martialStatus"],
+      haveChildren: dataSnapshot["haveChildren"],
+      noOfChildren: dataSnapshot["noOfChildren"],
+      profession: dataSnapshot["profession"],
+      employmentStatus: dataSnapshot["employmentStatus"],
+      income: dataSnapshot["income"],
+      livingSituation: dataSnapshot["livingSituation"],
+      willingToRelocate: dataSnapshot["willingToRelocate"],
+
+      //Background - Cultural Values
+      nationality: dataSnapshot["nationality"],
+      education: dataSnapshot["education"],
+      languageSpoken: dataSnapshot["languageSpoken"],
+      religion: dataSnapshot["religion"],
+      ethnicity: dataSnapshot["ethnicity"],
+
+      //Connections - Anahtar adları düzeltildi
+      instagramUrl: dataSnapshot["instagramUrl"], // instagram -> instagramUrl
+      linkedInUrl: dataSnapshot["linkedInUrl"], // linkedIn -> linkedInUrl
+      githubUrl: dataSnapshot["githubUrl"], // github -> githubUrl
+    );
+  }
 
   Person copyWith({
     String? uid,

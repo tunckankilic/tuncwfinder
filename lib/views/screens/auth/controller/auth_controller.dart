@@ -73,7 +73,6 @@ class AuthController extends GetxController {
       TextEditingController();
   final TextEditingController religionController = TextEditingController();
   final TextEditingController ethnicityController = TextEditingController();
-
   // Image picker
   Rx<File?> pickedImage = Rx<File?>(null);
 
@@ -82,6 +81,8 @@ class AuthController extends GetxController {
   final relationshipSelection = RxString('Single');
   var radioHaveChildrenController = ''.obs;
   var radioRelationshipStatusController = ''.obs;
+  final passwordError = ''.obs;
+  final confirmPasswordError = ''.obs;
 
   // Options lists
   final childrenOptions = ['Yes', 'No'];
@@ -151,7 +152,6 @@ We reserve the right to modify this Agreement at any time.
 13. Governing Law
 This Agreement is governed by the laws of [Your Jurisdiction].
   ''';
-
   final String privacyPolicy = '''
    TuncForWork Privacy
 TuncWFinder Privacy Policy
@@ -182,7 +182,7 @@ When necessary to protect the rights of the application
 
 4. Data Security
 Appropriate technical and organizational measures are taken to ensure the security of user information. However, please note that transmission methods over the internet or electronic storage are not 100% secure.
-5. Children’s Privacy
+5. Children's Privacy
 The application does not knowingly collect personal information from children under 13 years of age. If you are a parent or guardian and believe that your child has provided us with personal information, please contact us.
 6. Changes to This Policy
 This privacy policy may be updated from time to time. Changes will be posted on this page, and users will be notified in case of significant changes.
@@ -196,6 +196,16 @@ By accepting this privacy policy, you declare that you understand and agree to t
   void onInit() {
     super.onInit();
     pageController = PageController();
+
+    passwordController.addListener(() {
+      if (confirmPasswordController.text.isNotEmpty) {
+        if (passwordController.text != confirmPasswordController.text) {
+          confirmPasswordError.value = 'Passwords do not match';
+        } else {
+          confirmPasswordError.value = '';
+        }
+      }
+    });
   }
 
   @override
@@ -214,17 +224,203 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
   }
 
-  // // Error handling
-  // void _showError(String message) {
-  //   Get.snackbar(
-  //     'Error',
-  //     message,
-  //     snackPosition: SnackPosition.BOTTOM,
-  //     backgroundColor: Colors.red,
-  //     colorText: Colors.white,
-  //     duration: const Duration(seconds: 3),
-  //   );
-  // }
+  Future<void> register() async {
+    try {
+      showProgressBar.value = true;
+
+      if (!validateSignupFields()) {
+        showProgressBar.value = false;
+        return;
+      }
+
+      final UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
+
+      final User? user = userCredential.user;
+      if (user == null) {
+        throw 'User creation failed';
+      }
+
+      String profileImageUrl = '';
+      if (pickedImage.value != null) {
+        profileImageUrl = await _uploadProfilePicture(user.uid);
+      }
+
+      final pM.Person userData = pM.Person(
+        uid: user.uid,
+        imageProfile: profileImageUrl,
+        email: emailController.text.trim(),
+        password: passwordController.text,
+        name: nameController.text.trim(),
+        age: int.tryParse(ageController.text.trim()),
+        phoneNo: phoneNoController.text.trim(),
+        city: cityController.text.trim(),
+        country: countryController.text.trim(),
+        profileHeading: profileHeadingController.text.trim(),
+        publishedDateTime: DateTime.now().millisecondsSinceEpoch,
+        gender: genderController.text.trim(),
+        height: heightController.text.trim(),
+        weight: weightController.text.trim(),
+        bodyType: bodyTypeController.text.trim(),
+        drink: drinkController.text.trim(),
+        smoke: smokeController.text.trim(),
+        martialStatus: martialStatusController.text.trim(),
+        haveChildren: childrenSelection.value,
+        noOfChildren: noOfChildrenController.text.trim(),
+        profession: professionController.text.trim(),
+        employmentStatus: employmentStatusController.text.trim(),
+        income: incomeController.text.trim(),
+        livingSituation: livingSituationController.text.trim(),
+        willingToRelocate: willingToRelocateController.text.trim(),
+        nationality: nationalityController.text.trim(),
+        education: educationController.text.trim(),
+        languageSpoken: languageSpokenController.text.trim(),
+        religion: religionController.text.trim(),
+        ethnicity: ethnicityController.text.trim(),
+        instagramUrl: instagramController.text.trim(),
+        linkedInUrl: linkedInController.text.trim(),
+        githubUrl: githubController.text.trim(),
+      );
+
+      await _firestore.collection('users').doc(user.uid).set(userData.toJson());
+      await user.updateDisplayName(nameController.text.trim());
+      await user.updatePhotoURL(profileImageUrl);
+
+      await _firestore.collection('user_settings').doc(user.uid).set({
+        'emailNotifications': true,
+        'pushNotifications': true,
+        'profileVisibility': 'public',
+        'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+        'accountStatus': 'active',
+        'isVerified': false,
+        'createdAt': DateTime.now().millisecondsSinceEpoch,
+      });
+
+      await Future.wait([
+        _firestore.collection('users/${user.uid}/followers').add({
+          'createdAt': DateTime.now().millisecondsSinceEpoch,
+        }),
+        _firestore.collection('users/${user.uid}/following').add({
+          'createdAt': DateTime.now().millisecondsSinceEpoch,
+        }),
+        _firestore.collection('users/${user.uid}/connections').add({
+          'createdAt': DateTime.now().millisecondsSinceEpoch,
+        }),
+        _firestore.collection('users/${user.uid}/matches').add({
+          'createdAt': DateTime.now().millisecondsSinceEpoch,
+        })
+      ]);
+
+      Get.snackbar(
+        'Success',
+        'Account created successfully!',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green.shade50,
+        colorText: Colors.green.shade900,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(8),
+        borderRadius: 8,
+      );
+
+      clearAllFields();
+
+      Get.offAll(
+        () => const HomeScreen(),
+        binding: HomeBindings(),
+        transition: Transition.fadeIn,
+        duration: const Duration(milliseconds: 500),
+      );
+    } on FirebaseAuthException catch (e) {
+      handleAuthError(e);
+    } catch (e) {
+      _showError('Registration failed: ${e.toString()}');
+      print('Registration error: $e');
+    } finally {
+      showProgressBar.value = false;
+    }
+  }
+
+  void validatePassword(String value) {
+    final strength = PasswordValidator.validatePassword(value);
+
+    if (!strength.isValid) {
+      passwordError.value = 'Lütfen tüm şifre gereksinimlerini karşılayın';
+    } else {
+      passwordError.value = '';
+    }
+  }
+
+  void validateConfirmPassword(String value) {
+    if (value != passwordController.text) {
+      confirmPasswordError.value = 'Şifreler eşleşmiyor';
+    } else {
+      confirmPasswordError.value = '';
+    }
+  }
+
+  bool _validatePersonalInfo() {
+    if (pickedImage.value == null) {
+      _showError('Please select a profile picture');
+      return false;
+    }
+
+    if (nameController.text.trim().isEmpty) {
+      _showError('Name is required');
+      return false;
+    }
+
+    if (!ValidationUtils.isValidEmail(emailController.text.trim())) {
+      _showError('Please enter a valid email address');
+      return false;
+    }
+
+    validatePassword(passwordController.text);
+    if (passwordError.value.isNotEmpty) {
+      _showError(passwordError.value);
+      return false;
+    }
+
+    validateConfirmPassword(confirmPasswordController.text);
+    if (confirmPasswordError.value.isNotEmpty) {
+      _showError(confirmPasswordError.value);
+      return false;
+    }
+
+    if (!ValidationUtils.isValidAge(ageController.text.trim())) {
+      _showError('Please enter a valid age between 18 and 100');
+      return false;
+    }
+
+    if (genderController.text.trim().isEmpty) {
+      _showError('Please select your gender');
+      return false;
+    }
+
+    if (!ValidationUtils.isValidPhone(phoneNoController.text.trim())) {
+      _showError('Please enter a valid phone number');
+      return false;
+    }
+
+    if (countryController.text.trim().isEmpty) {
+      _showError('Please select your country');
+      return false;
+    }
+
+    if (cityController.text.trim().isEmpty) {
+      _showError('City is required');
+      return false;
+    }
+
+    if (profileHeadingController.text.trim().isEmpty) {
+      _showError('Profile heading is required');
+      return false;
+    }
+
+    return true;
+  }
 
   void _showSuccess(String message) {
     Get.snackbar(
@@ -237,7 +433,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
     );
   }
 
-  // Selection updates
   void updateChildrenOption(String value) {
     childrenSelection.value = value;
   }
@@ -254,7 +449,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
     radioRelationshipStatusController.value = value;
   }
 
-  // Terms acceptance
   void updateTermsAcceptance(bool accepted) {
     termsAccepted.value = accepted;
     update();
@@ -270,12 +464,10 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
   }
 
-  // Image picking
   Future<void> pickImage() async {
     try {
       isLoading.value = true;
 
-      // Check permissions
       var status = await Permission.photos.status;
       if (status.isDenied) {
         status = await Permission.photos.request();
@@ -285,7 +477,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
         }
       }
 
-      // Pick image
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 70,
@@ -337,142 +528,321 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
   }
 
-  Future<void> register() async {
+  Future<void> login() async {
+    if (!termsAccepted.value) {
+      Get.snackbar(
+        'Terms Required',
+        'Please accept the terms and conditions to continue',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(8),
+        borderRadius: 8,
+      );
+      return;
+    }
+
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      _showError('Please fill in all fields');
+      return;
+    }
+
+    if (!GetUtils.isEmail(emailController.text)) {
+      _showError('Please enter a valid email address');
+      return;
+    }
+
+    isLoading.value = true;
+
     try {
-      // Step 1: Initial Validation Checks
-      // Check if passwords match
-      if (passwordController.text != confirmPasswordController.text) {
-        _showError('Passwords do not match');
-        return;
-      }
+      await _auth.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
 
-      // Check password format
-      if (!ValidationUtils.isValidPassword(passwordController.text)) {
-        _showError(
-            'Password must be at least 8 characters and contain uppercase, lowercase, number and special character');
-        return;
-      }
-
-      // Step 2: Validate all signup fields
-      if (!validateSignupFields()) {
-        return; // validateSignupFields already shows error messages
-      }
-
-      // Step 3: Terms and Conditions Check
-      if (!termsAccepted.value) {
-        _showError('Please accept the terms and conditions to continue');
-        return;
-      }
-
-      // Step 4: Start Registration Process
-      showProgressBar.value = true;
-
-      try {
-        // Step 5: Create Firebase Auth Account
-        UserCredential userCredential =
-            await _auth.createUserWithEmailAndPassword(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
-        );
-
-        // Step 6: Upload Profile Picture (if selected)
-        String photoUrl = '';
-        if (pickedImage.value != null) {
-          try {
-            photoUrl = await _uploadProfilePicture(userCredential.user!.uid);
-          } catch (e) {
-            print('Error uploading profile picture: $e');
-            // Continue with registration even if image upload fails
-            _showError(
-                'Failed to upload profile picture, but registration will continue');
-          }
-        }
-
-        // Step 7: Create User Model
-        pM.Person newUser = pM.Person(
-          uid: userCredential.user!.uid,
-          imageProfile: photoUrl,
-          email: emailController.text.trim(),
-          password: passwordController
-              .text, // Note: Consider if you really need to store the password
-          name: nameController.text.trim(),
-          age: int.tryParse(ageController.text.trim()) ?? 0,
-          phoneNo: phoneNoController.text.trim(),
-          city: cityController.text.trim(),
-          country: countryController.text.trim(),
-          profileHeading: profileHeadingController.text.trim(),
-          gender: genderController.text.trim(),
-          height: heightController.text.trim(),
-          weight: weightController.text.trim(),
-          bodyType: bodyTypeController.text.trim(),
-          drink: drinkController.text.trim(),
-          smoke: smokeController.text.trim(),
-          martialStatus: martialStatusController.text.trim(),
-          haveChildren: haveChildrenController.text.trim(),
-          noOfChildren: noOfChildrenController.text.trim(),
-          profession: professionController.text.trim(),
-          employmentStatus: employmentStatusController.text.trim(),
-          income: incomeController.text.trim(),
-          livingSituation: livingSituationController.text.trim(),
-          willingToRelocate: willingToRelocateController.text.trim(),
-          nationality: nationalityController.text.trim(),
-          education: educationController.text.trim(),
-          languageSpoken: languageSpokenController.text.trim(),
-          religion: religionController.text.trim(),
-          ethnicity: ethnicityController.text.trim(),
-          linkedInUrl: linkedInController.text.trim(),
-          instagramUrl: instagramController.text.trim(),
-          githubUrl: githubController.text.trim(),
-          publishedDateTime: DateTime.now().millisecondsSinceEpoch,
-        );
-
-        // Step 8: Save User Data to Firestore
-        await _firestore
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .set(newUser.toJson());
-
-        // Step 9: Clear Form and Show Success
-        clearAllFields();
-        _showSuccess('Account created successfully');
-
-        // Step 10: Navigate to Home Screen
-        Get.offAll(() => const HomeScreen());
-      } on FirebaseAuthException catch (e) {
-        // Step 11: Handle Firebase Auth Specific Errors
-        String errorMessage = 'Registration failed';
-
-        switch (e.code) {
-          case 'email-already-in-use':
-            errorMessage = 'An account already exists for this email';
-            break;
-          case 'invalid-email':
-            errorMessage = 'The email address is not valid';
-            break;
-          case 'operation-not-allowed':
-            errorMessage = 'Email/password accounts are not enabled';
-            break;
-          case 'weak-password':
-            errorMessage = 'The password provided is too weak';
-            break;
-          default:
-            errorMessage = e.message ?? 'An unknown error occurred';
-        }
-
-        _showError(errorMessage);
-      }
+      await _handleSuccessfulLogin();
     } catch (error) {
-      // Step 12: Handle General Errors
-      _showError('Registration failed: ${error.toString()}');
+      _handleLoginError(error);
     } finally {
-      // Step 13: Always Reset Loading State
-      showProgressBar.value = false;
+      isLoading.value = false;
     }
   }
 
-// Helper method to clear all form fields
+  Future<void> _handleSuccessfulLogin() async {
+    try {
+      await _updateLastLoginTime();
+      Get.offAll(
+        () => const HomeScreen(),
+        binding: HomeBindings(),
+        transition: Transition.fadeIn,
+        duration: const Duration(milliseconds: 500),
+      );
+    } catch (error) {
+      print('Post-login operation failed: $error');
+      Get.offAll(() => const HomeScreen(), binding: HomeBindings());
+    }
+  }
+
+  Future<void> _updateLastLoginTime() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .update({'lastLoginAt': DateTime.now()});
+      }
+    } catch (error) {
+      print('Failed to update last login time: $error');
+    }
+  }
+
+  void _handleLoginError(dynamic error) {
+    String message = 'An error occurred while signing in';
+
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'user-not-found':
+          message = 'No account found with this email';
+          break;
+        case 'wrong-password':
+          message = 'Incorrect password';
+          break;
+        case 'user-disabled':
+          message = 'This account has been disabled';
+          break;
+        case 'too-many-requests':
+          message = 'Too many attempts. Please try again later';
+          break;
+        case 'invalid-email':
+          message = 'Please enter a valid email address';
+          break;
+        case 'network-request-failed':
+          message = 'Please check your internet connection';
+          break;
+        default:
+          message = 'Authentication failed. Please try again';
+      }
+    }
+
+    _showError(message);
+  }
+
+  Future<void> logout() async {
+    try {
+      await _auth.signOut();
+      Get.offAll(() => const LoginScreen());
+    } catch (error) {
+      _showError('Failed to log out: ${error.toString()}');
+    }
+  }
+
+  Future<void> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      _showSuccess('Password reset email sent');
+    } catch (error) {
+      _showError(error.toString());
+    }
+  }
+
+  Future<void> signInWithGoogle() async {
+    try {
+      isLoading.value = true;
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await _handleSignIn(() => _auth.signInWithCredential(credential));
+    } on FirebaseAuthException catch (e) {
+      await handleSignInError(e);
+    } catch (e) {
+      _showError('Failed to sign in with Google: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> fpSend() async {
+    isLoading.value = true;
+    try {
+      await _auth.sendPasswordResetEmail(
+        email: emailController.text,
+      );
+      Get.offAll(() => const LoginScreen(), binding: AuthBindings());
+    } catch (error) {
+      Get.snackbar('Error', error.toString());
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> signInWithApple() async {
+    try {
+      isLoading.value = true;
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      final oauthCredential = OAuthProvider("apple.com").credential(
+        idToken: credential.identityToken,
+        accessToken: credential.authorizationCode,
+      );
+
+      await _handleSignIn(() => _auth.signInWithCredential(oauthCredential));
+    } on SignInWithAppleAuthorizationException catch (e) {
+      _showError('Apple sign in failed: ${e.message}');
+    } on FirebaseAuthException catch (e) {
+      await handleSignInError(e);
+    } catch (e) {
+      _showError('Failed to sign in with Apple: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> _handleSignIn(
+      Future<UserCredential> Function() signInMethod) async {
+    try {
+      final userCredential = await signInMethod();
+      final user = userCredential.user!;
+      final isRegistered = await isUserRegistered(user.uid);
+      if (isRegistered) {
+        Get.offAllNamed('/home');
+      } else {
+        await _prefillUserData(user);
+        Get.toNamed('/register');
+      }
+    } on FirebaseAuthException catch (e) {
+      await handleSignInError(e);
+    } catch (e) {
+      _showError('Sign in failed: $e');
+    }
+  }
+
+  Future<bool> isUserRegistered(String uid) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(uid).get();
+      return userDoc.exists;
+    } catch (e) {
+      _showError('Failed to check user registration: $e');
+      return false;
+    }
+  }
+
+  Future<void> handleSignInError(FirebaseAuthException e) async {
+    switch (e.code) {
+      case 'account-exists-with-different-credential':
+        List<String> providers =
+            await _auth.fetchSignInMethodsForEmail(e.email!);
+        String providerName = _getProviderName(providers.first);
+        _showError(
+            'An account already exists with the same email address but different sign-in credentials. '
+            'Sign in using $providerName.');
+        break;
+      case 'invalid-credential':
+        _showError('The credential is malformed or has expired.');
+        break;
+      case 'user-disabled':
+        _showError('This user account has been disabled.');
+        break;
+      case 'user-not-found':
+        _showError('No user found for that email.');
+        break;
+      case 'wrong-password':
+        _showError('Wrong password provided for that user.');
+        break;
+      default:
+        _showError('An undefined error occurred: ${e.message}');
+    }
+  }
+
+  String _getProviderName(String providerId) {
+    switch (providerId) {
+      case 'google.com':
+        return 'Google';
+      case 'facebook.com':
+        return 'Facebook';
+      case 'apple.com':
+        return 'Apple';
+      case 'password':
+        return 'Email/Password';
+      default:
+        return 'Unknown Provider';
+    }
+  }
+
+  Future<void> _prefillUserData(User user) async {
+    emailController.text = user.email ?? '';
+    nameController.text = user.displayName ?? '';
+    phoneNoController.text = user.phoneNumber ?? '';
+
+    if (user.photoURL != null) {
+      try {
+        final response = await http.get(Uri.parse(user.photoURL!));
+        final bytes = response.bodyBytes;
+        final temp = await File(
+                '${(await getTemporaryDirectory()).path}/temp_profile.jpg')
+            .create();
+        await temp.writeAsBytes(bytes);
+        pickedImage.value = temp;
+      } catch (e) {
+        print('Error downloading profile picture: $e');
+      }
+    }
+
+    profileHeadingController.text = 'Hey there! I\'m new here.';
+    termsAccepted.value = false;
+
+    try {
+      DocumentSnapshot doc =
+          await _firestore.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        cityController.text = data['city'] ?? '';
+        countryController.text = data['country'] ?? '';
+        ageController.text = data['age']?.toString() ?? '';
+        genderController.text = data['gender'] ?? '';
+      }
+    } catch (e) {
+      print('Error fetching user data from Firestore: $e');
+    }
+  }
+
+  void _showError(String message) {
+    Get.snackbar(
+      'Error',
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  }
+
+  Future<String> _uploadProfilePicture(String uid) async {
+    try {
+      final ref = _storage.ref().child(
+          'user_images/$uid/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final uploadTask = await ref.putFile(pickedImage.value!);
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print('Error in _uploadProfilePicture: $e');
+      throw 'Failed to upload profile picture';
+    }
+  }
+
   void clearAllFields() {
-    // Form Controllers
     emailController.clear();
     passwordController.clear();
     confirmPasswordController.clear();
@@ -505,7 +875,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
     religionController.clear();
     ethnicityController.clear();
 
-    // Observable Variables
     childrenSelection.value = 'No';
     relationshipSelection.value = 'Single';
     radioHaveChildrenController.value = '';
@@ -513,59 +882,40 @@ By accepting this privacy policy, you declare that you understand and agree to t
     termsAccepted.value = false;
     pickedImage.value = null;
 
-    // Reset Page
     currentPage.value = 0;
     pageController.jumpToPage(0);
   }
 
-  // Validate Personal Info Page (Page 0)
-  bool _validatePersonalInfo() {
-    if (pickedImage.value == null) {
-      _showError('Please select a profile picture');
-      return false;
+  void nextPage() {
+    bool canProceed = false;
+
+    // Validate current page before proceeding
+    switch (currentPage.value) {
+      case 0:
+        canProceed = _validatePersonalInfo();
+        break;
+      case 1:
+        canProceed = _validateAppearance();
+        break;
+      case 2:
+        canProceed = _validateLifestyle();
+        break;
+      case 3:
+        canProceed = _validateBackground();
+        break;
+
+      default:
+        canProceed = true;
     }
-    if (nameController.text.trim().isEmpty) {
-      _showError('Name is required');
-      return false;
+
+    // Only proceed if validation passes
+    if (canProceed && currentPage.value < 4) {
+      pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      currentPage.value++;
     }
-    if (!ValidationUtils.isValidEmail(emailController.text.trim())) {
-      _showError('Please enter a valid email');
-      return false;
-    }
-    if (!ValidationUtils.isValidPassword(passwordController.text)) {
-      _showError(
-          'Password must be at least 8 characters with uppercase, lowercase, number and special character');
-      return false;
-    }
-    if (passwordController.text != confirmPasswordController.text) {
-      _showError('Passwords do not match');
-      return false;
-    }
-    if (!ValidationUtils.isValidAge(ageController.text.trim())) {
-      _showError('Please enter a valid age between 18 and 100');
-      return false;
-    }
-    if (genderController.text.trim().isEmpty) {
-      _showError('Please select your gender');
-      return false;
-    }
-    if (!ValidationUtils.isValidPhone(phoneNoController.text.trim())) {
-      _showError('Please enter a valid phone number');
-      return false;
-    }
-    if (countryController.text.trim().isEmpty) {
-      _showError('Please select your country');
-      return false;
-    }
-    if (cityController.text.trim().isEmpty) {
-      _showError('City is required');
-      return false;
-    }
-    if (profileHeadingController.text.trim().isEmpty) {
-      _showError('Profile heading is required');
-      return false;
-    }
-    return true;
   }
 
   // Validate Appearance Page (Page 1)
@@ -583,6 +933,30 @@ By accepting this privacy policy, you declare that you understand and agree to t
       return false;
     }
     return true;
+  }
+
+// AuthController içinde:
+  Widget buildPasswordFields() {
+    return Column(
+      children: [
+        PasswordInputField(
+          controller: passwordController,
+          label: 'Şifre',
+          onChanged: (value) {
+            validatePassword(value);
+          },
+        ),
+        const SizedBox(height: 16),
+        PasswordInputField(
+          controller: confirmPasswordController,
+          label: 'Şifre Tekrar',
+          isConfirmField: true,
+          onChanged: (value) {
+            validateConfirmPassword(value);
+          },
+        ),
+      ],
+    );
   }
 
   // Validate Lifestyle Page (Page 2)
@@ -656,300 +1030,52 @@ By accepting this privacy policy, you declare that you understand and agree to t
     return true;
   }
 
-  // Validate Connections Page (Page 4)
-  bool _validateConnections() {
-    // LinkedIn, Instagram, and GitHub URLs are optional but must be valid if provided
-    if (linkedInController.text.isNotEmpty &&
-        !ValidationUtils.isValidUrl(linkedInController.text)) {
-      _showError('Please enter a valid LinkedIn URL');
-      return false;
-    }
-    if (instagramController.text.isNotEmpty &&
-        !ValidationUtils.isValidUrl(instagramController.text)) {
-      _showError('Please enter a valid Instagram URL');
-      return false;
-    }
-    if (githubController.text.isNotEmpty &&
-        !ValidationUtils.isValidUrl(githubController.text)) {
-      _showError('Please enter a valid GitHub URL');
-      return false;
-    }
-    if (!termsAccepted.value) {
-      _showError('Please accept the terms and conditions');
-      return false;
-    }
-    return true;
-  }
+  // // Validate Connections Page (Page 4)
+  // bool _validateConnections() {
+  //   // LinkedIn, Instagram, and GitHub URLs are optional but must be valid if provided
+  //   if (linkedInController.text.isNotEmpty &&
+  //       !ValidationUtils.isValidUrl(linkedInController.text)) {
+  //     _showError('Please enter a valid LinkedIn URL');
+  //     return false;
+  //   }
+  //   if (instagramController.text.isNotEmpty &&
+  //       !ValidationUtils.isValidUrl(instagramController.text)) {
+  //     _showError('Please enter a valid Instagram URL');
+  //     return false;
+  //   }
+  //   if (githubController.text.isNotEmpty &&
+  //       !ValidationUtils.isValidUrl(githubController.text)) {
+  //     _showError('Please enter a valid GitHub URL');
+  //     return false;
+  //   }
+  //   if (!termsAccepted.value) {
+  //     _showError('Please accept the terms and conditions');
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
-  // Updated nextPage method with validation
-  void nextPage() {
-    bool canProceed = false;
-
-    // Validate current page before proceeding
-    switch (currentPage.value) {
-      case 0:
-        canProceed = _validatePersonalInfo();
+  void handleAuthError(FirebaseAuthException e) {
+    String message;
+    switch (e.code) {
+      case 'email-already-in-use':
+        message = 'This email is already registered';
         break;
-      case 1:
-        canProceed = _validateAppearance();
+      case 'invalid-email':
+        message = 'Invalid email address';
         break;
-      case 2:
-        canProceed = _validateLifestyle();
+      case 'operation-not-allowed':
+        message = 'Email/password registration is disabled';
         break;
-      case 3:
-        canProceed = _validateBackground();
-        break;
-      case 4:
-        canProceed = _validateConnections();
+      case 'weak-password':
+        message = 'Password is too weak';
         break;
       default:
-        canProceed = true;
+        message = e.message ?? 'An error occurred';
     }
-
-    // Only proceed if validation passes
-    if (canProceed && currentPage.value < 4) {
-      pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-      currentPage.value++;
-    }
-  }
-
-  Future<void> login() async {
-    // Terms and conditions kontrolü
-    if (!termsAccepted.value) {
-      Get.snackbar(
-        'Terms Required',
-        'Please accept the terms and conditions to continue',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade50,
-        colorText: Colors.red.shade900,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(8),
-        borderRadius: 8,
-      );
-      return;
-    }
-
-    // Validation checks
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      _showError('Please fill in all fields');
-      return;
-    }
-
-    if (!GetUtils.isEmail(emailController.text)) {
-      _showError('Please enter a valid email address');
-      return;
-    }
-
-    isLoading.value = true;
-
-    try {
-      await _auth.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text,
-      );
-
-      // Başarılı login sonrası
-      await _handleSuccessfulLogin();
-    } catch (error) {
-      _handleLoginError(error);
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-// Başarılı login işlemleri
-  Future<void> _handleSuccessfulLogin() async {
-    try {
-      // Son giriş tarihini güncelle
-      await _updateLastLoginTime();
-
-      // Ana sayfaya yönlendir
-      Get.offAll(
-        () => const HomeScreen(),
-        binding: HomeBindings(),
-        transition: Transition.fadeIn,
-        duration: const Duration(milliseconds: 500),
-      );
-    } catch (error) {
-      print('Post-login operation failed: $error');
-      // Ana sayfaya yine de yönlendir
-      Get.offAll(() => const HomeScreen(), binding: HomeBindings());
-    }
-  }
-
-// Son giriş zamanını güncelle
-  Future<void> _updateLastLoginTime() async {
-    try {
-      final user = _auth.currentUser;
-      if (user != null) {
-        await _firestore
-            .collection('users')
-            .doc(user.uid)
-            .update({'lastLoginAt': DateTime.now()});
-      }
-    } catch (error) {
-      print('Failed to update last login time: $error');
-    }
-  }
-
-// Login hatalarını handle et
-  void _handleLoginError(dynamic error) {
-    String message = 'An error occurred while signing in';
-
-    if (error is FirebaseAuthException) {
-      switch (error.code) {
-        case 'user-not-found':
-          message = 'No account found with this email';
-          break;
-        case 'wrong-password':
-          message = 'Incorrect password';
-          break;
-        case 'user-disabled':
-          message = 'This account has been disabled';
-          break;
-        case 'too-many-requests':
-          message = 'Too many attempts. Please try again later';
-          break;
-        case 'invalid-email':
-          message = 'Please enter a valid email address';
-          break;
-        case 'network-request-failed':
-          message = 'Please check your internet connection';
-          break;
-        default:
-          message = 'Authentication failed. Please try again';
-      }
-    }
-
     _showError(message);
   }
 
-// Hata gösterme
-  void _showError(String message) {
-    Get.snackbar(
-      'Error',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red.shade50,
-      colorText: Colors.red.shade900,
-      icon: const Icon(
-        Icons.error_outline,
-        color: Colors.red,
-      ),
-      duration: const Duration(seconds: 3),
-      margin: const EdgeInsets.all(8),
-      borderRadius: 8,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-      forwardAnimationCurve: Curves.easeOutBack,
-    );
-  }
-
-// Başarılı login mesajı (isteğe bağlı)
-  void _showSuccessMessage() {
-    Get.snackbar(
-      'Welcome',
-      'Successfully signed in',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.green.shade50,
-      colorText: Colors.green.shade900,
-      icon: const Icon(
-        Icons.check_circle_outline,
-        color: Colors.green,
-      ),
-      duration: const Duration(seconds: 2),
-      margin: const EdgeInsets.all(8),
-      borderRadius: 8,
-    );
-  }
-
-  Future<void> logout() async {
-    try {
-      await _auth.signOut();
-      Get.offAll(() => const LoginScreen());
-    } catch (error) {
-      _showError('Failed to log out: ${error.toString()}');
-    }
-  }
-
-  Future<void> resetPassword(String email) async {
-    try {
-      await _auth.sendPasswordResetEmail(email: email);
-      _showSuccess('Password reset email sent');
-    } catch (error) {
-      _showError(error.toString());
-    }
-  }
-
-  // Social sign-in methods
-  Future<void> signInWithGoogle() async {
-    try {
-      isLoading.value = true;
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return;
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      await _handleSignIn(() => _auth.signInWithCredential(credential));
-    } on FirebaseAuthException catch (e) {
-      await handleSignInError(e);
-    } catch (e) {
-      _showError('Failed to sign in with Google: $e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  Future<void> fpSend() async {
-    isLoading.value = true;
-    try {
-      await _auth.sendPasswordResetEmail(
-        email: emailController.text,
-      );
-      Get.offAll(() => const LoginScreen(), binding: AuthBindings());
-    } catch (error) {
-      Get.snackbar('Error', error.toString());
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  Future<void> signInWithApple() async {
-    try {
-      isLoading.value = true;
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-
-      final oauthCredential = OAuthProvider("apple.com").credential(
-        idToken: credential.identityToken,
-        accessToken: credential.authorizationCode,
-      );
-
-      await _handleSignIn(() => _auth.signInWithCredential(oauthCredential));
-    } on SignInWithAppleAuthorizationException catch (e) {
-      _showError('Apple sign in failed: ${e.message}');
-    } on FirebaseAuthException catch (e) {
-      await handleSignInError(e);
-    } catch (e) {
-      _showError('Failed to sign in with Apple: $e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  // Validation methods
   bool validateSignupFields() {
     // Critical field validations
     Map<String, ValidationRule> validationRules = {
@@ -1055,136 +1181,8 @@ By accepting this privacy policy, you declare that you understand and agree to t
     return true;
   }
 
-  Future<void> _handleSignIn(
-      Future<UserCredential> Function() signInMethod) async {
-    try {
-      final userCredential = await signInMethod();
-      final user = userCredential.user!;
-      final isRegistered = await isUserRegistered(user.uid);
-      if (isRegistered) {
-        Get.offAllNamed('/home');
-      } else {
-        await _prefillUserData(user);
-        Get.toNamed('/register');
-      }
-    } on FirebaseAuthException catch (e) {
-      await handleSignInError(e);
-    } catch (e) {
-      _showError('Sign in failed: $e');
-    }
-  }
-
-  Future<bool> isUserRegistered(String uid) async {
-    try {
-      final userDoc = await _firestore.collection('users').doc(uid).get();
-      return userDoc.exists;
-    } catch (e) {
-      _showError('Failed to check user registration: $e');
-      return false;
-    }
-  }
-
-  Future<void> handleSignInError(FirebaseAuthException e) async {
-    switch (e.code) {
-      case 'account-exists-with-different-credential':
-        List<String> providers =
-            await _auth.fetchSignInMethodsForEmail(e.email!);
-        String providerName = _getProviderName(providers.first);
-        _showError(
-            'An account already exists with the same email address but different sign-in credentials. '
-            'Sign in using $providerName.');
-        break;
-      case 'invalid-credential':
-        _showError('The credential is malformed or has expired.');
-        break;
-      case 'user-disabled':
-        _showError('This user account has been disabled.');
-        break;
-      case 'user-not-found':
-        _showError('No user found for that email.');
-        break;
-      case 'wrong-password':
-        _showError('Wrong password provided for that user.');
-        break;
-      default:
-        _showError('An undefined error occurred: ${e.message}');
-    }
-  }
-
-  String _getProviderName(String providerId) {
-    switch (providerId) {
-      case 'google.com':
-        return 'Google';
-      case 'facebook.com':
-        return 'Facebook';
-      case 'apple.com':
-        return 'Apple';
-      case 'password':
-        return 'Email/Password';
-      default:
-        return 'Unknown Provider';
-    }
-  }
-
-  Future<String> _uploadProfilePicture(String uid) async {
-    if (pickedImage.value == null) return '';
-
-    try {
-      Reference ref = _storage.ref().child('profile_pictures').child(uid);
-      await ref.putFile(pickedImage.value!);
-      return await ref.getDownloadURL();
-    } catch (e) {
-      print('Error uploading profile picture: $e');
-      _showError('Failed to upload profile picture. Using default image.');
-      return '';
-    }
-  }
-
-  Future<void> _prefillUserData(User user) async {
-    // Basic information
-    emailController.text = user.email ?? '';
-    nameController.text = user.displayName ?? '';
-    phoneNoController.text = user.phoneNumber ?? '';
-
-    // Profile picture
-    if (user.photoURL != null) {
-      try {
-        final response = await http.get(Uri.parse(user.photoURL!));
-        final bytes = response.bodyBytes;
-        final temp = await File(
-                '${(await getTemporaryDirectory()).path}/temp_profile.jpg')
-            .create();
-        await temp.writeAsBytes(bytes);
-        pickedImage.value = temp;
-      } catch (e) {
-        print('Error downloading profile picture: $e');
-      }
-    }
-
-    // Default values for other fields
-    profileHeadingController.text = 'Hey there! I\'m new here.';
-    termsAccepted.value = false;
-
-    // Try to get additional data from Firestore if exists
-    try {
-      DocumentSnapshot doc =
-          await _firestore.collection('users').doc(user.uid).get();
-      if (doc.exists) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        cityController.text = data['city'] ?? '';
-        countryController.text = data['country'] ?? '';
-        ageController.text = data['age']?.toString() ?? '';
-        genderController.text = data['gender'] ?? '';
-        // Add other fields as needed
-      }
-    } catch (e) {
-      print('Error fetching user data from Firestore: $e');
-    }
-  }
-
   @override
   void onClose() {
-    // Dispose all controllers
     pageController.dispose();
     confirmPasswordController.dispose();
     emailController.dispose();

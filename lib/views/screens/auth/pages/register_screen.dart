@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/service/validation.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 
 class RegistrationScreen extends GetView<AuthController> {
@@ -244,15 +245,61 @@ class RegistrationScreen extends GetView<AuthController> {
     IconData icon,
     bool isTablet,
   ) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
-      child: TextField(
-        controller: textedit,
-        obscureText: controller.obsPass.value,
-        style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
-        decoration: _getInputDecoration(label, icon, isTablet, true),
-      ),
-    );
+    return Obx(() => Padding(
+          padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
+          child: Stack(
+            children: [
+              TextField(
+                controller: textedit,
+                obscureText: controller.obsPass.value,
+                style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
+                onChanged: (value) {
+                  if (textedit == controller.passwordController) {
+                    controller.validatePassword(value);
+                  } else {
+                    controller.validateConfirmPassword(value);
+                  }
+                },
+                decoration:
+                    _getInputDecoration(label, icon, isTablet, true).copyWith(
+                  errorText: textedit == controller.passwordController
+                      ? controller.passwordError.value
+                      : controller.confirmPasswordError.value,
+                  errorStyle: TextStyle(
+                    color: Colors.transparent, // Hata metnini gizle
+                    fontSize: 0,
+                  ),
+                ),
+              ),
+              if ((textedit == controller.passwordController &&
+                      controller.passwordError.value.isNotEmpty) ||
+                  (textedit == controller.confirmPasswordController &&
+                      controller.confirmPasswordError.value.isNotEmpty))
+                Positioned(
+                  bottom: -8,
+                  left: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.shade200),
+                    ),
+                    child: Text(
+                      textedit == controller.passwordController
+                          ? controller.passwordError.value
+                          : controller.confirmPasswordError.value,
+                      style: TextStyle(
+                        color: Colors.red.shade900,
+                        fontSize: isTablet ? 12.0 : 10.0,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ));
   }
 
   Widget _buildDropdown(
@@ -272,7 +319,7 @@ class RegistrationScreen extends GetView<AuthController> {
             value: value,
             child: Text(
               value,
-              style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
+              style: TextStyle(fontSize: isTablet ? 15.0 : 13.0),
             ),
           );
         }).toList(),
@@ -368,47 +415,6 @@ class RegistrationScreen extends GetView<AuthController> {
               ),
               SizedBox(height: isTablet ? 30.0 : 20.0),
               _buildTermsAndConditions(isTablet),
-              SizedBox(height: isTablet ? 30.0 : 20.0),
-              SizedBox(
-                width: double.infinity,
-                height: isTablet ? 60.0 : 50.0,
-                child: Obx(() => ElevatedButton(
-                      onPressed: controller.showProgressBar.value
-                          ? null
-                          : () async {
-                              if (!controller.termsAccepted.value) {
-                                Get.snackbar(
-                                  'Error',
-                                  'Please accept the terms and conditions',
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  backgroundColor: Colors.red,
-                                  colorText: Colors.white,
-                                );
-                                return;
-                              }
-                              await controller.register();
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ElegantTheme.primaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(isTablet ? 12.0 : 8.0),
-                        ),
-                      ),
-                      child: controller.showProgressBar.value
-                          ? CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 3,
-                            )
-                          : Text(
-                              'Create Account',
-                              style: TextStyle(
-                                fontSize: isTablet ? 20.0 : 16.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    )),
-              ),
             ],
           ),
         ),
@@ -1095,6 +1101,90 @@ class RegistrationScreen extends GetView<AuthController> {
         ),
         child: content,
       ),
+    );
+  }
+}
+
+class PasswordInputField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final bool isConfirmField;
+  final Function(String) onChanged;
+
+  const PasswordInputField({
+    Key? key,
+    required this.controller,
+    required this.label,
+    this.isConfirmField = false,
+    required this.onChanged,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Obx(() {
+          final strength = !isConfirmField
+              ? PasswordValidator.validatePassword(controller.text)
+              : null;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: controller,
+                obscureText: true,
+                onChanged: onChanged,
+                decoration: InputDecoration(
+                  labelText: label,
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.visibility_outlined),
+                    onPressed: () {
+                      // Toggle password visibility
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              if (!isConfirmField && controller.text.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: strength!.score / 100,
+                  backgroundColor: Colors.grey[200],
+                  valueColor: AlwaysStoppedAnimation<Color>(strength.color),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: strength.requirements.map((req) {
+                    return Chip(
+                      avatar: Icon(
+                        req.isMet ? Icons.check : Icons.close,
+                        color: req.isMet ? Colors.green : Colors.red,
+                        size: 16,
+                      ),
+                      label: Text(
+                        req.description,
+                        style: TextStyle(
+                          color: req.isMet ? Colors.green : Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                      backgroundColor: req.isMet
+                          ? Colors.green.withOpacity(0.1)
+                          : Colors.red.withOpacity(0.1),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ],
+          );
+        }),
+      ],
     );
   }
 }

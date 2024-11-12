@@ -41,10 +41,15 @@ class SwipeController extends GetxController {
   @override
   void onInit() {
     currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    super.onInit();
-    readCurrentUserData();
-    ageRange();
-    getResults();
+    if (currentUserId.isNotEmpty) {
+      super.onInit();
+      readCurrentUserData();
+      ageRange();
+      getResults();
+    } else {
+      print("No user is currently signed in");
+      // Kullanıcı girişi olmadığında yapılacak işlemler
+    }
   }
 
   void readCurrentUserData() async {
