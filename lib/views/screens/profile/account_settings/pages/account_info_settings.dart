@@ -4,7 +4,36 @@ import 'package:tuncforwork/views/screens/profile/account_settings/account_setti
 import 'dart:io';
 
 class ProfileInfoScreen extends GetView<AccountSettingsController> {
-  const ProfileInfoScreen({super.key});
+  ProfileInfoScreen({super.key});
+
+  final ScrollController _scrollController = ScrollController();
+  final Map<String, GlobalKey> _sectionKeys = {
+    'personal': GlobalKey(),
+    'appearance': GlobalKey(),
+    'lifestyle': GlobalKey(),
+    'background': GlobalKey(),
+    'connections': GlobalKey(),
+  };
+
+  void _scrollToSection(String sectionName, BuildContext context) {
+    controller.currentSection.value = sectionName;
+
+    if (_sectionKeys[sectionName]?.currentContext != null) {
+      final RenderBox box = _sectionKeys[sectionName]!
+          .currentContext!
+          .findRenderObject() as RenderBox;
+      final offset = box.localToGlobal(Offset.zero);
+
+      final scrollPosition = (offset.dy + _scrollController.offset) -
+          (kToolbarHeight + MediaQuery.of(context).padding.top + 20);
+
+      _scrollController.animateTo(
+        scrollPosition,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,23 +48,142 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
     );
   }
 
+  Widget _buildTabletLayout(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = screenWidth * 0.1;
+
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Row(
+        children: [
+          // Left Navigation Panel
+          Container(
+            width: 280,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: _buildNavigationPanel(context),
+          ),
+          // Main Content Area
+          Expanded(
+            child: SingleChildScrollView(
+              controller: _scrollController, // ScrollController eklendi
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: 24.0,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildProfileImageSection(context, true),
+                    _buildTabletFormLayout(context),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection({
+    required BuildContext context,
+    required String title,
+    required bool isTablet,
+    required Widget child,
+  }) {
+    // Title'ı key formatına çevir
+    final sectionKey = title
+        .toLowerCase()
+        .replaceAll(' info', '')
+        .replaceAll(' links', 'connections');
+
+    return Container(
+      key: _sectionKeys[sectionKey], // Section key eklendi
+      margin: EdgeInsets.only(bottom: isTablet ? 32.0 : 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.grey[200]!,
+                  width: 1.0,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Theme.of(context).primaryColor,
+                        fontSize: isTablet ? 24.0 : 20.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.edit_outlined,
+                  color: Theme.of(context).primaryColor,
+                  size: isTablet ? 24.0 : 20.0,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16.0),
+          child,
+        ],
+      ),
+    );
+  }
+
   PreferredSizeWidget _buildAppBar(BuildContext context, bool isTablet) {
     final double toolbarHeight = isTablet ? 70.0 : kToolbarHeight;
 
     return AppBar(
-      backgroundColor: ElegantTheme.primaryColor,
+      backgroundColor: Theme.of(context).primaryColor,
+      elevation: 0,
       toolbarHeight: toolbarHeight,
+      centerTitle: true,
       title: Text(
         "Edit Profile Info",
         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: Colors.white,
               fontSize: isTablet ? 24.0 : 20.0,
+              fontWeight: FontWeight.bold,
             ),
       ),
       leading: IconButton(
         icon: Icon(
           Platform.isIOS ? Icons.arrow_back_ios : Icons.arrow_back,
           size: isTablet ? 28.0 : 24.0,
+          color: Colors.white,
         ),
         onPressed: () => Navigator.of(context).pop(),
       ),
@@ -49,47 +197,96 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
     return _buildPhoneLayout(context);
   }
 
-  Widget _buildTabletLayout(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final horizontalPadding = screenWidth * 0.1; // 10% padding on each side
+  // Widget _buildTabletLayout(BuildContext context) {
+  //   final screenWidth = MediaQuery.of(context).size.width;
+  //   final horizontalPadding = screenWidth * 0.1;
 
-    return Row(
-      children: [
-        // Left Navigation Panel
-        SizedBox(
-          width: 280,
-          child: _buildNavigationPanel(context),
-        ),
-        // Main Content Area
-        Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: horizontalPadding,
-              vertical: 24.0,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildProfileImageSection(context, true),
-                _buildTabletFormLayout(context),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  //   return Container(
+  //     color: Theme.of(context).scaffoldBackgroundColor,
+  //     child: Row(
+  //       children: [
+  //         // Left Navigation Panel
+  //         Container(
+  //           width: 280,
+  //           decoration: BoxDecoration(
+  //             color: Colors.white,
+  //             boxShadow: [
+  //               BoxShadow(
+  //                 color: Colors.grey.withOpacity(0.1),
+  //                 spreadRadius: 1,
+  //                 blurRadius: 10,
+  //                 offset: const Offset(0, 3),
+  //               ),
+  //             ],
+  //           ),
+  //           child: _buildNavigationPanel(context),
+  //         ),
+  //         // Main Content Area
+  //         Expanded(
+  //           child: SingleChildScrollView(
+  //             padding: EdgeInsets.symmetric(
+  //               horizontal: horizontalPadding,
+  //               vertical: 24.0,
+  //             ),
+  //             child: Container(
+  //               decoration: BoxDecoration(
+  //                 color: Colors.white,
+  //                 borderRadius: BorderRadius.circular(16.0),
+  //                 boxShadow: [
+  //                   BoxShadow(
+  //                     color: Colors.grey.withOpacity(0.1),
+  //                     spreadRadius: 1,
+  //                     blurRadius: 10,
+  //                     offset: const Offset(0, 3),
+  //                   ),
+  //                 ],
+  //               ),
+  //               padding: const EdgeInsets.all(24.0),
+  //               child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   _buildProfileImageSection(context, true),
+  //                   _buildTabletFormLayout(context),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildPhoneLayout(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildProfileImageSection(context, false),
-            const SizedBox(height: 24.0),
-            _buildPhoneFormLayout(context),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              margin: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProfileImageSection(context, false),
+                  const SizedBox(height: 24.0),
+                  _buildPhoneFormLayout(context),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -98,45 +295,56 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
 
   Widget _buildNavigationPanel(BuildContext context) {
     return Container(
-      color: ElegantTheme.primaryColor.withOpacity(0.05),
       padding: const EdgeInsets.symmetric(vertical: 24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+            child: Text(
+              "Profile Sections",
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
+          const SizedBox(height: 8.0),
           _buildNavItem(
             context: context,
-            icon: Icons.person,
+            icon: Icons.person_outline_rounded,
             title: "Personal Info",
             isSelected: controller.currentSection.value == "personal",
-            onTap: () => _scrollToSection("personal"),
+            onTap: () => _scrollToSection("personal", context),
           ),
           _buildNavItem(
             context: context,
-            icon: Icons.face,
+            icon: Icons.face_outlined,
             title: "Appearance",
             isSelected: controller.currentSection.value == "appearance",
-            onTap: () => _scrollToSection("appearance"),
+            onTap: () => _scrollToSection("appearance", context),
           ),
           _buildNavItem(
             context: context,
-            icon: Icons.health_and_safety,
+            icon: Icons.favorite_border_rounded,
             title: "Lifestyle",
             isSelected: controller.currentSection.value == "lifestyle",
-            onTap: () => _scrollToSection("lifestyle"),
+            onTap: () => _scrollToSection("lifestyle", context),
           ),
           _buildNavItem(
             context: context,
-            icon: Icons.history_edu,
+            icon: Icons.school_outlined,
             title: "Background",
             isSelected: controller.currentSection.value == "background",
-            onTap: () => _scrollToSection("background"),
+            onTap: () => _scrollToSection("background", context),
           ),
           _buildNavItem(
             context: context,
-            icon: Icons.connect_without_contact,
-            title: "Connections",
+            icon: Icons.share_outlined,
+            title: "Social Links",
             isSelected: controller.currentSection.value == "connections",
-            onTap: () => _scrollToSection("connections"),
+            onTap: () => _scrollToSection("connections", context),
           ),
         ],
       ),
@@ -159,12 +367,13 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? ElegantTheme.primaryColor.withOpacity(0.1)
+              ? Theme.of(context).primaryColor.withOpacity(0.1)
               : Colors.transparent,
           border: Border(
             left: BorderSide(
-              color:
-                  isSelected ? ElegantTheme.primaryColor : Colors.transparent,
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : Colors.transparent,
               width: 4.0,
             ),
           ),
@@ -174,8 +383,8 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
             Icon(
               icon,
               color: isSelected
-                  ? ElegantTheme.primaryColor
-                  : ElegantTheme.primaryColor.withOpacity(0.7),
+                  ? Theme.of(context).primaryColor
+                  : Colors.grey[600],
               size: 24.0,
             ),
             const SizedBox(width: 16.0),
@@ -183,8 +392,8 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
               title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: isSelected
-                        ? ElegantTheme.primaryColor
-                        : ElegantTheme.primaryColor.withOpacity(0.7),
+                        ? Theme.of(context).primaryColor
+                        : Colors.grey[600],
                     fontWeight:
                         isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
@@ -195,11 +404,6 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
     );
   }
 
-  void _scrollToSection(String sectionName) {
-    controller.currentSection.value = sectionName;
-    // Implement smooth scrolling to section
-  }
-
   Widget _buildTabletFormLayout(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,7 +411,6 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Left Column
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,7 +431,6 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
               ),
             ),
             const SizedBox(width: 32.0),
-            // Right Column
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,9 +449,9 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                   ),
                   _buildSection(
                     context: context,
-                    title: "Connections",
+                    title: "Social Links",
                     isTablet: true,
-                    child: _buildConnectionFields(context, true),
+                    child: _buildSocialLinksFields(context, true),
                   ),
                 ],
               ),
@@ -292,9 +494,9 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         ),
         _buildSection(
           context: context,
-          title: "Connections",
+          title: "Social Links",
           isTablet: false,
-          child: _buildConnectionFields(context, false),
+          child: _buildSocialLinksFields(context, false),
         ),
         const SizedBox(height: 24.0),
         _buildUpdateButton(context, false),
@@ -302,180 +504,234 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
     );
   }
 
-  Widget _buildSection({
-    required BuildContext context,
-    required String title,
-    required bool isTablet,
-    required Widget child,
-  }) {
-    return Container(
-      margin: EdgeInsets.only(bottom: isTablet ? 32.0 : 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: ElegantTheme.primaryColor,
-                  fontSize: isTablet ? 24.0 : 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: 16.0),
-          child,
-        ],
-      ),
-    );
-  }
+  // Widget _buildSection({
+  //   required BuildContext context,
+  //   required String title,
+  //   required bool isTablet,
+  //   required Widget child,
+  // }) {
+  //   return Container(
+  //     margin: EdgeInsets.only(bottom: isTablet ? 32.0 : 24.0),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Container(
+  //           padding: const EdgeInsets.only(bottom: 16.0),
+  //           decoration: BoxDecoration(
+  //             border: Border(
+  //               bottom: BorderSide(
+  //                 color: Colors.grey[200]!,
+  //                 width: 1.0,
+  //               ),
+  //             ),
+  //           ),
+  //           child: Row(
+  //             children: [
+  //               Text(
+  //                 title,
+  //                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
+  //                       color: Theme.of(context).primaryColor,
+  //                       fontSize: isTablet ? 24.0 : 20.0,
+  //                       fontWeight: FontWeight.bold,
+  //                     ),
+  //               ),
+  //               const Spacer(),
+  //               Icon(
+  //                 Icons.edit_outlined,
+  //                 color: Theme.of(context).primaryColor,
+  //                 size: isTablet ? 24.0 : 20.0,
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         const SizedBox(height: 16.0),
+  //         child,
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildProfileImageSection(BuildContext context, bool isTablet) {
     final double avatarSize = isTablet ? 160.0 : 120.0;
     final double buttonHeight = isTablet ? 48.0 : 40.0;
 
-    return Center(
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.only(bottom: isTablet ? 40.0 : 32.0),
       child: Column(
         children: [
-          Obx(
-            () => CircleAvatar(
-              radius: avatarSize / 2,
-              backgroundImage: controller.pickedImage.value != null
-                  ? FileImage(controller.pickedImage.value!)
-                  : const AssetImage("assets/profile_avatar.jpg")
-                      as ImageProvider,
-              backgroundColor: ElegantTheme.primaryColor.withOpacity(0.1),
-            ),
-          ),
-          SizedBox(height: isTablet ? 24.0 : 16.0),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Stack(
+            alignment: Alignment.center,
             children: [
-              _buildImagePickerButton(
-                context: context,
-                icon: Icons.image,
-                label: "Gallery",
-                onPressed: controller.pickImage,
-                isTablet: isTablet,
-                height: buttonHeight,
+              Obx(
+                () => Container(
+                  width: avatarSize,
+                  height: avatarSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Theme.of(context).primaryColor,
+                      width: 3.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2),
+                        spreadRadius: 2,
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(avatarSize / 2),
+                    child: controller.pickedImage.value != null
+                        ? Image.file(
+                            controller.pickedImage.value!,
+                            fit: BoxFit.cover,
+                          )
+                        : Image.asset(
+                            "assets/profile_avatar.jpg",
+                            fit: BoxFit.cover,
+                          ),
+                  ),
+                ),
               ),
-              SizedBox(width: isTablet ? 16.0 : 12.0),
-              _buildImagePickerButton(
-                context: context,
-                icon: Icons.camera_alt,
-                label: "Camera",
-                onPressed: controller.captureImage,
-                isTablet: isTablet,
-                height: buttonHeight,
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.3),
+                        spreadRadius: 1,
+                        blurRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.camera_alt_outlined,
+                      color: Colors.white,
+                    ),
+                    onPressed: () => _showImagePickerOptions(context, isTablet),
+                  ),
+                ),
               ),
             ],
+          ),
+          SizedBox(height: isTablet ? 16.0 : 12.0),
+          Text(
+            "Profile Picture",
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+          ),
+          const SizedBox(height: 4.0),
+          Text(
+            "Recommended size: 400x400px",
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPersonalInfoFields(BuildContext context, bool isTablet) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildTextField(
-          context: context,
-          controller: controller.nameController,
-          label: "Name",
-          icon: Icons.person,
-          isTablet: isTablet,
+  void _showImagePickerOptions(BuildContext context, bool isTablet) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        _buildTextField(
-          context: context,
-          controller: controller.emailController,
-          label: "Email",
-          icon: Icons.email,
-          keyboardType: TextInputType.emailAddress,
-          isTablet: isTablet,
+        padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Choose Profile Picture",
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+            ),
+            SizedBox(height: isTablet ? 24.0 : 16.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildImagePickerOption(
+                  context: context,
+                  icon: Icons.photo_library_outlined,
+                  label: "Gallery",
+                  onTap: () {
+                    controller.pickImage();
+                    Navigator.pop(context);
+                  },
+                  isTablet: isTablet,
+                ),
+                _buildImagePickerOption(
+                  context: context,
+                  icon: Icons.camera_alt_outlined,
+                  label: "Camera",
+                  onTap: () {
+                    controller.captureImage();
+                    Navigator.pop(context);
+                  },
+                  isTablet: isTablet,
+                ),
+              ],
+            ),
+            SizedBox(height: isTablet ? 24.0 : 16.0),
+          ],
         ),
-        _buildTextField(
-          context: context,
-          controller: controller.ageController,
-          label: "Age",
-          icon: Icons.cake,
-          keyboardType: TextInputType.number,
-          isTablet: isTablet,
-        ),
-        _buildDropdownField(
-          context: context,
-          label: "Gender",
-          icon: Icons.person_outlined,
-          items: gender,
-          value: controller.genderController.text,
-          onChanged: (value) => controller.genderController.text = value ?? '',
-          isTablet: isTablet,
-        ),
-        _buildTextField(
-          context: context,
-          controller: controller.phoneNoController,
-          label: "Phone Number",
-          icon: Icons.phone,
-          keyboardType: TextInputType.phone,
-          isTablet: isTablet,
-        ),
-        _buildDropdownField(
-          context: context,
-          label: "Country",
-          icon: Icons.flag_outlined,
-          items: countries,
-          value: controller.countryController.text,
-          onChanged: (value) => controller.countryController.text = value ?? '',
-          isTablet: isTablet,
-        ),
-        _buildTextField(
-          context: context,
-          controller: controller.cityController,
-          label: "City",
-          icon: Icons.location_city,
-          isTablet: isTablet,
-        ),
-        _buildTextField(
-          context: context,
-          controller: controller.profileHeadingController,
-          label: "Profile Heading",
-          icon: Icons.title,
-          maxLines: 3,
-          isTablet: isTablet,
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildAppearanceFields(BuildContext context, bool isTablet) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildTextField(
-          context: context,
-          controller: controller.heightController,
-          label: "Height (cm)",
-          icon: Icons.height,
-          keyboardType: TextInputType.number,
-          isTablet: isTablet,
+  Widget _buildImagePickerOption({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required bool isTablet,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
+      child: Container(
+        width: isTablet ? 120.0 : 100.0,
+        padding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
         ),
-        _buildTextField(
-          context: context,
-          controller: controller.weightController,
-          label: "Weight (kg)",
-          icon: Icons.fitness_center,
-          keyboardType: TextInputType.number,
-          isTablet: isTablet,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: isTablet ? 32.0 : 28.0,
+              color: Theme.of(context).primaryColor,
+            ),
+            SizedBox(height: isTablet ? 12.0 : 8.0),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: isTablet ? 16.0 : 14.0,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+          ],
         ),
-        _buildDropdownField(
-          context: context,
-          label: "Body Type",
-          icon: Icons.accessibility_new_outlined,
-          items: bodyTypes,
-          value: controller.bodyTypeController.text,
-          onChanged: (value) =>
-              controller.bodyTypeController.text = value ?? '',
-          isTablet: isTablet,
-        ),
-      ],
+      ),
     );
   }
 
@@ -487,43 +743,65 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
     required bool isTablet,
     TextInputType? keyboardType,
     int maxLines = 1,
+    String? helperText,
   }) {
     final fieldHeight = isTablet ? 60.0 : 48.0;
     final fontSize = isTablet ? 16.0 : 14.0;
     final iconSize = isTablet ? 24.0 : 20.0;
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: isTablet ? 24.0 : 16.0),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        maxLines: maxLines,
-        style: TextStyle(fontSize: fontSize),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(fontSize: fontSize),
-          prefixIcon:
-              Icon(icon, size: iconSize, color: ElegantTheme.primaryColor),
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: isTablet ? 16.0 : 12.0,
-            vertical: isTablet ? 20.0 : 16.0,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(isTablet ? 12.0 : 8.0),
-            borderSide: BorderSide(color: ElegantTheme.primaryColor),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(isTablet ? 12.0 : 8.0),
-            borderSide: BorderSide(
-              color: ElegantTheme.primaryColor,
-              width: isTablet ? 2.0 : 1.5,
+    return Container(
+      margin: EdgeInsets.only(bottom: isTablet ? 24.0 : 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            maxLines: maxLines,
+            style: TextStyle(
+              fontSize: fontSize,
+              color: Colors.grey[800],
+            ),
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: TextStyle(
+                fontSize: fontSize,
+                color: Colors.grey[600],
+              ),
+              prefixIcon: Icon(
+                icon,
+                size: iconSize,
+                color: Theme.of(context).primaryColor,
+              ),
+              helperText: helperText,
+              helperStyle: TextStyle(
+                fontSize: fontSize - 2,
+                color: Colors.grey[600],
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 16.0 : 12.0,
+                vertical: isTablet ? 20.0 : 16.0,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(isTablet ? 12.0 : 8.0),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(isTablet ? 12.0 : 8.0),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(isTablet ? 12.0 : 8.0),
+                borderSide: BorderSide(
+                  color: Theme.of(context).primaryColor,
+                  width: isTablet ? 2.0 : 1.5,
+                ),
+              ),
+              filled: true,
+              fillColor: Colors.grey[50],
             ),
           ),
-          constraints: BoxConstraints(
-            minHeight: fieldHeight,
-            maxHeight: fieldHeight * maxLines,
-          ),
-        ),
+        ],
       ),
     );
   }
@@ -536,48 +814,670 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
     required String value,
     required Function(String?) onChanged,
     required bool isTablet,
+    String? helperText,
   }) {
     final fieldHeight = isTablet ? 60.0 : 48.0;
     final fontSize = isTablet ? 16.0 : 14.0;
     final iconSize = isTablet ? 24.0 : 20.0;
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: isTablet ? 24.0 : 16.0),
-      child: DropdownButtonFormField<String>(
-        value: value.isEmpty ? items.first : value,
-        items: items.map((String item) {
-          return DropdownMenuItem<String>(
-            value: item,
-            child: Text(item, style: TextStyle(fontSize: fontSize)),
+    // Value'nun geçerli olup olmadığını kontrol et
+    final effectiveValue = items.contains(value) ? value : items.first;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: isTablet ? 24.0 : 16.0),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: constraints.maxWidth,
+                child: DropdownButtonFormField<String>(
+                  isExpanded:
+                      true, // Make dropdown expand to fill available width
+                  value: effectiveValue,
+                  items: items.map((String item) {
+                    return DropdownMenuItem<String>(
+                      value: item,
+                      child: Text(
+                        item,
+                        style: TextStyle(
+                          fontSize: fontSize,
+                          color: Colors.grey[800],
+                        ),
+                        overflow: TextOverflow.ellipsis, // Handle text overflow
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: onChanged,
+                  decoration: InputDecoration(
+                    labelText: label,
+                    isDense: true, // Reduce the overall height of the field
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12.0,
+                      vertical: isTablet ? 16.0 : 12.0,
+                    ),
+                    labelStyle: TextStyle(
+                      fontSize: fontSize,
+                      color: Colors.grey[600],
+                    ),
+                    prefixIcon: Icon(
+                      icon,
+                      size: iconSize,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    helperText: helperText,
+                    helperStyle: TextStyle(
+                      fontSize: fontSize - 2,
+                      color: Colors.grey[600],
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(isTablet ? 12.0 : 8.0),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(isTablet ? 12.0 : 8.0),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(isTablet ? 12.0 : 8.0),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                        width: isTablet ? 2.0 : 1.5,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                  ),
+                  icon: Icon(
+                    Icons.arrow_drop_down_rounded,
+                    size: iconSize,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+            ],
           );
-        }).toList(),
-        onChanged: onChanged,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(fontSize: fontSize),
-          prefixIcon:
-              Icon(icon, size: iconSize, color: ElegantTheme.primaryColor),
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: isTablet ? 16.0 : 12.0,
-            vertical: isTablet ? 20.0 : 16.0,
+        },
+      ),
+    );
+  }
+
+  Widget _buildCheckboxGroup({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required List<String> options,
+    required RxString selection,
+    required Function(String) onChanged,
+    required bool isTablet,
+  }) {
+    final fontSize = isTablet ? 16.0 : 14.0;
+    final iconSize = isTablet ? 24.0 : 20.0;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: isTablet ? 24.0 : 16.0),
+      padding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(isTablet ? 12.0 : 8.0),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: iconSize,
+                color: Theme.of(context).primaryColor,
+              ),
+              SizedBox(width: isTablet ? 16.0 : 12.0),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
           ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(isTablet ? 12.0 : 8.0),
-            borderSide: BorderSide(color: ElegantTheme.primaryColor),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(isTablet ? 12.0 : 8.0),
-            borderSide: BorderSide(
-              color: ElegantTheme.primaryColor,
-              width: isTablet ? 2.0 : 1.5,
+          SizedBox(height: isTablet ? 16.0 : 12.0),
+          ...options.map(
+            (option) => Obx(
+              () => Container(
+                margin: EdgeInsets.only(bottom: isTablet ? 8.0 : 4.0),
+                decoration: BoxDecoration(
+                  color: selection.value == option
+                      ? Theme.of(context).primaryColor.withOpacity(0.1)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(isTablet ? 8.0 : 6.0),
+                ),
+                child: CheckboxListTile(
+                  title: Text(
+                    option,
+                    style: TextStyle(
+                      fontSize: fontSize,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                  value: selection.value == option,
+                  onChanged: (bool? value) {
+                    if (value == true) {
+                      onChanged(option);
+                    } else if (selection.value == option) {
+                      onChanged('');
+                    }
+                  },
+                  activeColor: Theme.of(context).primaryColor,
+                  checkColor: Colors.white,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 12.0 : 8.0,
+                    vertical: isTablet ? 8.0 : 4.0,
+                  ),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  dense: !isTablet,
+                ),
+              ),
             ),
           ),
-          constraints: BoxConstraints(
-            minHeight: fieldHeight,
-            maxHeight: fieldHeight,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSocialLinksFields(BuildContext context, bool isTablet) {
+    return Container(
+      padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSocialLinkField(
+            context: context,
+            controller: controller.linkedInController,
+            label: "LinkedIn Profile",
+            icon: Icons.link,
+            prefix: "linkedin.com/in/",
+            isTablet: isTablet,
+          ),
+          _buildSocialLinkField(
+            context: context,
+            controller: controller.instagramController,
+            label: "Instagram",
+            icon: Icons.camera_alt_outlined,
+            prefix: "@",
+            isTablet: isTablet,
+          ),
+          _buildSocialLinkField(
+            context: context,
+            controller: controller.gitHubController,
+            label: "GitHub Profile",
+            icon: Icons.code,
+            prefix: "github.com/",
+            isTablet: isTablet,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSocialLinkField({
+    required BuildContext context,
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required String prefix,
+    required bool isTablet,
+    bool isLast = false,
+  }) {
+    final fontSize = isTablet ? 16.0 : 14.0;
+    final iconSize = isTablet ? 24.0 : 20.0;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: isLast ? 0 : (isTablet ? 20.0 : 16.0)),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: iconSize,
+            color: Theme.of(context).primaryColor,
+          ),
+          SizedBox(width: isTablet ? 16.0 : 12.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: fontSize - 2,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                Row(
+                  children: [
+                    Text(
+                      prefix,
+                      style: TextStyle(
+                        fontSize: fontSize,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    SizedBox(width: isTablet ? 8.0 : 4.0),
+                    Expanded(
+                      child: TextFormField(
+                        controller: controller,
+                        style: TextStyle(
+                          fontSize: fontSize,
+                          color: Colors.grey[800],
+                        ),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: isTablet ? 12.0 : 8.0,
+                          ),
+                          border: InputBorder.none,
+                          hintText: "Enter your username",
+                          hintStyle: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: fontSize,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Divider(color: Colors.grey[300]),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpdateButton(BuildContext context, bool isTablet) {
+    final buttonHeight = isTablet ? 56.0 : 48.0;
+    final fontSize = isTablet ? 18.0 : 16.0;
+
+    return Container(
+      width: double.infinity,
+      height: buttonHeight,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).primaryColor.withOpacity(0.3),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Obx(
+        () => ElevatedButton(
+          onPressed:
+              controller.uploading.value ? null : () => _handleUpdate(context),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).primaryColor,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
+            ),
+            padding: EdgeInsets.symmetric(
+              horizontal: isTablet ? 32.0 : 24.0,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (controller.uploading.value) ...[
+                SizedBox(
+                  height: isTablet ? 24.0 : 20.0,
+                  width: isTablet ? 24.0 : 20.0,
+                  child: CircularProgressIndicator(
+                    strokeWidth: isTablet ? 3.0 : 2.0,
+                    valueColor:
+                        const AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                SizedBox(width: isTablet ? 16.0 : 12.0),
+                Text(
+                  "Updating Profile...",
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ] else ...[
+                Icon(
+                  Icons.check_circle_outline,
+                  size: isTablet ? 24.0 : 20.0,
+                  color: Colors.white,
+                ),
+                SizedBox(width: isTablet ? 16.0 : 12.0),
+                Text(
+                  "Update Profile",
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _handleUpdate(BuildContext context) async {
+    try {
+      // Form doğrulama
+      if (!_validateForm()) {
+        _showErrorSnackbar(
+          context,
+          "Please fill in all required fields correctly.",
+        );
+        return;
+      }
+
+      // Profil güncelleme
+      await controller.updateUserDataToFirestore();
+
+      // Başarılı güncelleme bildirimi
+      _showSuccessSnackbar(context);
+    } catch (e) {
+      _showErrorSnackbar(
+        context,
+        "An error occurred while updating your profile. Please try again.",
+      );
+    }
+  }
+
+  bool _validateForm() {
+    // Gerekli alanları kontrol et
+    if (controller.nameController.text.isEmpty ||
+        controller.emailController.text.isEmpty ||
+        controller.phoneNoController.text.isEmpty) {
+      return false;
+    }
+
+    // Email formatını kontrol et
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(controller.emailController.text)) {
+      return false;
+    }
+
+    // Telefon numarası formatını kontrol et
+    final phoneRegex = RegExp(r'^\+?[\d\s-]+$');
+    if (!phoneRegex.hasMatch(controller.phoneNoController.text)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  void _showSuccessSnackbar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.green[600],
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(
+            MediaQuery.of(context).size.width > 600 ? 40.0 : 16.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        content: Row(
+          children: [
+            const Icon(
+              Icons.check_circle_outline,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Profile Updated',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize:
+                          MediaQuery.of(context).size.width > 600 ? 16.0 : 14.0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Your profile has been successfully updated.',
+                    style: TextStyle(
+                      fontSize:
+                          MediaQuery.of(context).size.width > 600 ? 14.0 : 12.0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showErrorSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red[600],
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(
+            MediaQuery.of(context).size.width > 600 ? 40.0 : 16.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        content: Row(
+          children: [
+            const Icon(
+              Icons.error_outline,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Error',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize:
+                          MediaQuery.of(context).size.width > 600 ? 16.0 : 14.0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    message,
+                    style: TextStyle(
+                      fontSize:
+                          MediaQuery.of(context).size.width > 600 ? 14.0 : 12.0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
+  Widget _buildPersonalInfoFields(BuildContext context, bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildTextField(
+          context: context,
+          controller: controller.nameController,
+          label: "Full Name",
+          icon: Icons.person_outline,
+          isTablet: isTablet,
+          helperText:
+              "Enter your full name as it appears on official documents",
+        ),
+        _buildTextField(
+          context: context,
+          controller: controller.emailController,
+          label: "Email Address",
+          icon: Icons.email_outlined,
+          keyboardType: TextInputType.emailAddress,
+          isTablet: isTablet,
+          helperText: "Your primary email address for communications",
+        ),
+        Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: _buildTextField(
+                context: context,
+                controller: controller.ageController,
+                label: "Age",
+                icon: Icons.cake_outlined,
+                keyboardType: TextInputType.number,
+                isTablet: isTablet,
+              ),
+            ),
+            SizedBox(width: isTablet ? 24.0 : 16.0),
+            Expanded(
+              flex: 3,
+              child: _buildDropdownField(
+                context: context,
+                label: "Gender",
+                icon: Icons.person_outline_rounded,
+                items: gender,
+                value: controller.genderController.text,
+                onChanged: (value) =>
+                    controller.genderController.text = value ?? '',
+                isTablet: isTablet,
+              ),
+            ),
+          ],
+        ),
+        _buildTextField(
+          context: context,
+          controller: controller.phoneNoController,
+          label: "Phone Number",
+          icon: Icons.phone_outlined,
+          keyboardType: TextInputType.phone,
+          isTablet: isTablet,
+          helperText: "Include country code (e.g., +1 234 567 8900)",
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: _buildDropdownField(
+                context: context,
+                label: "Country",
+                icon: Icons.public_outlined,
+                items: countries,
+                value: controller.countryController.text,
+                onChanged: (value) =>
+                    controller.countryController.text = value ?? '',
+                isTablet: isTablet,
+              ),
+            ),
+            SizedBox(width: isTablet ? 24.0 : 16.0),
+            Expanded(
+              child: _buildTextField(
+                context: context,
+                controller: controller.cityController,
+                label: "City",
+                icon: Icons.location_city_outlined,
+                isTablet: isTablet,
+              ),
+            ),
+          ],
+        ),
+        _buildTextField(
+          context: context,
+          controller: controller.profileHeadingController,
+          label: "Profile Headline",
+          icon: Icons.text_fields_outlined,
+          maxLines: 2,
+          isTablet: isTablet,
+          helperText:
+              "A brief description that appears at the top of your profile",
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAppearanceFields(BuildContext context, bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildTextField(
+                context: context,
+                controller: controller.heightController,
+                label: "Height",
+                icon: Icons.height_outlined,
+                keyboardType: TextInputType.number,
+                isTablet: isTablet,
+                helperText: "In centimeters",
+              ),
+            ),
+            SizedBox(width: isTablet ? 24.0 : 16.0),
+            Expanded(
+              child: _buildTextField(
+                context: context,
+                controller: controller.weightController,
+                label: "Weight",
+                icon: Icons.monitor_weight_outlined,
+                keyboardType: TextInputType.number,
+                isTablet: isTablet,
+                helperText: "In kilograms",
+              ),
+            ),
+          ],
+        ),
+        _buildDropdownField(
+          context: context,
+          label: "Body Type",
+          icon: Icons.accessibility_new_outlined,
+          items: const [
+            "Average",
+            "Athletic",
+            "Slim",
+            "Muscular",
+            "Curvy",
+            "Plus Size",
+            "Prefer not to say"
+          ],
+          value: controller.bodyTypeController.text,
+          onChanged: (value) =>
+              controller.bodyTypeController.text = value ?? '',
+          isTablet: isTablet,
+        ),
+      ],
     );
   }
 
@@ -594,7 +1494,8 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
           onChanged: controller.updateChildrenOption,
           isTablet: isTablet,
         ),
-        if (controller.childrenSelection.value.isNotEmpty)
+        if (controller.childrenSelection.value.isNotEmpty &&
+            controller.childrenSelection.value != "No")
           _buildTextField(
             context: context,
             controller: controller.noOfChildrenController,
@@ -606,8 +1507,16 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         _buildDropdownField(
           context: context,
           label: "Employment Status",
-          icon: Icons.business_center_outlined,
-          items: employmentStatuses,
+          icon: Icons.work_outline_outlined,
+          items: const [
+            "Full-time",
+            "Part-time",
+            "Self-employed",
+            "Student",
+            "Retired",
+            "Not employed",
+            "Prefer not to say"
+          ],
           value: controller.employmentStatusController.text,
           onChanged: (value) =>
               controller.employmentStatusController.text = value ?? '',
@@ -615,17 +1524,24 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         ),
         _buildTextField(
           context: context,
-          controller: controller.incomeController,
-          label: "Annual Income",
-          icon: Icons.attach_money,
-          keyboardType: TextInputType.number,
+          controller: controller.professionController,
+          label: "Profession",
+          icon: Icons.business_center_outlined,
           isTablet: isTablet,
+          helperText: "Your current job title or profession",
         ),
         _buildDropdownField(
           context: context,
           label: "Living Situation",
           icon: Icons.home_outlined,
-          items: livingSituations,
+          items: const [
+            "Own home",
+            "Rent alone",
+            "Share rental",
+            "Living with family",
+            "Student housing",
+            "Other"
+          ],
           value: controller.livingSituationController.text,
           onChanged: (value) =>
               controller.livingSituationController.text = value ?? '',
@@ -642,7 +1558,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         _buildDropdownField(
           context: context,
           label: "Nationality",
-          icon: Icons.public_outlined,
+          icon: Icons.flag_outlined,
           items: nationalities,
           value: controller.nationalityController.text,
           onChanged: (value) =>
@@ -651,7 +1567,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         ),
         _buildDropdownField(
           context: context,
-          label: "Highest Education",
+          label: "Education Level",
           icon: Icons.school_outlined,
           items: highSchool,
           value: controller.educationController.text,
@@ -661,7 +1577,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         ),
         _buildDropdownField(
           context: context,
-          label: "Languages",
+          label: "Primary Language",
           icon: Icons.language_outlined,
           items: languages,
           value: controller.languageSpokenController.text,
@@ -670,174 +1586,6 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
           isTablet: isTablet,
         ),
       ],
-    );
-  }
-
-  Widget _buildConnectionFields(BuildContext context, bool isTablet) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildTextField(
-          context: context,
-          controller: controller.linkedInController,
-          label: "LinkedIn Profile",
-          icon: Icons.link,
-          isTablet: isTablet,
-        ),
-        _buildTextField(
-          context: context,
-          controller: controller.instagramController,
-          label: "Instagram Handle",
-          icon: Icons.camera_alt,
-          isTablet: isTablet,
-        ),
-        _buildTextField(
-          context: context,
-          controller: controller.gitHubController,
-          label: "GitHub Profile",
-          icon: Icons.code,
-          isTablet: isTablet,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCheckboxGroup({
-    required BuildContext context,
-    required String title,
-    required IconData icon,
-    required List<String> options,
-    required RxString selection,
-    required Function(String) onChanged,
-    required bool isTablet,
-  }) {
-    final fontSize = isTablet ? 16.0 : 14.0;
-    final iconSize = isTablet ? 24.0 : 20.0;
-    final verticalPadding = isTablet ? 12.0 : 8.0;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: isTablet ? 24.0 : 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: iconSize, color: ElegantTheme.primaryColor),
-              SizedBox(width: isTablet ? 16.0 : 12.0),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: isTablet ? 12.0 : 8.0),
-          ...options.map(
-            (option) => Obx(
-              () => CheckboxListTile(
-                title: Text(
-                  option,
-                  style: TextStyle(fontSize: fontSize),
-                ),
-                value: selection.value == option,
-                onChanged: (bool? value) {
-                  if (value == true) {
-                    onChanged(option);
-                  } else if (selection.value == option) {
-                    onChanged('');
-                  }
-                },
-                activeColor: ElegantTheme.primaryColor,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 0,
-                  vertical: verticalPadding,
-                ),
-                controlAffinity: ListTileControlAffinity.leading,
-                dense: !isTablet,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUpdateButton(BuildContext context, bool isTablet) {
-    final buttonHeight = isTablet ? 56.0 : 48.0;
-    final fontSize = isTablet ? 18.0 : 16.0;
-    final horizontalPadding = isTablet ? 48.0 : 32.0;
-
-    return Obx(
-      () => SizedBox(
-        width: double.infinity,
-        height: buttonHeight,
-        child: ElevatedButton(
-          onPressed: controller.uploading.value
-              ? null
-              : controller.updateUserDataToFirestore,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ElegantTheme.primaryColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
-            ),
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          ),
-          child: controller.uploading.value
-              ? SizedBox(
-                  height: isTablet ? 24.0 : 20.0,
-                  width: isTablet ? 24.0 : 20.0,
-                  child: CircularProgressIndicator(
-                    strokeWidth: isTablet ? 3.0 : 2.0,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : Text(
-                  "Update Profile",
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImagePickerButton({
-    required BuildContext context,
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-    required bool isTablet,
-    required double height,
-  }) {
-    return SizedBox(
-      height: height,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(
-          icon,
-          size: isTablet ? 24.0 : 20.0,
-        ),
-        label: Text(
-          label,
-          style: TextStyle(
-            fontSize: isTablet ? 16.0 : 14.0,
-          ),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: ElegantTheme.secondaryColor,
-          padding: EdgeInsets.symmetric(
-            horizontal: isTablet ? 24.0 : 16.0,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(isTablet ? 12.0 : 8.0),
-          ),
-        ),
-      ),
     );
   }
 }

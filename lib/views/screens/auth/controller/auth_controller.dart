@@ -33,7 +33,7 @@ class AuthController extends GetxController {
   RxBool termsAccepted = false.obs;
   late PageController pageController;
   RxInt currentPage = 0.obs;
-  RxBool obsPass = false.obs;
+  RxBool obsPass = true.obs;
 
   // Form Controllers
   final TextEditingController emailController = TextEditingController();
@@ -192,6 +192,16 @@ email: ismail.tunc.kankilic@gmail.com
 By accepting this privacy policy, you declare that you understand and agree to the terms stated herein.
   ''';
 
+  final List<RxBool> checks = List.generate(5, (index) => false.obs);
+  final List<String> textler = [
+    "At least 8 character",
+    "At least one capital letter (A-Z)",
+    "At least 1 small letter (a-z)",
+    "At least 1 digit (0-9)",
+    "At least 1 special character (!,#...)",
+  ];
+  final RxBool isVisible = true.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -228,6 +238,11 @@ By accepting this privacy policy, you declare that you understand and agree to t
     try {
       showProgressBar.value = true;
 
+      // Debug için sosyal medya değerlerini kontrol edelim
+      print('LinkedIn URL: ${linkedInController.text}');
+      print('Instagram URL: ${instagramController.text}');
+      print('Github URL: ${githubController.text}');
+
       final UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
@@ -243,6 +258,11 @@ By accepting this privacy policy, you declare that you understand and agree to t
       if (pickedImage.value != null) {
         profileImageUrl = await _uploadProfilePicture(user.uid);
       }
+
+      // Sosyal medya URL'lerini temizleyelim
+      final linkedInUrl = linkedInController.text.trim();
+      final instagramUrl = instagramController.text.trim();
+      final githubUrl = githubController.text.trim();
 
       final pM.Person userData = pM.Person(
         uid: user.uid,
@@ -275,9 +295,10 @@ By accepting this privacy policy, you declare that you understand and agree to t
         languageSpoken: languageSpokenController.text.trim(),
         religion: religionController.text.trim(),
         ethnicity: ethnicityController.text.trim(),
-        instagramUrl: instagramController.text.trim(),
-        linkedInUrl: linkedInController.text.trim(),
-        githubUrl: githubController.text.trim(),
+        // Sosyal medya URL'lerini boş string yerine null olarak ayarlayalım
+        linkedInUrl: linkedInUrl.isNotEmpty ? linkedInUrl : null,
+        instagramUrl: instagramUrl.isNotEmpty ? instagramUrl : null,
+        githubUrl: githubUrl.isNotEmpty ? githubUrl : null,
       );
 
       await _firestore.collection('users').doc(user.uid).set(userData.toJson());
@@ -319,6 +340,9 @@ By accepting this privacy policy, you declare that you understand and agree to t
         margin: const EdgeInsets.all(8),
         borderRadius: 8,
       );
+      final writtenData =
+          await _firestore.collection('users').doc(user.uid).get();
+      print('Written data: ${writtenData.data()}');
 
       clearAllFields();
 
@@ -355,67 +379,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
       confirmPasswordError.value = '';
     }
   }
-
-  // bool _validatePersonalInfo() {
-  //   if (pickedImage.value == null) {
-  //     _showError('Please select a profile picture');
-  //     return false;
-  //   }
-
-  //   if (nameController.text.trim().isEmpty) {
-  //     _showError('Name is required');
-  //     return false;
-  //   }
-
-  //   if (!ValidationUtils.isValidEmail(emailController.text.trim())) {
-  //     _showError('Please enter a valid email address');
-  //     return false;
-  //   }
-
-  //   validatePassword(passwordController.text);
-  //   if (passwordError.value.isNotEmpty) {
-  //     _showError(passwordError.value);
-  //     return false;
-  //   }
-
-  //   validateConfirmPassword(confirmPasswordController.text);
-  //   if (confirmPasswordError.value.isNotEmpty) {
-  //     _showError(confirmPasswordError.value);
-  //     return false;
-  //   }
-
-  //   if (!ValidationUtils.isValidAge(ageController.text.trim())) {
-  //     _showError('Please enter a valid age between 18 and 100');
-  //     return false;
-  //   }
-
-  //   if (genderController.text.trim().isEmpty) {
-  //     _showError('Please select your gender');
-  //     return false;
-  //   }
-
-  //   if (!ValidationUtils.isValidPhone(phoneNoController.text.trim())) {
-  //     _showError('Please enter a valid phone number');
-  //     return false;
-  //   }
-
-  //   if (countryController.text.trim().isEmpty) {
-  //     _showError('Please select your country');
-  //     return false;
-  //   }
-
-  //   if (cityController.text.trim().isEmpty) {
-  //     _showError('City is required');
-  //     return false;
-  //   }
-
-  //   if (profileHeadingController.text.trim().isEmpty) {
-  //     _showError('Profile heading is required');
-  //     return false;
-  //   }
-
-  //   return true;
-  // }
 
   void _showSuccess(String message) {
     Get.snackbar(
@@ -881,17 +844,75 @@ By accepting this privacy policy, you declare that you understand and agree to t
     pageController.jumpToPage(0);
   }
 
+  // validation.dart içinde
+
+// Start Page validasyonu için
+  static ValidationResult validateStartPage({
+    required String name,
+    required String email,
+    required String password,
+    required String confirmPassword,
+  }) {
+    // Name Validation
+    if (name.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Name is required',
+      );
+    }
+
+    if (name.trim().length < 2) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Name must be at least 2 characters long',
+      );
+    }
+
+    // Email Validation
+    if (!GetUtils.isEmail(email.trim())) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please enter a valid email address',
+      );
+    }
+
+    // Password Validation
+    final passwordStrength = PasswordValidator.validatePassword(password);
+    if (!passwordStrength.isValid) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Password does not meet requirements',
+      );
+    }
+
+    // Confirm Password Validation
+    if (password != confirmPassword) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Passwords do not match',
+      );
+    }
+
+    return ValidationResult(isValid: true);
+  }
+
+// AuthController içinde nextPage metodunu güncelle
   void nextPage() {
     ValidationResult? validationResult;
 
     switch (currentPage.value) {
-      case 0: // Personal Info
-        validationResult = RegistrationValidator.validatePersonalInfo(
+      case 0: // Start Page
+        validationResult = RegistrationValidator.validateStartPage(
           profileImage: pickedImage.value,
           name: nameController.text,
           email: emailController.text,
           password: passwordController.text,
           confirmPassword: confirmPasswordController.text,
+        );
+        break;
+
+      case 1: // Personal Info
+        validationResult = RegistrationValidator.validatePersonalInfo(
           age: ageController.text,
           gender: genderController.text,
           phone: phoneNoController.text,
@@ -901,7 +922,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         );
         break;
 
-      case 1: // Appearance
+      case 2: // Appearance
         validationResult = RegistrationValidator.validateAppearance(
           height: heightController.text,
           weight: weightController.text,
@@ -909,7 +930,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         );
         break;
 
-      case 2: // Lifestyle
+      case 3: // Lifestyle
         validationResult = RegistrationValidator.validateLifestyle(
           drink: drinkController.text,
           smoke: smokeController.text,
@@ -924,7 +945,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         );
         break;
 
-      case 3: // Background
+      case 4: // Background
         validationResult = RegistrationValidator.validateBackground(
           nationality: nationalityController.text,
           education: educationController.text,
@@ -934,7 +955,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         );
         break;
 
-      case 4: // Social Links and Terms
+      case 5: // Social Links and Terms
         validationResult = RegistrationValidator.validateSocialLinks(
           linkedIn: linkedInController.text,
           instagram: instagramController.text,
@@ -948,43 +969,29 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
 
     if (validationResult.isValid) {
-      if (currentPage.value < 4) {
+      if (currentPage.value < 5) {
         pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
         currentPage.value++;
+      } else {
+        // Son sayfada ve validasyon başarılıysa kayıt işlemini başlat
+        register();
       }
     } else {
       Get.snackbar(
         'Error',
         validationResult.errorMessage ?? 'Please check your inputs',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
         duration: const Duration(seconds: 3),
         margin: const EdgeInsets.all(8),
         borderRadius: 8,
       );
     }
   }
-
-  // // Validate Appearance Page (Page 1)
-  // bool _validateAppearance() {
-  //   if (!ValidationUtils.isValidHeight(heightController.text.trim())) {
-  //     _showError('Please enter a valid height');
-  //     return false;
-  //   }
-  //   if (!ValidationUtils.isValidWeight(weightController.text.trim())) {
-  //     _showError('Please enter a valid weight');
-  //     return false;
-  //   }
-  //   if (bodyTypeController.text.trim().isEmpty) {
-  //     _showError('Please select your body type');
-  //     return false;
-  //   }
-  //   return true;
-  // }
 
 // AuthController içinde:
   Widget buildPasswordFields() {
@@ -1081,31 +1088,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
     return true;
   }
 
-  // // Validate Connections Page (Page 4)
-  // bool _validateConnections() {
-  //   // LinkedIn, Instagram, and GitHub URLs are optional but must be valid if provided
-  //   if (linkedInController.text.isNotEmpty &&
-  //       !ValidationUtils.isValidUrl(linkedInController.text)) {
-  //     _showError('Please enter a valid LinkedIn URL');
-  //     return false;
-  //   }
-  //   if (instagramController.text.isNotEmpty &&
-  //       !ValidationUtils.isValidUrl(instagramController.text)) {
-  //     _showError('Please enter a valid Instagram URL');
-  //     return false;
-  //   }
-  //   if (githubController.text.isNotEmpty &&
-  //       !ValidationUtils.isValidUrl(githubController.text)) {
-  //     _showError('Please enter a valid GitHub URL');
-  //     return false;
-  //   }
-  //   if (!termsAccepted.value) {
-  //     _showError('Please accept the terms and conditions');
-  //     return false;
-  //   }
-  //   return true;
-  // }
-
   void handleAuthError(FirebaseAuthException e) {
     String message;
     switch (e.code) {
@@ -1126,111 +1108,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
     _showError(message);
   }
-
-  // bool validateSignupFields() {
-  //   // Critical field validations
-  //   Map<String, ValidationRule> validationRules = {
-  //     'Email': ValidationRule(
-  //       value: emailController.text,
-  //       validator: ValidationUtils.isValidEmail,
-  //       errorMessage: 'Please enter a valid email address',
-  //     ),
-  //     'Password': ValidationRule(
-  //       value: passwordController.text,
-  //       validator: ValidationUtils.isValidPassword,
-  //       errorMessage:
-  //           'Password must be at least 8 characters with uppercase, lowercase, number and special character',
-  //     ),
-  //     'Name': ValidationRule(
-  //       value: nameController.text,
-  //       validator: (value) => value.length >= 2,
-  //       errorMessage: 'Name must be at least 2 characters long',
-  //     ),
-  //     'Age': ValidationRule(
-  //       value: ageController.text,
-  //       validator: ValidationUtils.isValidAge,
-  //       errorMessage: 'Age must be between 18 and 100',
-  //     ),
-  //     'Phone Number': ValidationRule(
-  //       value: phoneNoController.text,
-  //       validator: ValidationUtils.isValidPhone,
-  //       errorMessage: 'Please enter a valid phone number',
-  //     ),
-  //     'Height': ValidationRule(
-  //       value: heightController.text,
-  //       validator: ValidationUtils.isValidHeight,
-  //       errorMessage: 'Please enter a valid height',
-  //     ),
-  //     'Weight': ValidationRule(
-  //       value: weightController.text,
-  //       validator: ValidationUtils.isValidWeight,
-  //       errorMessage: 'Please enter a valid weight',
-  //     ),
-  //   };
-
-  //   // Required fields that only need presence check
-  //   Map<String, TextEditingController> requiredFields = {
-  //     'City': cityController,
-  //     'Country': countryController,
-  //     'Profile Heading': profileHeadingController,
-  //     'Gender': genderController,
-  //     'Body Type': bodyTypeController,
-  //     'Drink': drinkController,
-  //     'Smoke': smokeController,
-  //     'Marital Status': martialStatusController,
-  //     'Have Children': haveChildrenController,
-  //     'Number of Children': noOfChildrenController,
-  //     'Profession': professionController,
-  //     'Employment Status': employmentStatusController,
-  //     'Income': incomeController,
-  //     'Living Situation': livingSituationController,
-  //     'Willing to Relocate': willingToRelocateController,
-  //     'Nationality': nationalityController,
-  //     'Education': educationController,
-  //     'Language Spoken': languageSpokenController,
-  //     'Religion': religionController,
-  //     'Ethnicity': ethnicityController,
-  //   };
-
-  //   // Validate critical fields
-  //   for (var entry in validationRules.entries) {
-  //     if (!entry.value.isValid()) {
-  //       _showError(entry.value.errorMessage);
-  //       return false;
-  //     }
-  //   }
-
-  //   // Validate required fields
-  //   for (var entry in requiredFields.entries) {
-  //     if (entry.value.text.trim().isEmpty) {
-  //       _showError('Please fill in the ${entry.key} field');
-  //       return false;
-  //     }
-  //   }
-
-  //   // Validate optional URL fields
-  //   Map<String, TextEditingController> urlFields = {
-  //     'LinkedIn': linkedInController,
-  //     'Instagram': instagramController,
-  //     'GitHub': githubController,
-  //   };
-
-  //   for (var entry in urlFields.entries) {
-  //     if (entry.value.text.isNotEmpty &&
-  //         !ValidationUtils.isValidUrl(entry.value.text)) {
-  //       _showError('Please enter a valid ${entry.key} URL or leave it empty');
-  //       return false;
-  //     }
-  //   }
-
-  //   // Validate terms acceptance
-  //   if (!termsAccepted.value) {
-  //     _showError('Please accept the terms and conditions');
-  //     return false;
-  //   }
-
-  //   return true;
-  // }
 
   @override
   void onClose() {

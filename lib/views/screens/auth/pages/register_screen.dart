@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/service/validation.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
@@ -26,13 +27,13 @@ class RegistrationScreen extends GetView<AuthController> {
                   Expanded(
                     child: PageView.builder(
                       controller: controller.pageController,
-                      itemCount: 5,
+                      itemCount: 6,
                       physics: const NeverScrollableScrollPhysics(),
                       onPageChanged: (index) {
                         controller.currentPage.value = index;
                       },
                       itemBuilder: (context, index) {
-                        return _buildPage(index, isTablet);
+                        return _buildPage(index, isTablet, context);
                       },
                     ),
                   ),
@@ -61,11 +62,12 @@ class RegistrationScreen extends GetView<AuthController> {
       ),
       child: Obx(() => Column(
             children: [
-              _buildNavItem('Personal Info', 0, Icons.person_outline),
-              _buildNavItem('Appearance', 1, Icons.face_3_outlined),
-              _buildNavItem('Lifestyle', 2, Icons.health_and_safety),
-              _buildNavItem('Background', 3, Icons.history_edu),
-              _buildNavItem('Connections', 4, Icons.connect_without_contact),
+              _buildNavItem('Start', 0, Icons.person),
+              _buildNavItem('Personal Info', 1, Icons.person_outline),
+              _buildNavItem('Appearance', 2, Icons.face_3_outlined),
+              _buildNavItem('Lifestyle', 3, Icons.health_and_safety),
+              _buildNavItem('Background', 4, Icons.history_edu),
+              _buildNavItem('Connections', 5, Icons.connect_without_contact),
             ],
           )),
     );
@@ -148,7 +150,7 @@ class RegistrationScreen extends GetView<AuthController> {
           ),
           SizedBox(height: isTablet ? 25.0 : 20.0),
           Obx(() => LinearProgressIndicator(
-                value: (controller.currentPage.value + 1) / 5,
+                value: (controller.currentPage.value + 1) / 6,
                 backgroundColor: ElegantTheme.primaryColor.withOpacity(0.2),
                 valueColor: const AlwaysStoppedAnimation<Color>(
                   ElegantTheme.primaryColor,
@@ -161,13 +163,14 @@ class RegistrationScreen extends GetView<AuthController> {
     );
   }
 
-  Widget _buildPage(int index, bool isTablet) {
+  Widget _buildPage(int index, bool isTablet, BuildContext context) {
     final content = switch (index) {
-      0 => _buildPersonalInfoPage(isTablet),
-      1 => _buildAppearancePage(isTablet),
-      2 => _buildLifestylePage(isTablet),
-      3 => _buildBackgroundPage(isTablet),
-      4 => _buildConnectionsPage(isTablet),
+      0 => _buildStartPage(isTablet, context),
+      1 => _buildPersonalInfoPage(isTablet),
+      2 => _buildAppearancePage(isTablet),
+      3 => _buildLifestylePage(isTablet),
+      4 => _buildBackgroundPage(isTablet),
+      5 => _buildConnectionsPage(isTablet),
       _ => Container(),
     };
 
@@ -237,69 +240,6 @@ class RegistrationScreen extends GetView<AuthController> {
         decoration: _getInputDecoration(label, icon, isTablet, false),
       ),
     );
-  }
-
-  Widget _buildPasswordTextField(
-    TextEditingController textedit,
-    String label,
-    IconData icon,
-    bool isTablet,
-  ) {
-    return Obx(() => Padding(
-          padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
-          child: Stack(
-            children: [
-              TextField(
-                controller: textedit,
-                obscureText: controller.obsPass.value,
-                style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
-                onChanged: (value) {
-                  if (textedit == controller.passwordController) {
-                    controller.validatePassword(value);
-                  } else {
-                    controller.validateConfirmPassword(value);
-                  }
-                },
-                decoration:
-                    _getInputDecoration(label, icon, isTablet, true).copyWith(
-                  errorText: textedit == controller.passwordController
-                      ? controller.passwordError.value
-                      : controller.confirmPasswordError.value,
-                  errorStyle: TextStyle(
-                    color: Colors.transparent, // Hata metnini gizle
-                    fontSize: 0,
-                  ),
-                ),
-              ),
-              if ((textedit == controller.passwordController &&
-                      controller.passwordError.value.isNotEmpty) ||
-                  (textedit == controller.confirmPasswordController &&
-                      controller.confirmPasswordError.value.isNotEmpty))
-                Positioned(
-                  bottom: -8,
-                  left: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.shade200),
-                    ),
-                    child: Text(
-                      textedit == controller.passwordController
-                          ? controller.passwordError.value
-                          : controller.confirmPasswordError.value,
-                      style: TextStyle(
-                        color: Colors.red.shade900,
-                        fontSize: isTablet ? 12.0 : 10.0,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ));
   }
 
   Widget _buildDropdown(
@@ -395,25 +335,11 @@ class RegistrationScreen extends GetView<AuthController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTextField(
-                controller.linkedInController,
-                "LinkedIn Profile",
-                Icons.link_outlined,
-                isTablet,
+              SocialLinksSection(
+                controller: controller,
+                isTablet: isTablet,
               ),
-              _buildTextField(
-                controller.instagramController,
-                "Instagram Handle",
-                Icons.camera_alt_outlined,
-                isTablet,
-              ),
-              _buildTextField(
-                controller.githubController,
-                "GitHub Profile",
-                Icons.code_outlined,
-                isTablet,
-              ),
-              SizedBox(height: isTablet ? 30.0 : 20.0),
+              SizedBox(height: isTablet ? 30.0 : 24.0),
               _buildTermsAndConditions(isTablet),
             ],
           ),
@@ -424,7 +350,7 @@ class RegistrationScreen extends GetView<AuthController> {
 
   Widget _buildNavigationButtons(bool isTablet) {
     return Padding(
-      padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
+      padding: EdgeInsets.all(isTablet ? 15.0 : 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -449,7 +375,7 @@ class RegistrationScreen extends GetView<AuthController> {
 
           // Next/Create Account Button
           Obx(() {
-            final isLastPage = controller.currentPage.value == 4;
+            final isLastPage = controller.currentPage.value == 5;
             final isLoading = controller.showProgressBar.value;
 
             return ElevatedButton(
@@ -551,7 +477,8 @@ class RegistrationScreen extends GetView<AuthController> {
         ));
   }
 
-  Widget _buildPersonalInfoPage(bool isTablet) {
+  // _buildStartPage güncellendi
+  Widget _buildStartPage(bool isTablet, BuildContext context) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
       child: Center(
@@ -574,18 +501,210 @@ class RegistrationScreen extends GetView<AuthController> {
                 Icons.email_outlined,
                 isTablet,
               ),
-              _buildPasswordTextField(
-                controller.passwordController,
-                "Password",
-                Icons.lock_outline,
-                isTablet,
+              _buildPasswordField(
+                textController: controller.passwordController,
+                label: "Password",
+                icon: Icons.lock_outline,
+                isTablet: isTablet,
+                controller: controller, // AuthController erişimi için
               ),
-              _buildPasswordTextField(
-                controller.confirmPasswordController,
-                "Confirm Password",
-                Icons.lock_outline,
-                isTablet,
+              _buildPasswordField(
+                textController: controller.confirmPasswordController,
+                label: "Confirm Password",
+                icon: Icons.lock_outline,
+                isTablet: isTablet,
+                controller: controller,
+                isConfirmPassword: true,
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+// Yeni ve geliştirilmiş password field widget'ı
+  Widget _buildPasswordField({
+    required TextEditingController textController,
+    required String label,
+    required IconData icon,
+    required bool isTablet,
+    required AuthController controller,
+    bool isConfirmPassword = false,
+  }) {
+    return Obx(() => Padding(
+          padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: textController,
+                obscureText: controller.obsPass.value,
+                style: TextStyle(
+                  fontSize: isTablet ? 18.0 : 16.0,
+                  color: Colors.black,
+                ),
+                onChanged: (value) {
+                  if (!isConfirmPassword) {
+                    // Ana şifre alanı için kontroller
+                    if (value.length >= 8) {
+                      controller.checks[0].value = true;
+                    } else {
+                      controller.checks[0].value = false;
+                    }
+                    if (value.contains(RegExp(r'[A-Z]'))) {
+                      controller.checks[1].value = true;
+                    } else {
+                      controller.checks[1].value = false;
+                    }
+                    if (value.contains(RegExp(r'[a-z]'))) {
+                      controller.checks[2].value = true;
+                    } else {
+                      controller.checks[2].value = false;
+                    }
+                    if (value.contains(RegExp(r'[0-9]'))) {
+                      controller.checks[3].value = true;
+                    } else {
+                      controller.checks[3].value = false;
+                    }
+                    if (value.contains(
+                        RegExp(r'[!@#$%^&*()_+\-=\[\]{};:\\\|,.<>\/?]+'))) {
+                      controller.checks[4].value = true;
+                    } else {
+                      controller.checks[4].value = false;
+                    }
+                    if (value.isEmpty) {
+                      for (var i = 0; i < 5; i++) {
+                        controller.checks[i].value = false;
+                      }
+                    }
+
+                    // Confirm password ile karşılaştırma
+                    if (controller.confirmPasswordController.text.isNotEmpty) {
+                      if (value != controller.confirmPasswordController.text) {
+                        controller.confirmPasswordError.value =
+                            'Passwords do not match';
+                      } else {
+                        controller.confirmPasswordError.value = '';
+                      }
+                    }
+                  } else {
+                    // Confirm password kontrolü
+                    if (value != controller.passwordController.text) {
+                      controller.confirmPasswordError.value =
+                          'Passwords do not match';
+                    } else {
+                      controller.confirmPasswordError.value = '';
+                    }
+                  }
+                },
+                decoration: InputDecoration(
+                  labelText: label,
+                  labelStyle: TextStyle(
+                    fontSize: isTablet ? 18.0 : 16.0,
+                    color: Colors.black,
+                  ),
+                  prefixIcon: Icon(
+                    icon,
+                    color: ElegantTheme.primaryColor,
+                    size: isTablet ? 28.0 : 24.0,
+                  ),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      controller.obsPass.value = !controller.obsPass.value;
+                    },
+                    icon: Icon(
+                      controller.obsPass.value
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: ElegantTheme.primaryColor,
+                    ),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
+                    borderSide:
+                        const BorderSide(color: ElegantTheme.primaryColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
+                    borderSide: BorderSide(
+                      color: Colors.black,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
+                    borderSide: BorderSide(
+                      color: ElegantTheme.primaryColor,
+                      width: isTablet ? 2.5 : 2.0,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 20.0 : 15.0,
+                    vertical: isTablet ? 20.0 : 15.0,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  errorText: isConfirmPassword
+                      ? controller.confirmPasswordError.value.isNotEmpty
+                          ? controller.confirmPasswordError.value
+                          : null
+                      : controller.passwordError.value.isNotEmpty
+                          ? controller.passwordError.value
+                          : null,
+                ),
+              ),
+              if (!isConfirmPassword) ...[
+                SizedBox(height: isTablet ? 20.0 : 15.0),
+                Text(
+                  "Password Strength",
+                  style: TextStyle(
+                    color: Color(0xFF787A8D),
+                    fontSize: isTablet ? 14.0 : 12.0,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 5.0),
+                SizedBox(
+                  width: double.infinity,
+                  height: 12.0,
+                  child: CustomProgressBar(
+                    var1: controller.checks[0].value,
+                    var2: controller.checks[1].value,
+                    var3: controller.checks[2].value,
+                    var4: controller.checks[3].value,
+                    var5: controller.checks[4].value,
+                    isTablet: isTablet,
+                  ),
+                ),
+                SizedBox(height: 10.0),
+                Column(
+                  children: List.generate(
+                    5,
+                    (index) => Padding(
+                      padding: EdgeInsets.only(bottom: 5.0),
+                      child: CheckList(
+                        index: index,
+                        isTablet: isTablet,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ));
+  }
+
+  Widget _buildPersonalInfoPage(bool isTablet) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
+      child: Center(
+        child: Container(
+          constraints:
+              BoxConstraints(maxWidth: isTablet ? 800.0 : double.infinity),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               _buildTextField(
                 controller.ageController,
                 "Age",
@@ -1150,41 +1269,305 @@ class PasswordInputField extends StatelessWidget {
                   ),
                 ),
               ),
-              if (!isConfirmField && controller.text.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: strength!.score / 100,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(strength.color),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  children: strength.requirements.map((req) {
-                    return Chip(
-                      avatar: Icon(
-                        req.isMet ? Icons.check : Icons.close,
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                value: strength!.score / 100,
+                backgroundColor: Colors.grey[200],
+                valueColor: AlwaysStoppedAnimation<Color>(strength.color),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: strength.requirements.map((req) {
+                  return Chip(
+                    avatar: Icon(
+                      req.isMet ? Icons.check : Icons.close,
+                      color: req.isMet ? Colors.green : Colors.red,
+                      size: 16,
+                    ),
+                    label: Text(
+                      req.description,
+                      style: TextStyle(
                         color: req.isMet ? Colors.green : Colors.red,
-                        size: 16,
+                        fontSize: 12,
                       ),
-                      label: Text(
-                        req.description,
-                        style: TextStyle(
-                          color: req.isMet ? Colors.green : Colors.red,
-                          fontSize: 12,
-                        ),
-                      ),
-                      backgroundColor: req.isMet
-                          ? Colors.green.withOpacity(0.1)
-                          : Colors.red.withOpacity(0.1),
-                    );
-                  }).toList(),
-                ),
-              ],
+                    ),
+                    backgroundColor: req.isMet
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.red.withOpacity(0.1),
+                  );
+                }).toList(),
+              ),
             ],
           );
         }),
       ],
     );
+  }
+}
+
+class CustomProgressBar extends StatelessWidget {
+  final bool isTablet;
+  final bool var1;
+  final bool var2;
+  final bool var3;
+  final bool var4;
+  final bool var5;
+
+  const CustomProgressBar({
+    required this.isTablet,
+    required this.var1,
+    required this.var2,
+    required this.var3,
+    required this.var4,
+    required this.var5,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final progress =
+        [var1, var2, var3, var4, var5].where((element) => element).length;
+
+    return Container(
+      width: screenWidth,
+      height: isTablet ? 36 : 24,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Stack(
+        children: [
+          FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: progress / 5,
+            child: Container(
+              height: isTablet ? 18 : 12,
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIndicator(bool value) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: value ? Colors.green : Colors.grey,
+      ),
+    );
+  }
+}
+
+class CheckList extends StatelessWidget {
+  final bool isTablet;
+  final int index;
+  CheckList({
+    Key? key,
+    required this.isTablet,
+    required this.index,
+  }) : super(key: key);
+
+  AuthController controller = Get.put(AuthController());
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          controller.checks[index].value ? Icons.done : Icons.close,
+          color: controller.checks[index].value ? Colors.green : Colors.red,
+          size: isTablet ? 18 : 14,
+        ),
+        SizedBox(
+          width: isTablet ? 12 : 5,
+        ),
+        Text(controller.textler[index],
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: isTablet ? 18 : 14,
+              color: controller.checks[index].value ? Colors.green : Colors.red,
+            ))
+      ],
+    );
+  }
+}
+
+class SocialLinksSection extends StatelessWidget {
+  final AuthController controller;
+  final bool isTablet;
+
+  const SocialLinksSection({
+    Key? key,
+    required this.controller,
+    required this.isTablet,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Social Media Profiles',
+            style: TextStyle(
+              fontSize: isTablet ? 20.0 : 18.0,
+              fontWeight: FontWeight.bold,
+              color: ElegantTheme.primaryColor,
+            ),
+          ),
+          SizedBox(height: 16),
+          _buildSocialInput(
+            controller: controller.linkedInController,
+            prefix: 'linkedin.com/in/',
+            icon: Icons.business,
+            label: 'LinkedIn',
+            color: Color(0xFF0A66C2),
+            placeholder: 'username',
+          ),
+          SizedBox(height: isTablet ? 20.0 : 16.0),
+          _buildSocialInput(
+            controller: controller.instagramController,
+            prefix: '@',
+            icon: Icons.camera_alt,
+            label: 'Instagram',
+            color: Color(0xFFE4405F),
+            placeholder: 'username',
+          ),
+          SizedBox(height: isTablet ? 20.0 : 16.0),
+          _buildSocialInput(
+            controller: controller.githubController,
+            prefix: 'github.com/',
+            icon: Icons.code,
+            label: 'GitHub',
+            color: Color(0xFF24292E),
+            placeholder: 'username',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSocialInput({
+    required TextEditingController controller,
+    required String prefix,
+    required IconData icon,
+    required String label,
+    required Color color,
+    required String placeholder,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: color, size: isTablet ? 24.0 : 20.0),
+            SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: isTablet ? 16.0 : 14.0,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 16.0 : 12.0,
+                  vertical: isTablet ? 12.0 : 10.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius:
+                      BorderRadius.horizontal(left: Radius.circular(8)),
+                  border:
+                      Border(right: BorderSide(color: Colors.grey.shade300)),
+                ),
+                child: Text(
+                  prefix,
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontSize: isTablet ? 14.0 : 12.0,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: placeholder,
+                    hintStyle: TextStyle(color: Colors.grey.shade400),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 16.0 : 12.0,
+                    ),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.content_paste, color: Colors.grey.shade600),
+                onPressed: () async {
+                  final data = await Clipboard.getData('text/plain');
+                  if (data?.text != null) {
+                    final url = data!.text!;
+                    final username = _extractUsername(url, label);
+                    if (username != null) {
+                      controller.text = username;
+                    }
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String? _extractUsername(String text, String platform) {
+    switch (platform) {
+      case 'LinkedIn':
+        final match = RegExp(r'linkedin\.com/in/([^/]+)').firstMatch(text);
+        return match?.group(1);
+      case 'GitHub':
+        final match = RegExp(r'github\.com/([^/]+)').firstMatch(text);
+        return match?.group(1);
+      case 'Instagram':
+        if (text.contains('instagram.com')) {
+          final match = RegExp(r'instagram\.com/([^/]+)').firstMatch(text);
+          return match?.group(1);
+        }
+        return text.replaceAll('@', '');
+      default:
+        return text;
+    }
   }
 }

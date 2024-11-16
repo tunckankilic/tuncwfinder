@@ -1,10 +1,8 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 
-import 'service.dart';
-
-// Create a ValidationResult class to handle validation outcomes
 class ValidationResult {
   final bool isValid;
   final String? errorMessage;
@@ -13,19 +11,13 @@ class ValidationResult {
 }
 
 class RegistrationValidator {
-  // Page 1: Personal Information Validation
-  static ValidationResult validatePersonalInfo({
+  // Start Page validation
+  static ValidationResult validateStartPage({
     required File? profileImage,
     required String name,
     required String email,
     required String password,
     required String confirmPassword,
-    required String age,
-    required String gender,
-    required String phone,
-    required String country,
-    required String city,
-    required String profileHeading,
   }) {
     // Profile Image Check
     if (profileImage == null) {
@@ -51,6 +43,13 @@ class RegistrationValidator {
     }
 
     // Email Validation
+    if (email.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Email is required',
+      );
+    }
+
     if (!GetUtils.isEmail(email.trim())) {
       return ValidationResult(
         isValid: false,
@@ -59,6 +58,13 @@ class RegistrationValidator {
     }
 
     // Password Validation
+    if (password.isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Password is required',
+      );
+    }
+
     final passwordStrength = PasswordValidator.validatePassword(password);
     if (!passwordStrength.isValid) {
       return ValidationResult(
@@ -68,6 +74,13 @@ class RegistrationValidator {
     }
 
     // Confirm Password Validation
+    if (confirmPassword.isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Please confirm your password',
+      );
+    }
+
     if (password != confirmPassword) {
       return ValidationResult(
         isValid: false,
@@ -75,7 +88,26 @@ class RegistrationValidator {
       );
     }
 
+    return ValidationResult(isValid: true);
+  }
+
+  // Personal Info validation
+  static ValidationResult validatePersonalInfo({
+    required String age,
+    required String gender,
+    required String phone,
+    required String country,
+    required String city,
+    required String profileHeading,
+  }) {
     // Age Validation
+    if (age.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Age is required',
+      );
+    }
+
     int? ageNum = int.tryParse(age.trim());
     if (ageNum == null || ageNum < 18 || ageNum > 100) {
       return ValidationResult(
@@ -93,6 +125,13 @@ class RegistrationValidator {
     }
 
     // Phone Validation
+    if (phone.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Phone number is required',
+      );
+    }
+
     if (!GetUtils.isPhoneNumber(phone.trim())) {
       return ValidationResult(
         isValid: false,
@@ -133,13 +172,19 @@ class RegistrationValidator {
     return ValidationResult(isValid: true);
   }
 
-  // Page 2: Appearance Validation
   static ValidationResult validateAppearance({
     required String height,
     required String weight,
     required String bodyType,
   }) {
     // Height Validation
+    if (height.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Height is required',
+      );
+    }
+
     double? heightNum = double.tryParse(height.trim());
     if (heightNum == null || heightNum < 100 || heightNum > 250) {
       return ValidationResult(
@@ -149,6 +194,13 @@ class RegistrationValidator {
     }
 
     // Weight Validation
+    if (weight.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Weight is required',
+      );
+    }
+
     double? weightNum = double.tryParse(weight.trim());
     if (weightNum == null || weightNum < 30 || weightNum > 300) {
       return ValidationResult(
@@ -168,7 +220,7 @@ class RegistrationValidator {
     return ValidationResult(isValid: true);
   }
 
-  // Page 3: Lifestyle Validation
+  // Lifestyle validasyonu
   static ValidationResult validateLifestyle({
     required String drink,
     required String smoke,
@@ -181,7 +233,7 @@ class RegistrationValidator {
     required String livingSituation,
     required String relationshipStatus,
   }) {
-    // Habits Validation
+    // Drinking Habits
     if (drink.trim().isEmpty) {
       return ValidationResult(
         isValid: false,
@@ -189,6 +241,7 @@ class RegistrationValidator {
       );
     }
 
+    // Smoking Habits
     if (smoke.trim().isEmpty) {
       return ValidationResult(
         isValid: false,
@@ -196,7 +249,7 @@ class RegistrationValidator {
       );
     }
 
-    // Status Validations
+    // Marital Status
     if (maritalStatus.trim().isEmpty) {
       return ValidationResult(
         isValid: false,
@@ -204,7 +257,7 @@ class RegistrationValidator {
       );
     }
 
-    // Children Validation
+    // Children Information
     if (haveChildren.trim().isEmpty) {
       return ValidationResult(
         isValid: false,
@@ -212,14 +265,24 @@ class RegistrationValidator {
       );
     }
 
-    if (haveChildren == 'Yes' && numberOfChildren.trim().isEmpty) {
-      return ValidationResult(
-        isValid: false,
-        errorMessage: 'Please specify number of children',
-      );
+    if (haveChildren == 'Yes') {
+      if (numberOfChildren.trim().isEmpty) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Please specify number of children',
+        );
+      }
+
+      int? childrenNum = int.tryParse(numberOfChildren.trim());
+      if (childrenNum == null || childrenNum < 0 || childrenNum > 20) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Please enter a valid number of children (0-20)',
+        );
+      }
     }
 
-    // Professional Info Validation
+    // Professional Information
     if (profession.trim().isEmpty) {
       return ValidationResult(
         isValid: false,
@@ -251,7 +314,7 @@ class RegistrationValidator {
       );
     }
 
-    // Living Situation Validation
+    // Living Situation
     if (livingSituation.trim().isEmpty) {
       return ValidationResult(
         isValid: false,
@@ -259,7 +322,7 @@ class RegistrationValidator {
       );
     }
 
-    // Relationship Status Validation
+    // Relationship Status
     if (relationshipStatus.trim().isEmpty) {
       return ValidationResult(
         isValid: false,
@@ -270,7 +333,7 @@ class RegistrationValidator {
     return ValidationResult(isValid: true);
   }
 
-  // Page 4: Background Validation
+  // Background validasyonu
   static ValidationResult validateBackground({
     required String nationality,
     required String education,
@@ -278,7 +341,7 @@ class RegistrationValidator {
     required String religion,
     required String ethnicity,
   }) {
-    // Nationality Validation
+    // Nationality
     if (nationality.trim().isEmpty) {
       return ValidationResult(
         isValid: false,
@@ -286,7 +349,7 @@ class RegistrationValidator {
       );
     }
 
-    // Education Validation
+    // Education
     if (education.trim().isEmpty) {
       return ValidationResult(
         isValid: false,
@@ -294,15 +357,15 @@ class RegistrationValidator {
       );
     }
 
-    // Language Validation
+    // Language
     if (language.trim().isEmpty) {
       return ValidationResult(
         isValid: false,
-        errorMessage: 'Please select languages spoken',
+        errorMessage: 'Please select your language(s)',
       );
     }
 
-    // Religion Validation
+    // Religion
     if (religion.trim().isEmpty) {
       return ValidationResult(
         isValid: false,
@@ -310,7 +373,7 @@ class RegistrationValidator {
       );
     }
 
-    // Ethnicity Validation
+    // Ethnicity
     if (ethnicity.trim().isEmpty) {
       return ValidationResult(
         isValid: false,
@@ -321,36 +384,51 @@ class RegistrationValidator {
     return ValidationResult(isValid: true);
   }
 
-  // Page 5: Social Media Links Validation (Optional fields with URL validation)
+  // Social Links validasyonu
   static ValidationResult validateSocialLinks({
     required String linkedIn,
     required String instagram,
     required String github,
     required bool termsAccepted,
   }) {
-    // URL validation for optional social media links
-    if (linkedIn.isNotEmpty && !GetUtils.isURL(linkedIn)) {
-      return ValidationResult(
-        isValid: false,
-        errorMessage: 'Please enter a valid LinkedIn URL',
+    // LinkedIn Validation (Optional)
+    if (linkedIn.isNotEmpty) {
+      final linkedInPattern = RegExp(
+        r'^https?:\/\/(www\.)?linkedin\.com\/(in|pub)\/[A-Za-z0-9_-]+\/?$',
       );
+      if (!linkedInPattern.hasMatch(linkedIn.trim())) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Please enter a valid LinkedIn profile URL',
+        );
+      }
     }
 
-    if (instagram.isNotEmpty && !GetUtils.isURL(instagram)) {
-      return ValidationResult(
-        isValid: false,
-        errorMessage: 'Please enter a valid Instagram URL',
-      );
+    // Instagram Validation (Optional)
+    if (instagram.isNotEmpty) {
+      final instagramPattern = RegExp(r'^@?[A-Za-z0-9_.]+$');
+      if (!instagramPattern.hasMatch(instagram.trim())) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Please enter a valid Instagram handle',
+        );
+      }
     }
 
-    if (github.isNotEmpty && !GetUtils.isURL(github)) {
-      return ValidationResult(
-        isValid: false,
-        errorMessage: 'Please enter a valid GitHub URL',
+    // GitHub Validation (Optional)
+    if (github.isNotEmpty) {
+      final githubPattern = RegExp(
+        r'^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9_-]+\/?$',
       );
+      if (!githubPattern.hasMatch(github.trim())) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Please enter a valid GitHub profile URL',
+        );
+      }
     }
 
-    // Terms acceptance validation
+    // Terms and Conditions
     if (!termsAccepted) {
       return ValidationResult(
         isValid: false,
@@ -360,32 +438,71 @@ class RegistrationValidator {
 
     return ValidationResult(isValid: true);
   }
+
+  // Helper method for URL validation
+  static bool isValidUrl(String url) {
+    if (url.isEmpty) return true; // Optional fields
+    try {
+      final uri = Uri.parse(url);
+      return uri.hasScheme && uri.hasAuthority;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Helper method for numeric validation
+  static bool isValidNumber(String value,
+      {double min = 0, double max = double.infinity}) {
+    try {
+      final number = double.parse(value);
+      return number >= min && number <= max;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
+// Password valdation classes
 class PasswordValidator {
   static const int minLength = 8;
 
   static PasswordStrength validatePassword(String password) {
     final requirements = <PasswordRequirement>[
-      PasswordRequirement('En az $minLength karakter',
-          password.length >= minLength, Icons.label),
-      PasswordRequirement('Büyük harf (A-Z)',
-          password.contains(RegExp(r'[A-Z]')), Icons.text_fields),
-      PasswordRequirement('Küçük harf (a-z)',
-          password.contains(RegExp(r'[a-z]')), Icons.text_fields_outlined),
       PasswordRequirement(
-          'Sayı (0-9)', password.contains(RegExp(r'[0-9]')), Icons.numbers),
-      PasswordRequirement('Özel karakter (!@#\$%^&*)',
-          password.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]')), Icons.star),
+        'At least $minLength characters',
+        password.length >= minLength,
+        Icons.label,
+      ),
+      PasswordRequirement(
+        'Uppercase letter (A-Z)',
+        password.contains(RegExp(r'[A-Z]')),
+        Icons.text_fields,
+      ),
+      PasswordRequirement(
+        'Lowercase letter (a-z)',
+        password.contains(RegExp(r'[a-z]')),
+        Icons.text_fields_outlined,
+      ),
+      PasswordRequirement(
+        'Number (0-9)',
+        password.contains(RegExp(r'[0-9]')),
+        Icons.numbers,
+      ),
+      PasswordRequirement(
+        'Special character (!@#\$%^&*)',
+        password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]')),
+        Icons.star,
+      ),
     ];
 
     final failedRequirements = requirements.where((req) => !req.isMet).toList();
 
     return PasswordStrength(
-        isValid: failedRequirements.isEmpty,
-        requirements: requirements,
-        failedRequirements: failedRequirements,
-        score: _calculateScore(requirements));
+      isValid: failedRequirements.isEmpty,
+      requirements: requirements,
+      failedRequirements: failedRequirements,
+      score: _calculateScore(requirements),
+    );
   }
 
   static int _calculateScore(List<PasswordRequirement> requirements) {
@@ -426,9 +543,139 @@ class PasswordStrength {
   }
 
   String get strengthText {
-    if (score < 40) return 'Zayıf';
-    if (score < 60) return 'Orta';
-    if (score < 80) return 'İyi';
-    return 'Güçlü';
+    if (score < 40) return 'Weak';
+    if (score < 60) return 'Medium';
+    if (score < 80) return 'Good';
+    return 'Strong';
+  }
+}
+
+extension ValidationHandling on AuthController {
+  void handleValidation({
+    required ValidationResult result,
+    VoidCallback? onSuccess,
+  }) {
+    if (result.isValid) {
+      onSuccess?.call();
+    } else {
+      Get.snackbar(
+        'Error',
+        result.errorMessage ?? 'Please check your inputs',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(8),
+        borderRadius: 8,
+      );
+    }
+  }
+
+  void validateAndProceed() {
+    ValidationResult? validationResult;
+
+    switch (currentPage.value) {
+      case 0: // Start Page
+        validationResult = RegistrationValidator.validateStartPage(
+          profileImage: pickedImage.value,
+          name: nameController.text,
+          email: emailController.text,
+          password: passwordController.text,
+          confirmPassword: confirmPasswordController.text,
+        );
+        break;
+
+      case 1: // Personal Info
+        validationResult = RegistrationValidator.validatePersonalInfo(
+          age: ageController.text,
+          gender: genderController.text,
+          phone: phoneNoController.text,
+          country: countryController.text,
+          city: cityController.text,
+          profileHeading: profileHeadingController.text,
+        );
+        break;
+
+      case 2: // Appearance
+        validationResult = RegistrationValidator.validateAppearance(
+          height: heightController.text,
+          weight: weightController.text,
+          bodyType: bodyTypeController.text,
+        );
+        break;
+
+      case 3: // Lifestyle
+        validationResult = RegistrationValidator.validateLifestyle(
+          drink: drinkController.text,
+          smoke: smokeController.text,
+          maritalStatus: martialStatusController.text,
+          haveChildren: childrenSelection.value,
+          numberOfChildren: noOfChildrenController.text,
+          profession: professionController.text,
+          employmentStatus: employmentStatusController.text,
+          income: incomeController.text,
+          livingSituation: livingSituationController.text,
+          relationshipStatus: relationshipSelection.value,
+        );
+        break;
+
+      case 4: // Background
+        validationResult = RegistrationValidator.validateBackground(
+          nationality: nationalityController.text,
+          education: educationController.text,
+          language: languageSpokenController.text,
+          religion: religionController.text,
+          ethnicity: ethnicityController.text,
+        );
+        break;
+
+      case 5: // Social Links
+        validationResult = RegistrationValidator.validateSocialLinks(
+          linkedIn: linkedInController.text,
+          instagram: instagramController.text,
+          github: githubController.text,
+          termsAccepted: termsAccepted.value,
+        );
+        break;
+
+      default:
+        validationResult = ValidationResult(isValid: true);
+    }
+
+    handleValidation(
+      result: validationResult,
+      onSuccess: () {
+        if (currentPage.value < 5) {
+          pageController.nextPage(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+          currentPage.value++;
+        }
+      },
+    );
+  }
+}
+
+// Validasyon için kullanılacak bazı helper extension'lar
+extension StringValidationExtension on String {
+  bool get isValidLinkedInUrl => RegExp(
+        r'^https?:\/\/(www\.)?linkedin\.com\/(in|pub)\/[A-Za-z0-9_-]+\/?$',
+      ).hasMatch(this);
+
+  bool get isValidInstagramHandle =>
+      RegExp(r'^@?[A-Za-z0-9_.]+$').hasMatch(this);
+
+  bool get isValidGithubUrl => RegExp(
+        r'^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9_-]+\/?$',
+      ).hasMatch(this);
+
+  bool get isValidNumber {
+    try {
+      double.parse(this);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

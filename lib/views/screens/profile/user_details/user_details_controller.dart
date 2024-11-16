@@ -161,7 +161,7 @@ class UserDetailsController extends GetxController {
               onTap: () {
                 Get.back();
                 Get.to(
-                  () => const ProfileInfoScreen(),
+                  () => ProfileInfoScreen(),
                   binding: ProfileBindings(userId: currentUser!.uid),
                 );
               },
