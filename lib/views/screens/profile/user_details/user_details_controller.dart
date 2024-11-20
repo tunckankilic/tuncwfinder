@@ -99,9 +99,9 @@ class UserDetailsController extends GetxController {
           religion.value = data['religion'] as String? ?? '';
           ethnicity.value = data['ethnicity'] as String? ?? '';
 
-          linkedInUrl.value = data['linkedIn'] as String? ?? '';
-          instagramUrl.value = data['instagram'] as String? ?? '';
-          githubUrl.value = data['github'] as String? ?? '';
+          linkedInUrl.value = data['linkedInUrl'] as String? ?? '';
+          instagramUrl.value = data['instagramUrl'] as String? ?? '';
+          githubUrl.value = data['githubUrl'] as String? ?? '';
 
           imageUrls.value = [
             data['urlImage1'] as String?,

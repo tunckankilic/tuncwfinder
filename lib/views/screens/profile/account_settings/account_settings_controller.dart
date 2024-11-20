@@ -454,9 +454,9 @@ class AccountSettingsController extends GetxController {
         'ethnicity': ethnicityController.text,
 
         // Connections
-        'instagram': instagramController.text,
-        'linkedIn': linkedInController.text,
-        'github': gitHubController.text,
+        'instagramUrl': instagramController.text,
+        'linkedInUrl': linkedInController.text,
+        'githubUrl': gitHubController.text,
 
         // Images
         if (profileImageUrl != null) 'profileImageUrl': profileImageUrl,
