@@ -37,12 +37,24 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
 
   @override
   Widget build(BuildContext context) {
+    // Controller'ın varlığını kontrol et
+    if (!Get.isRegistered<AccountSettingsController>()) {
+      Get.put(AccountSettingsController());
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isTablet = constraints.maxWidth > 600;
         return Scaffold(
           appBar: _buildAppBar(context, isTablet),
-          body: _buildResponsiveLayout(context, isTablet),
+          body: Obx(() {
+            if (controller.isLoading.value) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return _buildResponsiveLayout(context, isTablet);
+          }),
         );
       },
     );
@@ -503,53 +515,6 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
       ],
     );
   }
-
-  // Widget _buildSection({
-  //   required BuildContext context,
-  //   required String title,
-  //   required bool isTablet,
-  //   required Widget child,
-  // }) {
-  //   return Container(
-  //     margin: EdgeInsets.only(bottom: isTablet ? 32.0 : 24.0),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Container(
-  //           padding: const EdgeInsets.only(bottom: 16.0),
-  //           decoration: BoxDecoration(
-  //             border: Border(
-  //               bottom: BorderSide(
-  //                 color: Colors.grey[200]!,
-  //                 width: 1.0,
-  //               ),
-  //             ),
-  //           ),
-  //           child: Row(
-  //             children: [
-  //               Text(
-  //                 title,
-  //                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-  //                       color: Theme.of(context).primaryColor,
-  //                       fontSize: isTablet ? 24.0 : 20.0,
-  //                       fontWeight: FontWeight.bold,
-  //                     ),
-  //               ),
-  //               const Spacer(),
-  //               Icon(
-  //                 Icons.edit_outlined,
-  //                 color: Theme.of(context).primaryColor,
-  //                 size: isTablet ? 24.0 : 20.0,
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //         const SizedBox(height: 16.0),
-  //         child,
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Widget _buildProfileImageSection(BuildContext context, bool isTablet) {
     final double avatarSize = isTablet ? 160.0 : 120.0;

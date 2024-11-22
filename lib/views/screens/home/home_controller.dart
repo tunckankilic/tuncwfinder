@@ -126,15 +126,9 @@ class HomeController extends GetxController {
         return controller;
       }, permanent: true);
 
-      vsvrController = await Get.putAsync<VsvrController>(() async {
-        final controller = VsvrController();
-        await controller.onInit();
-        return controller;
-      }, permanent: true);
-
       profileController = await Get.putAsync<ProfileController>(() async {
         final controller = ProfileController();
-        await controller.onInit();
+        controller.onInit();
         return controller;
       }, permanent: true);
 

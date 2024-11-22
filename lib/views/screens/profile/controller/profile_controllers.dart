@@ -16,9 +16,9 @@ class ProfileController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
-  Future<void> onInit() async {
+  void onInit() async {
     super.onInit();
-    await _initializeProfileStream();
+    _initializeProfileStream();
   }
 
   Future<void> _initializeProfileStream() async {
