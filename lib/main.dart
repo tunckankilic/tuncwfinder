@@ -10,10 +10,6 @@ import 'package:tuncforwork/views/screens/auth/auth_wrapper.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
-import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
-import 'package:tuncforwork/views/screens/home/home_controller.dart';
-import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
-import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -83,7 +79,7 @@ Future<void> requestNotificationPermission() async {
   try {
     // Permission handler ile izin isteme
     final status = await Permission.notification.request();
-    print('Notification permission status: $status');
+    log('Notification permission status: $status');
 
     // Firebase Messaging izinleri
     final settings = await FirebaseMessaging.instance.requestPermission(
@@ -95,9 +91,8 @@ Future<void> requestNotificationPermission() async {
       provisional: false,
       sound: true,
     );
-    print(
-        'Firebase Messaging permission status: ${settings.authorizationStatus}');
+    log('Firebase Messaging permission status: ${settings.authorizationStatus}');
   } catch (e) {
-    print('Error requesting notification permissions: $e');
+    log('Error requesting notification permissions: $e');
   }
 }

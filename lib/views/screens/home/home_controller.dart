@@ -1,8 +1,9 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tuncforwork/models/person.dart' as pM;
 import 'package:tuncforwork/service/push_notification_system.dart';
 import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
@@ -95,7 +96,7 @@ class HomeController extends GetxController {
 
       isInitialized.value = true;
     } catch (e) {
-      print('Error in _initializeApp: $e');
+      log('Error in _initializeApp: $e');
     } finally {
       isLoading.value = false;
     }
@@ -111,13 +112,17 @@ class HomeController extends GetxController {
 
   Future<void> initializeControllers() async {
     try {
-      // Her controller'ı sırayla initialize et
+      // LslrController'ı öncelikli olarak başlat
+      lslrController = await Get.putAsync<LslrController>(() async {
+        final controller = LslrController();
+        controller.onInit();
+        return controller;
+      }, permanent: true);
+
+      // Diğer controller'ları başlat
       fsfrController = await Get.putAsync<FsfrController>(() async {
         final controller = FsfrController();
-        await controller.onInit();
-        if (fsfrController != null) {
-          await fsfrController!.getFavoriteListKeys(); // Initial veri yükleme
-        }
+        controller.onInit();
         return controller;
       }, permanent: true);
 
@@ -127,24 +132,15 @@ class HomeController extends GetxController {
         return controller;
       }, permanent: true);
 
-      lslrController = await Get.putAsync<LslrController>(() async {
-        final controller = LslrController();
-        await controller.onInit();
-        if (lslrController != null) {
-          await lslrController!.getLikedListKeys(); // Initial veri yükleme
-        }
-        return controller;
-      }, permanent: true);
-
       profileController = await Get.putAsync<ProfileController>(() async {
         final controller = ProfileController();
         await controller.onInit();
         return controller;
       }, permanent: true);
 
-      print('All controllers initialized successfully');
+      log('All controllers initialized successfully');
     } catch (e) {
-      print('Error initializing controllers: $e');
+      log('Error initializing controllers: $e');
       rethrow;
     }
   }
@@ -170,7 +166,7 @@ class HomeController extends GetxController {
           break;
       }
     } catch (e) {
-      print('Error refreshing screen $index: $e');
+      log('Error refreshing screen $index: $e');
     } finally {
       isLoading.value = false;
     }

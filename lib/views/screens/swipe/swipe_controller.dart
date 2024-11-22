@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -47,7 +48,7 @@ class SwipeController extends GetxController {
       ageRange();
       getResults();
     } else {
-      print("No user is currently signed in");
+      log("No user is currently signed in");
       // Kullanıcı girişi olmadığında yapılacak işlemler
     }
   }
@@ -493,7 +494,7 @@ class SwipeController extends GetxController {
       // Analytics logging (isteğe bağlı)
       await _logBlockAction(blockedUserId);
     } catch (e) {
-      print("Error in blockUser: $e");
+      log("Error in blockUser: $e");
       Get.snackbar(
         'Error',
         'Failed to block user. Please try again.',
@@ -526,7 +527,7 @@ class SwipeController extends GetxController {
       });
     } catch (e) {
       // Analytics hatası kritik değil, sessizce devam et
-      print("Analytics error: $e");
+      log("Analytics error: $e");
     }
   }
 
@@ -803,7 +804,7 @@ class SwipeController extends GetxController {
         'Failed to fetch results. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
       );
-      print("Error in getResults: $e"); // For debugging
+      log("Error in getResults: $e"); // For debugging
     }
   }
 

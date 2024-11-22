@@ -1231,12 +1231,12 @@ class PasswordInputField extends StatelessWidget {
   final Function(String) onChanged;
 
   const PasswordInputField({
-    Key? key,
+    super.key,
     required this.controller,
     required this.label,
     this.isConfirmField = false,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1315,6 +1315,7 @@ class CustomProgressBar extends StatelessWidget {
   final bool var5;
 
   const CustomProgressBar({
+    super.key,
     required this.isTablet,
     required this.var1,
     required this.var2,
@@ -1370,10 +1371,10 @@ class CheckList extends StatelessWidget {
   final bool isTablet;
   final int index;
   CheckList({
-    Key? key,
+    super.key,
     required this.isTablet,
     required this.index,
-  }) : super(key: key);
+  });
 
   AuthController controller = Get.put(AuthController());
   @override
@@ -1404,10 +1405,10 @@ class SocialLinksSection extends StatelessWidget {
   final bool isTablet;
 
   const SocialLinksSection({
-    Key? key,
+    super.key,
     required this.controller,
     required this.isTablet,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

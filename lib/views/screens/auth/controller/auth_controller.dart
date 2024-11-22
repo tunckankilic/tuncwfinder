@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -14,10 +15,8 @@ import 'package:tuncforwork/models/person.dart' as pM;
 import 'package:tuncforwork/service/validation.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
 import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
-import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
 import 'package:tuncforwork/views/screens/home/home_bindings.dart';
 import 'package:tuncforwork/views/screens/home/home_controller.dart';
-import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 
 class AuthController extends GetxController {
@@ -243,9 +242,9 @@ By accepting this privacy policy, you declare that you understand and agree to t
       showProgressBar.value = true;
 
       // Debug için sosyal medya değerlerini kontrol edelim
-      print('LinkedIn URL: ${linkedInController.text}');
-      print('Instagram URL: ${instagramController.text}');
-      print('Github URL: ${githubController.text}');
+      log('LinkedIn URL: ${linkedInController.text}');
+      log('Instagram URL: ${instagramController.text}');
+      log('Github URL: ${githubController.text}');
 
       final UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
@@ -346,7 +345,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       );
       final writtenData =
           await _firestore.collection('users').doc(user.uid).get();
-      print('Written data: ${writtenData.data()}');
+      log('Written data: ${writtenData.data()}');
 
       clearAllFields();
 
@@ -360,7 +359,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       handleAuthError(e);
     } catch (e) {
       _showError('Registration failed: ${e.toString()}');
-      print('Registration error: $e');
+      log('Registration error: $e');
     } finally {
       showProgressBar.value = false;
     }
@@ -451,7 +450,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         _showSuccess('Image selected successfully');
       }
     } catch (e) {
-      print('Error picking image: $e');
+      log('Error picking image: $e');
       _showError('Failed to pick image. Please try again.');
     } finally {
       isLoading.value = false;
@@ -483,7 +482,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         _showSuccess('Photo captured successfully');
       }
     } catch (e) {
-      print('Error capturing image: $e');
+      log('Error capturing image: $e');
       _showError('Failed to capture image. Please try again.');
     } finally {
       isLoading.value = false;
@@ -538,7 +537,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     } on FirebaseAuthException catch (e) {
       handleAuthError(e);
     } catch (e) {
-      print('Login error: $e');
+      log('Login error: $e');
       _showError('Login failed: ${e.toString()}');
     } finally {
       isLoading.value = false;
@@ -744,7 +743,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         await temp.writeAsBytes(bytes);
         pickedImage.value = temp;
       } catch (e) {
-        print('Error downloading profile picture: $e');
+        log('Error downloading profile picture: $e');
       }
     }
 
@@ -762,7 +761,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         genderController.text = data['gender'] ?? '';
       }
     } catch (e) {
-      print('Error fetching user data from Firestore: $e');
+      log('Error fetching user data from Firestore: $e');
     }
   }
 
@@ -784,7 +783,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       final downloadUrl = await uploadTask.ref.getDownloadURL();
       return downloadUrl;
     } catch (e) {
-      print('Error in _uploadProfilePicture: $e');
+      log('Error in _uploadProfilePicture: $e');
       throw 'Failed to upload profile picture';
     }
   }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -39,17 +40,17 @@ class UserController extends GetxController {
       if (doc.exists) {
         try {
           currentUser.value = Person.fromDataSnapshot(doc);
-          print('Initial user data loaded');
+          log('Initial user data loaded');
           _retryCount = 0; // Başarılı olunca retry sayısını sıfırla
         } catch (e) {
-          print('Error parsing initial user data: $e');
+          log('Error parsing initial user data: $e');
           _handleRetry(uid);
           return;
         }
       } else if (_retryCount < _maxRetries) {
         await Future.delayed(Duration(milliseconds: 500 * (_retryCount + 1)));
         _retryCount++;
-        print('Retrying user data load, attempt $_retryCount');
+        log('Retrying user data load, attempt $_retryCount');
         await _initializeUserStream(uid);
         return;
       }
@@ -61,22 +62,22 @@ class UserController extends GetxController {
           if (docSnapshot.exists) {
             try {
               currentUser.value = Person.fromDataSnapshot(docSnapshot);
-              print('User data updated from stream');
+              log('User data updated from stream');
             } catch (e) {
-              print('Error parsing stream data: $e');
+              log('Error parsing stream data: $e');
             }
           } else {
-            print('Document does not exist in stream for uid: $uid');
+            log('Document does not exist in stream for uid: $uid');
             _handleRetry(uid);
           }
         },
         onError: (error) {
-          print('Error in user stream: $error');
+          log('Error in user stream: $error');
           isLoading.value = false;
         },
       );
     } catch (e) {
-      print('Error initializing user stream: $e');
+      log('Error initializing user stream: $e');
     } finally {
       isLoading.value = false;
     }
@@ -86,10 +87,10 @@ class UserController extends GetxController {
     if (_retryCount < _maxRetries) {
       _retryCount++;
       await Future.delayed(Duration(milliseconds: 500 * _retryCount));
-      print('Retrying user data load, attempt $_retryCount');
+      log('Retrying user data load, attempt $_retryCount');
       await _initializeUserStream(uid);
     } else {
-      print('Max retries reached for user data load');
+      log('Max retries reached for user data load');
       isLoading.value = false;
     }
   }
@@ -111,7 +112,7 @@ class UserController extends GetxController {
         'isBanned': userDoc.data()?['isBanned'] ?? false,
       };
     } catch (e) {
-      print('Error checking user status: $e');
+      log('Error checking user status: $e');
       return {'exists': false, 'isBanned': false};
     }
   }
@@ -129,9 +130,9 @@ class UserController extends GetxController {
       if (docSnapshot.exists) {
         try {
           currentUser.value = Person.fromDataSnapshot(docSnapshot);
-          print('Initial user data loaded');
+          log('Initial user data loaded');
         } catch (e) {
-          print('Error parsing initial user data: $e');
+          log('Error parsing initial user data: $e');
         }
       }
 
@@ -142,21 +143,21 @@ class UserController extends GetxController {
           if (docSnapshot.exists) {
             try {
               currentUser.value = Person.fromDataSnapshot(docSnapshot);
-              print('User data updated from stream');
+              log('User data updated from stream');
             } catch (e) {
-              print('Error parsing stream data: $e');
+              log('Error parsing stream data: $e');
             }
           } else {
-            print('Document does not exist in stream for uid: $uid');
+            log('Document does not exist in stream for uid: $uid');
           }
         },
         onError: (error) {
-          print('Error in user stream: $error');
+          log('Error in user stream: $error');
           isLoading.value = false;
         },
       );
     } catch (e) {
-      print('Error initializing user stream: $e');
+      log('Error initializing user stream: $e');
       isLoading.value = false;
     }
   }

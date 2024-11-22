@@ -7,7 +7,6 @@ import 'package:tuncforwork/views/screens/profile/account_settings/account_setti
 import 'package:tuncforwork/views/screens/profile/controller/profile_controllers.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
-import 'package:tuncforwork/views/screens/viewsent/vsvr_controller.dart';
 
 class HomeBindings extends Bindings {
   @override

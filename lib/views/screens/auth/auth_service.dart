@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tuncforwork/service/service.dart';
@@ -14,7 +16,7 @@ class AuthService extends GetxService {
       final userData = userDoc.data() as Map<String, dynamic>?;
       return userData?['isBanned'] ?? false;
     } catch (e) {
-      print('Error checking ban status: $e');
+      log('Error checking ban status: $e');
       return false;
     }
   }
@@ -37,7 +39,7 @@ class AuthService extends GetxService {
 
       return true;
     } catch (e) {
-      print('Error ensuring user document: $e');
+      log('Error ensuring user document: $e');
       return false;
     }
   }

@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -134,7 +135,7 @@ class Person {
   static Person fromDataSnapshot(DocumentSnapshot snapshot) {
     try {
       Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-      print('Parsing document data: $data'); // Debug için
+      log('Parsing document data: $data'); // Debug için
 
       return Person(
         uid: data['uid'] as String?,
@@ -171,7 +172,7 @@ class Person {
         githubUrl: data['github'] as String?, // github -> githubUrl düzeltmesi
       );
     } catch (e) {
-      print('Error in fromDataSnapshot: $e');
+      log('Error in fromDataSnapshot: $e');
       rethrow;
     }
   }
