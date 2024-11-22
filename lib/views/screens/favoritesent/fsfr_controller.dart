@@ -10,9 +10,9 @@ class FsfrController extends GetxController {
   RxBool isLoading = true.obs;
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     super.onInit();
-    getFavoriteListKeys();
+    await getFavoriteListKeys();
     ever(isFavoriteSentClicked, (_) => getFavoriteListKeys());
   }
 

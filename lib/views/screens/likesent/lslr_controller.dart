@@ -8,9 +8,9 @@ class LslrController extends GetxController {
   RxList likedList = [].obs;
   RxBool isLoading = true.obs;
   @override
-  void onInit() {
+  Future<void> onInit() async {
     super.onInit();
-    getLikedListKeys();
+    await getLikedListKeys();
     ever(isLikeSentClicked, (_) => getLikedListKeys());
   }
 

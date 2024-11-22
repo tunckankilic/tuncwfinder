@@ -16,12 +16,12 @@ class ProfileController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     super.onInit();
-    _initializeProfileStream();
+    await _initializeProfileStream();
   }
 
-  void _initializeProfileStream() {
+  Future<void> _initializeProfileStream() async {
     Query query = _firestore
         .collection("users")
         .where("uid", isNotEqualTo: _auth.currentUser!.uid);

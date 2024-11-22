@@ -736,6 +736,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
   }
 
   Widget _buildTextField({
+    bool readOnly = false,
     required BuildContext context,
     required TextEditingController controller,
     required String label,
@@ -755,6 +756,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextFormField(
+            readOnly: readOnly,
             controller: controller,
             keyboardType: keyboardType,
             maxLines: maxLines,
@@ -1333,6 +1335,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildTextField(
+          readOnly: true,
           context: context,
           controller: controller.nameController,
           label: "Full Name",
@@ -1342,6 +1345,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
               "Enter your full name as it appears on official documents",
         ),
         _buildTextField(
+          readOnly: true,
           context: context,
           controller: controller.emailController,
           label: "Email Address",

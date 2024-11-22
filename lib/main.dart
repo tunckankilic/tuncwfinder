@@ -10,6 +10,10 @@ import 'package:tuncforwork/views/screens/auth/auth_wrapper.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
+import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
+import 'package:tuncforwork/views/screens/home/home_controller.dart';
+import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
+import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -30,9 +34,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: ElegantTheme.themeData,
           initialBinding: InitialBindings(),
-          getPages: AppRoutes.routes,
-          unknownRoute: AppRoutes.unknownRoute,
-          home: const AuthenticationWrapper(),
+          home: AuthenticationWrapper(),
         );
       },
     );
@@ -42,23 +44,13 @@ class MyApp extends StatelessWidget {
 class InitialBindings extends Bindings {
   @override
   void dependencies() {
-    // Service'leri bağla
+    // Core Services
     Get.put(AuthService(), permanent: true);
     Get.put(PushNotificationSystem(), permanent: true);
 
-    // Controller'ları bağla
-    Get.put(AuthController(), permanent: true);
+    // Core Controllers - sadece bunları yükle
     Get.put(UserController(), permanent: true);
-
-    // Token üretimini gecikmeli başlat
-    Future.delayed(const Duration(seconds: 1), () async {
-      try {
-        final pushSystem = Get.find<PushNotificationSystem>();
-        await pushSystem.generateDeviceRegistrationToken();
-      } catch (e) {
-        print('Error in initial token generation: $e');
-      }
-    });
+    Get.put(AuthController(), permanent: true);
   }
 }
 

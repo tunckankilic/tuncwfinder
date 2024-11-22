@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/person.dart' as pM;
 import 'package:tuncforwork/service/push_notification_system.dart';
+import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
 import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
 import 'package:tuncforwork/views/screens/profile/controller/profile_controllers.dart';
@@ -14,17 +15,16 @@ import 'package:tuncforwork/views/screens/viewsent/vsvr_controller.dart';
 
 class HomeController extends GetxController {
   static HomeController instance = Get.find();
-
+  final RxBool isInitialized = false.obs;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Controllers
-  late final PushNotificationSystem notificationSystem;
-  late final FsfrController fsfrController;
-  late final VsvrController vsvrController;
-  late final ProfileController profileController;
-  late final LslrController lslrController;
-  late final UserDetailsController userDetailsController;
+  PushNotificationSystem? notificationSystem;
+  FsfrController? fsfrController;
+  VsvrController? vsvrController;
+  LslrController? lslrController;
+  ProfileController? profileController;
 
   // Rx variables
   final RxInt screenIndex = 0.obs;
@@ -71,6 +71,8 @@ class HomeController extends GetxController {
 
   Widget get currentScreen => tabScreensList[screenIndex.value].page();
 
+  ///*************************************************************************
+
   @override
   void onInit() {
     super.onInit();
@@ -79,148 +81,92 @@ class HomeController extends GetxController {
 
   Future<void> _initializeApp() async {
     try {
-      // Initialize notification system
-      notificationSystem = PushNotificationSystem();
-      await notificationSystem.generateDeviceRegistrationToken();
+      isLoading.value = true;
 
-      // Initialize controllers
-      fsfrController = Get.put(FsfrController(), permanent: true);
-      vsvrController = Get.put(VsvrController(), permanent: true);
-      lslrController = Get.put(LslrController(), permanent: true);
-      profileController = Get.put(ProfileController(), permanent: true);
+      // Core servisleri initialize et
+      notificationSystem = Get.find<PushNotificationSystem>();
+      await notificationSystem?.initialize();
 
-      // Set up auth state listener
-      _auth.authStateChanges().listen(_onAuthStateChanged);
+      // User verisinin yüklenmesini bekle
+      await _waitForUserData();
 
-      // Check current user
-      await _checkCurrentUser();
+      // Controller'ları initialize et
+      await initializeControllers();
+
+      isInitialized.value = true;
     } catch (e) {
       print('Error in _initializeApp: $e');
-      errorMessage.value = 'Error initializing app: $e';
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  Future<void> _checkCurrentUser() async {
+  Future<void> _waitForUserData() async {
+    final userController = Get.find<UserController>();
+    await Future.doWhile(() async {
+      await Future.delayed(const Duration(milliseconds: 100));
+      return userController.currentUser.value == null;
+    });
+  }
+
+  Future<void> initializeControllers() async {
     try {
-      final user = _auth.currentUser;
-      if (user != null) {
-        currentUser.value = user;
-        await _ensureUserDocument(user.uid);
-      }
+      // Her controller'ı sırayla initialize et
+      fsfrController = await Get.putAsync<FsfrController>(() async {
+        final controller = FsfrController();
+        await controller.onInit();
+        if (fsfrController != null) {
+          await fsfrController!.getFavoriteListKeys(); // Initial veri yükleme
+        }
+        return controller;
+      }, permanent: true);
+
+      vsvrController = await Get.putAsync<VsvrController>(() async {
+        final controller = VsvrController();
+        await controller.onInit();
+        return controller;
+      }, permanent: true);
+
+      lslrController = await Get.putAsync<LslrController>(() async {
+        final controller = LslrController();
+        await controller.onInit();
+        if (lslrController != null) {
+          await lslrController!.getLikedListKeys(); // Initial veri yükleme
+        }
+        return controller;
+      }, permanent: true);
+
+      profileController = await Get.putAsync<ProfileController>(() async {
+        final controller = ProfileController();
+        await controller.onInit();
+        return controller;
+      }, permanent: true);
+
+      print('All controllers initialized successfully');
     } catch (e) {
-      print('Error checking current user: $e');
+      print('Error initializing controllers: $e');
+      rethrow;
     }
-  }
-
-  void _onAuthStateChanged(User? user) async {
-    try {
-      if (user != null) {
-        currentUser.value = user;
-        await _ensureUserDocument(user.uid);
-      } else {
-        currentUser.value = null;
-        // Handle logout if needed
-        Get.offAllNamed('/login'); // Or your login route
-      }
-    } catch (e) {
-      print('Error in auth state change: $e');
-    }
-  }
-
-  Future<void> _ensureUserDocument(String uid) async {
-    try {
-      final docRef = _firestore.collection('users').doc(uid);
-      final doc = await docRef.get();
-
-      if (!doc.exists) {
-        final userData = pM.Person(
-          uid: uid,
-          email: currentUser.value?.email ?? '',
-          name: currentUser.value?.displayName ?? 'User',
-          imageProfile: currentUser.value?.photoURL ?? '',
-          publishedDateTime: DateTime.now().millisecondsSinceEpoch,
-          age: 0,
-          phoneNo: '',
-          city: '',
-          country: '',
-          profileHeading: 'Hey there! I\'m new here.',
-          gender: '',
-          height: '',
-          weight: '',
-          bodyType: '',
-          drink: '',
-          smoke: '',
-          martialStatus: '',
-          haveChildren: 'No',
-          noOfChildren: '',
-          profession: '',
-          employmentStatus: '',
-          income: '',
-          livingSituation: '',
-          willingToRelocate: '',
-          nationality: '',
-          education: '',
-          languageSpoken: '',
-          religion: '',
-          ethnicity: '',
-        );
-
-        // Create main document
-        await docRef.set(userData.toJson());
-
-        // Create subcollections
-        final batch = _firestore.batch();
-
-        ['followers', 'following', 'connections', 'matches']
-            .forEach((collection) {
-          final docRef = _firestore
-              .collection('users')
-              .doc(uid)
-              .collection(collection)
-              .doc();
-          batch.set(docRef, {'createdAt': FieldValue.serverTimestamp()});
-        });
-
-        // Create user settings
-        batch.set(_firestore.collection('user_settings').doc(uid), {
-          'emailNotifications': true,
-          'pushNotifications': true,
-          'profileVisibility': 'public',
-          'lastUpdated': FieldValue.serverTimestamp(),
-          'accountStatus': 'active',
-          'isVerified': false,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-
-        await batch.commit();
-      }
-
-      // Update online status
-      await docRef.update({
-        'isOnline': true,
-        'lastLoginAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      print('Error ensuring user document: $e');
-      errorMessage.value = 'Error setting up user profile: $e';
-    }
-  }
-
-  void changeScreen(int index) {
-    screenIndex.value = index;
-    refreshCurrentScreen(index);
   }
 
   Future<void> refreshCurrentScreen(int index) async {
     try {
+      if (!isInitialized.value) {
+        await _waitForControllers();
+      }
+
       isLoading.value = true;
 
       switch (index) {
         case 1: // Favorites
-          await fsfrController.getFavoriteListKeys();
+          if (fsfrController != null) {
+            await fsfrController!.getFavoriteListKeys();
+          }
           break;
         case 2: // Likes
-          await lslrController.getLikedListKeys();
+          if (lslrController != null) {
+            await lslrController!.getLikedListKeys();
+          }
           break;
       }
     } catch (e) {
@@ -230,14 +176,26 @@ class HomeController extends GetxController {
     }
   }
 
+  Future<void> _waitForControllers() async {
+    int retryCount = 0;
+    while (!isInitialized.value && retryCount < 3) {
+      await Future.delayed(Duration(milliseconds: 500));
+      retryCount++;
+    }
+  }
+
+  void changeScreen(int index) {
+    screenIndex.value = index;
+    refreshCurrentScreen(index);
+  }
+
   @override
   void onClose() {
-    if (_auth.currentUser != null) {
-      _firestore.collection('users').doc(_auth.currentUser!.uid).update({
-        'isOnline': false,
-        'lastLoginAt': FieldValue.serverTimestamp(),
-      });
-    }
+    // Controller'ları temizle
+    fsfrController = null;
+    vsvrController = null;
+    lslrController = null;
+    profileController = null;
     super.onClose();
   }
 }

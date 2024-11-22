@@ -506,7 +506,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         password: passwordController.text,
       );
 
-      // 2. User document kontrolü ve parse
+      // 2. User document kontrolü
       final userDocRef =
           _firestore.collection('users').doc(userCredential.user!.uid);
       final userDoc = await userDocRef.get();
@@ -515,28 +515,23 @@ By accepting this privacy policy, you declare that you understand and agree to t
         throw 'User document not found';
       }
 
-      // 3. UserController'ı yükle ve initialize et
-      final userController = Get.put(UserController(), permanent: true);
+      // 3. UserController'ı initialize et
+      final userController = Get.find<UserController>();
+      await userController.initializeUserStream(userCredential.user!.uid);
 
-      // Document verilerini parse et
-      try {
-        final userData = pM.Person.fromDataSnapshot(userDoc);
-        userController.currentUser.value = userData;
-        print('User data parsed successfully: ${userData.toString()}');
-      } catch (e) {
-        print('Error parsing user data: $e');
-        print('Raw document data: ${userDoc.data()}');
-      }
+      // 4. Verilerin yüklenmesini bekle
+      await Future.doWhile(() async {
+        await Future.delayed(const Duration(milliseconds: 100));
+        return userController.currentUser.value == null;
+      });
 
-      // 4. Diğer controller'ları yükle
-      Get.put(HomeController());
-      Get.put(FsfrController(), permanent: true);
-      Get.put(LslrController(), permanent: true);
+      // 5. HomeController'ı yükle ve initialize et
+      final homeController = Get.put(HomeController(), permanent: true);
+      await homeController.initializeControllers();
 
-      // 5. Ana ekrana yönlendir
+      // 6. Ana ekrana yönlendir - HomeBindings kullanma
       await Get.offAll(
         () => const HomeScreen(),
-        binding: HomeBindings(),
         transition: Transition.fadeIn,
         duration: const Duration(milliseconds: 500),
       );

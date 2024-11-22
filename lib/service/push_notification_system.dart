@@ -9,6 +9,7 @@ import 'package:tuncforwork/views/screens/screens.dart';
 class PushNotificationSystem extends GetxController {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   bool _isInitialized = false;
+  bool get isInitialized => _isInitialized;
 
   @override
   void onInit() {
@@ -16,6 +17,30 @@ class PushNotificationSystem extends GetxController {
     Future.delayed(const Duration(seconds: 1), () {
       _initializeNotifications();
     });
+  }
+
+  // initialize metodunu ekleyelim
+  Future<void> initialize() async {
+    try {
+      if (_isInitialized) return;
+
+      print('Initializing push notification system...');
+
+      // iOS için özel yapılandırma
+      if (Platform.isIOS) {
+        await _setupIOSNotifications();
+      }
+
+      // İzinleri kontrol et ve token üret
+      await _setupNotifications();
+
+      _isInitialized = true;
+    } catch (e, stack) {
+      print('Error initializing push notification system: $e\n$stack');
+      // Hata durumunda bile bildirimleri dinlemeye başla
+      _setupNotificationListeners();
+      rethrow;
+    }
   }
 
   Future<void> generateDeviceRegistrationToken() async {

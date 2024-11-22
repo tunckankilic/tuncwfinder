@@ -49,8 +49,8 @@ class VsvrController extends GetxController {
   }
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
+    await getViewsListKeys();
     super.onInit();
-    getViewsListKeys();
   }
 }
