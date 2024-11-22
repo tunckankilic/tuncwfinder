@@ -13,24 +13,34 @@ class FsfrController extends GetxController {
   void onInit() {
     super.onInit();
     getFavoriteListKeys();
+    ever(isFavoriteSentClicked, (_) => getFavoriteListKeys());
   }
 
   Future<void> getFavoriteListKeys() async {
     try {
       isLoading.value = true;
+      favoritesList.clear(); // Listeyi temizle
+
       if (isFavoriteSentClicked.value) {
         await _getFavoriteSent();
       } else {
         await _getFavoriteReceived();
       }
+
       await getKeysDataFromUsersCollection(isFavoriteSentClicked.value
           ? favoriteSentList
           : favoriteReceivedList);
     } catch (e) {
       print("Error in getFavoriteListKeys: $e");
-      // Handle error (e.g., show a snackbar to the user)
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  void toggleFavoriteList(bool isSent) {
+    if (isFavoriteSentClicked.value != isSent) {
+      isFavoriteSentClicked.value = isSent;
+      getFavoriteListKeys(); // Direkt olarak veriyi yenile
     }
   }
 
@@ -71,13 +81,13 @@ class FsfrController extends GetxController {
     }
   }
 
-  void toggleFavoriteList(bool isSent) {
-    if (isFavoriteSentClicked.value != isSent) {
-      isFavoriteSentClicked.value = isSent;
-      favoriteSentList.clear();
-      favoriteReceivedList.clear();
-      favoritesList.clear();
-      getFavoriteListKeys();
-    }
-  }
+  // void toggleFavoriteList(bool isSent) {
+  //   if (isFavoriteSentClicked.value != isSent) {
+  //     isFavoriteSentClicked.value = isSent;
+  //     favoriteSentList.clear();
+  //     favoriteReceivedList.clear();
+  //     favoritesList.clear();
+  //     getFavoriteListKeys();
+  //   }
+  // }
 }

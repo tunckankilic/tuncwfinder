@@ -6,34 +6,50 @@ class LslrController extends GetxController {
   RxList<String> likeSentList = <String>[].obs;
   RxList<String> likeReceivedList = <String>[].obs;
   RxList likedList = [].obs;
-
+  RxBool isLoading = true.obs;
   @override
   void onInit() {
     super.onInit();
     getLikedListKeys();
+    ever(isLikeSentClicked, (_) => getLikedListKeys());
   }
 
-  getLikedListKeys() async {
-    if (isLikeSentClicked.value) {
-      var likeSentDocument = await FirebaseFirestore.instance
-          .collection("users")
-          .doc(currentUserId.toString())
-          .collection("likeSent")
-          .get();
+  Future<void> getLikedListKeys() async {
+    try {
+      isLoading.value = true;
+      likedList.clear(); // Listeyi temizle
 
-      likeSentList.value = likeSentDocument.docs.map((doc) => doc.id).toList();
-      getKeysDataFromUsersCollection(likeSentList);
-    } else {
-      var likeReceivedDocument = await FirebaseFirestore.instance
-          .collection("users")
-          .doc(currentUserId.toString())
-          .collection("likeReceived")
-          .get();
+      if (isLikeSentClicked.value) {
+        var likeSentDocument = await FirebaseFirestore.instance
+            .collection("users")
+            .doc(currentUserId.toString())
+            .collection("likeSent")
+            .get();
 
-      likeReceivedList.value =
-          likeReceivedDocument.docs.map((doc) => doc.id).toList();
-      getKeysDataFromUsersCollection(likeReceivedList);
+        likeSentList.value =
+            likeSentDocument.docs.map((doc) => doc.id).toList();
+        await getKeysDataFromUsersCollection(likeSentList);
+      } else {
+        var likeReceivedDocument = await FirebaseFirestore.instance
+            .collection("users")
+            .doc(currentUserId.toString())
+            .collection("likeReceived")
+            .get();
+
+        likeReceivedList.value =
+            likeReceivedDocument.docs.map((doc) => doc.id).toList();
+        await getKeysDataFromUsersCollection(likeReceivedList);
+      }
+    } catch (e) {
+      print("Error in getLikedListKeys: $e");
+    } finally {
+      isLoading.value = false;
     }
+  }
+
+  void toggleLikeList(bool isSent) {
+    isLikeSentClicked.value = isSent;
+    getLikedListKeys(); // Direkt olarak veriyi yenile
   }
 
   getKeysDataFromUsersCollection(RxList<String> keysList) async {
@@ -46,11 +62,11 @@ class LslrController extends GetxController {
         .toList();
   }
 
-  void toggleLikeList(bool isSent) {
-    isLikeSentClicked.value = isSent;
-    likeSentList.clear();
-    likeReceivedList.clear();
-    likedList.clear();
-    getLikedListKeys();
-  }
+  // void toggleLikeList(bool isSent) {
+  //   isLikeSentClicked.value = isSent;
+  //   likeSentList.clear();
+  //   likeReceivedList.clear();
+  //   likedList.clear();
+  //   getLikedListKeys();
+  // }
 }

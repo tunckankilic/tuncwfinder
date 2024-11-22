@@ -1522,26 +1522,20 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
               controller.employmentStatusController.text = value ?? '',
           isTablet: isTablet,
         ),
-        _buildTextField(
-          context: context,
-          controller: controller.professionController,
-          label: "Profession",
-          icon: Icons.business_center_outlined,
-          isTablet: isTablet,
-          helperText: "Your current job title or profession",
-        ),
+        _buildDropdownField(
+            context: context,
+            label: "Profession",
+            icon: Icons.business_center_outlined,
+            items: itJobs,
+            value: controller.professionController.text,
+            onChanged: (value) =>
+                controller.professionController.text = value ?? "",
+            isTablet: isTablet),
         _buildDropdownField(
           context: context,
           label: "Living Situation",
           icon: Icons.home_outlined,
-          items: const [
-            "Own home",
-            "Rent alone",
-            "Share rental",
-            "Living with family",
-            "Student housing",
-            "Other"
-          ],
+          items: livingSituations,
           value: controller.livingSituationController.text,
           onChanged: (value) =>
               controller.livingSituationController.text = value ?? '',

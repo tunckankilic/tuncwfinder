@@ -3,12 +3,13 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/auth/auth_service.dart';
+import 'package:tuncforwork/views/screens/auth/auth_wrapper.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
-import 'package:tuncforwork/views/screens/screens.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -31,16 +32,7 @@ class MyApp extends StatelessWidget {
           initialBinding: InitialBindings(),
           getPages: AppRoutes.routes,
           unknownRoute: AppRoutes.unknownRoute,
-          home: StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return const HomeScreen();
-              } else {
-                return const LoginScreen();
-              }
-            },
-          ),
+          home: const AuthenticationWrapper(),
         );
       },
     );
@@ -50,20 +42,21 @@ class MyApp extends StatelessWidget {
 class InitialBindings extends Bindings {
   @override
   void dependencies() {
-    // Push Notification System'i bağla
-    final pushNotificationSystem =
-        Get.put(PushNotificationSystem(), permanent: true);
+    // Service'leri bağla
+    Get.put(AuthService(), permanent: true);
+    Get.put(PushNotificationSystem(), permanent: true);
 
-    // Auth Controller'ı bağla
-    Get.put(AuthController());
+    // Controller'ları bağla
+    Get.put(AuthController(), permanent: true);
+    Get.put(UserController(), permanent: true);
 
-    // Token üretimini gecikmeli olarak başlat
+    // Token üretimini gecikmeli başlat
     Future.delayed(const Duration(seconds: 1), () async {
       try {
-        await pushNotificationSystem.generateDeviceRegistrationToken();
-      } catch (e, stack) {
-        log('Error in initial token generation: $e');
-        log('Stack trace: $stack');
+        final pushSystem = Get.find<PushNotificationSystem>();
+        await pushSystem.generateDeviceRegistrationToken();
+      } catch (e) {
+        print('Error in initial token generation: $e');
       }
     });
   }

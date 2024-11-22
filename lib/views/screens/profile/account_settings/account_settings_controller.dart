@@ -281,9 +281,9 @@ class AccountSettingsController extends GetxController {
   }
 
   void loadConnectionsInfo(Map<String, dynamic> data) {
-    linkedInController.text = data['linkedIn'] ?? '';
-    instagramController.text = data['instagram'] ?? '';
-    gitHubController.text = data['github'] ?? '';
+    linkedInController.text = data['linkedInUrl'] ?? '';
+    instagramController.text = data['instagramUrl'] ?? '';
+    gitHubController.text = data['githubUrl'] ?? '';
   }
 
   void loadImages(Map<String, dynamic> data) {

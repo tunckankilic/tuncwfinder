@@ -25,7 +25,7 @@ class LoginScreen extends GetView<AuthController> {
                 maxWidth: isTablet ? 600 : double.infinity,
               ),
               padding: EdgeInsets.symmetric(
-                horizontal: isTablet ? 40.0 : 20.0,
+                horizontal: isTablet ? 30.0 : 10.0,
                 vertical: isTablet ? 40.0 : 20.0,
               ),
               child: Column(
@@ -43,7 +43,7 @@ class LoginScreen extends GetView<AuthController> {
                   _buildLoginButton(isTablet),
                   SizedBox(height: isTablet ? 30.0 : 20.0),
                   _buildFPLink(isTablet),
-                  SizedBox(height: isTablet ? 30.0 : 20.0),
+                  SizedBox(height: isTablet ? 10.0 : 6.0),
                   _buildSignUpLink(isTablet),
                 ],
               ),

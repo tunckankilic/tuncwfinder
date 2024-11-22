@@ -132,52 +132,48 @@ class Person {
       };
 
   static Person fromDataSnapshot(DocumentSnapshot snapshot) {
-    var dataSnapshot = snapshot.data() as Map<String, dynamic>;
+    try {
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      print('Parsing document data: $data'); // Debug için
 
-    return Person(
-      //personal info
-      uid: dataSnapshot["uid"],
-      imageProfile: dataSnapshot["imageProfile"],
-      email: dataSnapshot["email"],
-      password: dataSnapshot["password"],
-      name: dataSnapshot["name"],
-      age: dataSnapshot["age"],
-      phoneNo: dataSnapshot["phoneNo"],
-      city: dataSnapshot["city"],
-      country: dataSnapshot["country"],
-      profileHeading: dataSnapshot["profileHeading"],
-      publishedDateTime: dataSnapshot["publishedDateTime"],
-      gender: dataSnapshot["gender"],
-
-      //Appearance
-      height: dataSnapshot["height"],
-      weight: dataSnapshot["weight"],
-      bodyType: dataSnapshot["bodyType"],
-
-      //Life style
-      drink: dataSnapshot["drink"],
-      smoke: dataSnapshot["smoke"],
-      martialStatus: dataSnapshot["martialStatus"],
-      haveChildren: dataSnapshot["haveChildren"],
-      noOfChildren: dataSnapshot["noOfChildren"],
-      profession: dataSnapshot["profession"],
-      employmentStatus: dataSnapshot["employmentStatus"],
-      income: dataSnapshot["income"],
-      livingSituation: dataSnapshot["livingSituation"],
-      willingToRelocate: dataSnapshot["willingToRelocate"],
-
-      //Background - Cultural Values
-      nationality: dataSnapshot["nationality"],
-      education: dataSnapshot["education"],
-      languageSpoken: dataSnapshot["languageSpoken"],
-      religion: dataSnapshot["religion"],
-      ethnicity: dataSnapshot["ethnicity"],
-
-      //Connections - Anahtar adları düzeltildi
-      instagramUrl: dataSnapshot["instagramUrl"], // instagram -> instagramUrl
-      linkedInUrl: dataSnapshot["linkedInUrl"], // linkedIn -> linkedInUrl
-      githubUrl: dataSnapshot["githubUrl"], // github -> githubUrl
-    );
+      return Person(
+        uid: data['uid'] as String?,
+        email: data['email'] as String?,
+        imageProfile: data['imageProfile'] as String?,
+        name: data['name'] as String?,
+        age: data['age'] != null ? int.tryParse(data['age'].toString()) : null,
+        phoneNo: data['phoneNo'] as String?,
+        city: data['city'] as String?,
+        country: data['country'] as String?,
+        profileHeading: data['profileHeading'] as String?,
+        publishedDateTime: data['publishedDateTime'] as int?,
+        gender: data['gender'] as String?,
+        height: data['height'] as String?,
+        weight: data['weight'] as String?,
+        bodyType: data['bodyType'] as String?,
+        drink: data['drink'] as String?,
+        smoke: data['smoke'] as String?,
+        martialStatus: data['martialStatus'] as String?,
+        haveChildren: data['haveChildren'] as String?,
+        noOfChildren: data['noOfChildren'] as String?,
+        profession: data['profession'] as String?,
+        employmentStatus: data['employmentStatus'] as String?,
+        income: data['income'] as String?,
+        livingSituation: data['livingSituation'] as String?,
+        willingToRelocate: data['willingToRelocate'] as String?,
+        nationality: data['nationality'] as String?,
+        education: data['education'] as String?,
+        languageSpoken: data['languageSpoken'] as String?,
+        religion: data['religion'] as String?,
+        ethnicity: data['ethnicity'] as String?,
+        instagramUrl: data['instagramUrl'] as String?,
+        linkedInUrl: data['linkedInUrl'] as String?,
+        githubUrl: data['github'] as String?, // github -> githubUrl düzeltmesi
+      );
+    } catch (e) {
+      print('Error in fromDataSnapshot: $e');
+      rethrow;
+    }
   }
 
   Person copyWith({

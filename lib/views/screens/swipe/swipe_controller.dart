@@ -602,7 +602,7 @@ class SwipeController extends GetxController {
 
   void openLinkedInProfile(
       {required String linkedInUsername, required BuildContext context}) async {
-    var url = linkedInUsername;
+    var url = "https://www.linkedin.com/in/$linkedInUsername";
 
     try {
       if (await canLaunchUrl(Uri.parse(url))) {
@@ -633,7 +633,7 @@ class SwipeController extends GetxController {
   void openInstagramProfile(
       {required String instagramUsername,
       required BuildContext context}) async {
-    var webUrl = instagramUsername;
+    var webUrl = "https://www.instagram.com/$instagramUsername";
 
     try {
       if (await canLaunchUrl(Uri.parse(webUrl))) {
@@ -664,7 +664,7 @@ class SwipeController extends GetxController {
 
   void openGitHubProfile(
       {required String gitHubUsername, required BuildContext context}) async {
-    var url = gitHubUsername;
+    var url = "https://github.com/$gitHubUsername";
 
     try {
       if (await canLaunchUrl(Uri.parse(url))) {

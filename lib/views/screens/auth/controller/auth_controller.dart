@@ -13,7 +13,11 @@ import 'package:http/http.dart' as http;
 import 'package:tuncforwork/models/person.dart' as pM;
 import 'package:tuncforwork/service/validation.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
+import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
+import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
 import 'package:tuncforwork/views/screens/home/home_bindings.dart';
+import 'package:tuncforwork/views/screens/home/home_controller.dart';
+import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 
 class AuthController extends GetxController {
@@ -488,71 +492,61 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
   Future<void> login() async {
     if (!termsAccepted.value) {
-      Get.snackbar(
-        'Terms Required',
-        'Please accept the terms and conditions to continue',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade50,
-        colorText: Colors.red.shade900,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(8),
-        borderRadius: 8,
-      );
+      Get.snackbar('Terms Required',
+          'Please accept the terms and conditions to continue');
       return;
     }
-
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      _showError('Please fill in all fields');
-      return;
-    }
-
-    if (!GetUtils.isEmail(emailController.text)) {
-      _showError('Please enter a valid email address');
-      return;
-    }
-
-    isLoading.value = true;
 
     try {
-      await _auth.signInWithEmailAndPassword(
+      isLoading.value = true;
+
+      // 1. Auth işlemi
+      final userCredential = await _auth.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text,
       );
 
-      await _handleSuccessfulLogin();
-    } catch (error) {
-      _handleLoginError(error);
-    } finally {
-      isLoading.value = false;
-    }
-  }
+      // 2. User document kontrolü ve parse
+      final userDocRef =
+          _firestore.collection('users').doc(userCredential.user!.uid);
+      final userDoc = await userDocRef.get();
 
-  Future<void> _handleSuccessfulLogin() async {
-    try {
-      await _updateLastLoginTime();
-      Get.offAll(
+      if (!userDoc.exists) {
+        throw 'User document not found';
+      }
+
+      // 3. UserController'ı yükle ve initialize et
+      final userController = Get.put(UserController(), permanent: true);
+
+      // Document verilerini parse et
+      try {
+        final userData = pM.Person.fromDataSnapshot(userDoc);
+        userController.currentUser.value = userData;
+        print('User data parsed successfully: ${userData.toString()}');
+      } catch (e) {
+        print('Error parsing user data: $e');
+        print('Raw document data: ${userDoc.data()}');
+      }
+
+      // 4. Diğer controller'ları yükle
+      Get.put(HomeController());
+      Get.put(FsfrController(), permanent: true);
+      Get.put(LslrController(), permanent: true);
+
+      // 5. Ana ekrana yönlendir
+      await Get.offAll(
         () => const HomeScreen(),
         binding: HomeBindings(),
         transition: Transition.fadeIn,
         duration: const Duration(milliseconds: 500),
       );
-    } catch (error) {
-      print('Post-login operation failed: $error');
-      Get.offAll(() => const HomeScreen(), binding: HomeBindings());
-    }
-  }
-
-  Future<void> _updateLastLoginTime() async {
-    try {
-      final user = _auth.currentUser;
-      if (user != null) {
-        await _firestore
-            .collection('users')
-            .doc(user.uid)
-            .update({'lastLoginAt': DateTime.now()});
-      }
-    } catch (error) {
-      print('Failed to update last login time: $error');
+    } on FirebaseAuthException catch (e) {
+      handleAuthError(e);
+    } catch (e) {
+      print('Login error: $e');
+      _showError('Login failed: ${e.toString()}');
+    } finally {
+      isLoading.value = false;
     }
   }
 

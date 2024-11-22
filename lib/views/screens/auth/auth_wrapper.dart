@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/auth/auth_service.dart';
+import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 
 class AuthenticationWrapper extends StatelessWidget {
@@ -11,25 +14,62 @@ class AuthenticationWrapper extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
+        // Yükleniyor durumu
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const LoadingScreen();
+        }
+
+        // Kullanıcı oturum açmışsa
         if (snapshot.hasData) {
-          return FutureBuilder<bool>(
-            future: AuthService().checkUserBanStatus(snapshot.data!.uid),
-            builder: (context, banSnapshot) {
-              if (banSnapshot.hasData && banSnapshot.data == true) {
-                return BannedUserScreen();
+          return FutureBuilder<Map<String, dynamic>>(
+            future: _checkUserStatus(snapshot.data!.uid),
+            builder: (context, statusSnapshot) {
+              if (statusSnapshot.connectionState == ConnectionState.waiting) {
+                return const LoadingScreen();
               }
 
-              if (banSnapshot.hasData && banSnapshot.data == false) {
-                return HomeScreen();
+              if (statusSnapshot.hasData) {
+                final status = statusSnapshot.data!;
+
+                // Kullanıcı banlanmışsa
+                if (status['isBanned'] == true) {
+                  return const BannedUserScreen();
+                }
+
+                // Kullanıcı dokümanı varsa
+                if (status['exists'] == true) {
+                  // UserController'ı initialize et
+                  final userController = Get.find<UserController>();
+                  userController.initialize(snapshot.data!.uid);
+                  return const HomeScreen();
+                }
               }
 
-              return LoadingScreen();
+              // Hata durumunda veya doküman yoksa login ekranına yönlendir
+              return const LoginScreen();
             },
           );
         }
-        return LoginScreen();
+
+        // Kullanıcı oturum açmamışsa
+        return const LoginScreen();
       },
     );
+  }
+
+  Future<Map<String, dynamic>> _checkUserStatus(String uid) async {
+    try {
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      return {
+        'exists': userDoc.exists,
+        'isBanned': userDoc.data()?['isBanned'] ?? false,
+      };
+    } catch (e) {
+      print('Error checking user status: $e');
+      return {'exists': false, 'isBanned': false};
+    }
   }
 }
 
