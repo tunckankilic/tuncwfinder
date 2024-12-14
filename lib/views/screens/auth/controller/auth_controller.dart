@@ -18,6 +18,7 @@ import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'package:tuncforwork/views/screens/home/home_bindings.dart';
 import 'package:tuncforwork/views/screens/home/home_controller.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
@@ -1050,6 +1051,66 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
     return true;
   }
+
+  Future<void> _connectGithub(BuildContext context) async {
+    try {
+      final GithubAuthProvider githubProvider = GithubAuthProvider();
+      final UserCredential result =
+          await FirebaseAuth.instance.signInWithProvider(githubProvider);
+
+      if (result.additionalUserInfo?.username != null) {
+        githubController.text = result.additionalUserInfo!.username!;
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('GitHub profile connected successfully!')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to connect GitHub: ${e.toString()}')));
+    }
+  }
+
+  // Future<void> _connectInstagram(BuildContext context) async {
+  //   final instagramClientId = 'YOUR_INSTAGRAM_CLIENT_ID';
+  //   final redirectUri = 'your-app://oauth/instagram';
+
+  //   try {
+  //     // Instagram OAuth URL'ini oluştur
+  //     final authUrl = Uri.parse('https://api.instagram.com/oauth/authorize'
+  //         '?client_id=$instagramClientId'
+  //         '&redirect_uri=$redirectUri'
+  //         '&scope=user_profile'
+  //         '&response_type=code');
+
+  //     // Tarayıcıda OAuth sayfasını aç
+  //     if (await canLaunchUrl(authUrl)) {
+  //       await launchUrl(authUrl, mode: LaunchMode.externalApplication);
+
+  //       // Deep link ile gelen kodu dinle
+  //       final initialLink = await getInitialLink();
+  //       if (initialLink != null) {
+  //         final code = Uri.parse(initialLink).queryParameters['code'];
+  //         if (code != null) {
+  //           // Instagram API'den kullanıcı bilgilerini al
+  //           final userInfo = await _getInstagramUserInfo(code);
+  //           if (userInfo != null) {
+  //             instagramController.text = userInfo['username'];
+  //             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //                 content: Text('Instagram profile connected successfully!')));
+  //           }
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //         content: Text('Failed to connect Instagram: ${e.toString()}')));
+  //   }
+  // }
+
+  // Future<Map<String, dynamic>?> _getInstagramUserInfo(String code) async {
+  //   // Instagram API entegrasyonu burada yapılacak
+  //   // Token alma ve kullanıcı bilgilerini çekme işlemleri
+  //   return null;
+  // }
 
   // Validate Background Page (Page 3)
   bool _validateBackground() {
