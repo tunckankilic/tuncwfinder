@@ -8,7 +8,7 @@ import 'package:tuncforwork/views/screens/profile/user_details/user_details_cont
 class AppRoutes {
   static const String splash = '/splash';
   static const String login = '/login';
-  static const String register = '/register';
+
   static const String home = '/home';
   static const String userDetails = '/user/:id';
   static const String fpass = FPScreen.routeName;
@@ -23,7 +23,7 @@ class AppRoutes {
       page: () => const LoginScreen(),
     ),
     GetPage(
-      name: register,
+      name: RegistrationScreen.routeName,
       page: () => const RegistrationScreen(),
     ),
     GetPage(

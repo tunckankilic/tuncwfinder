@@ -31,6 +31,7 @@ class MyApp extends StatelessWidget {
           theme: ElegantTheme.themeData,
           initialBinding: InitialBindings(),
           home: AuthenticationWrapper(),
+          getPages: AppRoutes.routes,
         );
       },
     );
