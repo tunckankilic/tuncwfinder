@@ -4,27 +4,105 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tuncforwork/models/models.dart';
 import '../models/person.dart';
+import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 
 class LinkedInApiService {
-  final String baseUrl = 'https://api.linkedin.com/v2';
-  String? accessToken;
+  final String accessToken;
+  final String userId;
 
-  Future<void> init() async {
-    final prefs = await SharedPreferences.getInstance();
-    accessToken = prefs.getString('linkedin_token');
+  LinkedInApiService({
+    required this.accessToken,
+    required this.userId,
+  });
+
+  Future<Map<String, dynamic>> getProfile() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.linkedin.com/v2/me'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'X-Restli-Protocol-Version': '2.0.0',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('LinkedIn profil bilgileri alınamadı');
+      }
+    } catch (e) {
+      throw Exception('LinkedIn API hatası: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getWorkExperience() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.linkedin.com/v2/positions'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'X-Restli-Protocol-Version': '2.0.0',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(data['elements']);
+      } else {
+        throw Exception('İş deneyimleri alınamadı');
+      }
+    } catch (e) {
+      throw Exception('LinkedIn API hatası: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getEducation() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.linkedin.com/v2/education'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'X-Restli-Protocol-Version': '2.0.0',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(data['elements']);
+      } else {
+        throw Exception('Eğitim bilgileri alınamadı');
+      }
+    } catch (e) {
+      throw Exception('LinkedIn API hatası: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getSkills() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.linkedin.com/v2/skills'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'X-Restli-Protocol-Version': '2.0.0',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(data['elements']);
+      } else {
+        throw Exception('Yetenekler alınamadı');
+      }
+    } catch (e) {
+      throw Exception('LinkedIn API hatası: $e');
+    }
   }
 
   // LinkedIn API'ye istek göndermek için yardımcı metod
   Future<Map<String, dynamic>> _makeRequest(String endpoint) async {
-    if (accessToken == null) {
-      await init();
-      if (accessToken == null) {
-        throw Exception('LinkedIn erişim tokeni bulunamadı');
-      }
-    }
-
     final response = await http.get(
-      Uri.parse('$baseUrl/$endpoint'),
+      Uri.parse('https://api.linkedin.com/v2/$endpoint'),
       headers: {
         'Authorization': 'Bearer $accessToken',
         'cache-control': 'no-cache',
@@ -73,17 +151,11 @@ class LinkedInApiService {
   // LinkedIn API'den alınan verileri kullanarak Person nesnesini güncelle
   Future<Person> updatePersonWithLinkedInInfo(Person person) async {
     try {
-      await init(); // Token'ı yükle
-
-      if (accessToken == null) {
-        return person; // Token yoksa güncelleme yapma
-      }
-
       // Profil bilgilerini al
-      final profile = await getUserProfile();
+      final profile = await getProfile();
 
       // Beceri bilgilerini al
-      final skills = await getUserSkills();
+      final skills = await getSkills();
       final List<String> skillNames = [];
       for (var skill in skills) {
         skillNames.add(skill['name']);
@@ -97,7 +169,7 @@ class LinkedInApiService {
       }
 
       // Deneyim bilgilerini al
-      final experiences = await getUserExperiences();
+      final experiences = await getWorkExperience();
       final List<WorkExperience> workExperiences = [];
 
       for (var exp in experiences) {
@@ -116,7 +188,7 @@ class LinkedInApiService {
       }
 
       // Eğitim bilgilerini al
-      final educations = await getUserEducation();
+      final educations = await getEducation();
       final List<String> educationList = [];
 
       for (var edu in educations) {
@@ -239,3 +311,230 @@ class LinkedInApiService {
     return linkedInSkills;
   }
 }
+
+class GitHubService {
+  final String accessToken;
+
+  GitHubService({required this.accessToken});
+
+  Future<Map<String, dynamic>> getUserProfile() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.github.com/user'),
+        headers: {
+          'Authorization': 'token $accessToken',
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('GitHub profil bilgileri alınamadı');
+      }
+    } catch (e) {
+      throw Exception('GitHub API hatası: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getRepositories() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.github.com/user/repos'),
+        headers: {
+          'Authorization': 'token $accessToken',
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(json.decode(response.body));
+      } else {
+        throw Exception('Repolar alınamadı');
+      }
+    } catch (e) {
+      throw Exception('GitHub API hatası: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getContributions() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.github.com/user/events'),
+        headers: {
+          'Authorization': 'token $accessToken',
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(json.decode(response.body));
+      } else {
+        throw Exception('Katkılar alınamadı');
+      }
+    } catch (e) {
+      throw Exception('GitHub API hatası: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getRepositoryDetails(String repoName) async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.github.com/repos/$repoName'),
+        headers: {
+          'Authorization': 'token $accessToken',
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Repo detayları alınamadı');
+      }
+    } catch (e) {
+      throw Exception('GitHub API hatası: $e');
+    }
+  }
+}
+
+class SocialMediaController extends GetxController {
+  final LinkedInApiService? linkedInService;
+  final GitHubService? githubService;
+
+  SocialMediaController({
+    this.linkedInService,
+    this.githubService,
+  });
+
+  final isLoading = false.obs;
+  final error = ''.obs;
+
+  final linkedInProfile = Rx<Map<String, dynamic>?>(null);
+  final githubProfile = Rx<Map<String, dynamic>?>(null);
+
+  Future<void> fetchLinkedInData() async {
+    try {
+      isLoading.value = true;
+      error.value = '';
+
+      if (linkedInService != null) {
+        final profile = await linkedInService!.getProfile();
+        final workExperience = await linkedInService!.getWorkExperience();
+        final education = await linkedInService!.getEducation();
+        final skills = await linkedInService!.getSkills();
+
+        linkedInProfile.value = {
+          'profile': profile,
+          'workExperience': workExperience,
+          'education': education,
+          'skills': skills,
+        };
+      }
+    } catch (e) {
+      error.value = e.toString();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchGitHubData() async {
+    try {
+      isLoading.value = true;
+      error.value = '';
+
+      if (githubService != null) {
+        final profile = await githubService!.getUserProfile();
+        final repositories = await githubService!.getRepositories();
+        final contributions = await githubService!.getContributions();
+
+        githubProfile.value = {
+          'profile': profile,
+          'repositories': repositories,
+          'contributions': contributions,
+        };
+      }
+    } catch (e) {
+      error.value = e.toString();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+}
+
+class SocialMediaProfilePage extends GetView<SocialMediaController> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Sosyal Medya Profilleri'),
+      ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        if (controller.error.isNotEmpty) {
+          return Center(child: Text(controller.error.value));
+        }
+
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              if (controller.linkedInProfile.value != null)
+                _buildLinkedInSection(controller.linkedInProfile.value!),
+              if (controller.githubProfile.value != null)
+                _buildGitHubSection(controller.githubProfile.value!),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildLinkedInSection(Map<String, dynamic> data) {
+    return Card(
+      margin: EdgeInsets.all(8),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('LinkedIn Profili',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 8),
+            Text(
+                'İsim: ${data['profile']['firstName']} ${data['profile']['lastName']}'),
+            Text('Başlık: ${data['profile']['headline']}'),
+            Text('Özet: ${data['profile']['summary']}'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGitHubSection(Map<String, dynamic> data) {
+    return Card(
+      margin: EdgeInsets.all(8),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('GitHub Profili',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 8),
+            Text('Kullanıcı Adı: ${data['profile']['login']}'),
+            Text('İsim: ${data['profile']['name']}'),
+            Text('Bio: ${data['profile']['bio']}'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+final controller = SocialMediaController(
+  linkedInService: LinkedInApiService(accessToken: 'token', userId: 'id'),
+  githubService: GitHubService(accessToken: 'token'),
+);

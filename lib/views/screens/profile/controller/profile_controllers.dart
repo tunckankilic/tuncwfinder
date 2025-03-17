@@ -165,3 +165,15 @@ class ProfileController extends GetxController {
     }
   }
 }
+
+class SocialMediaErrorHandler {
+  static String handleError(dynamic error) {
+    if (error is FirebaseAuthException) {
+      return 'Kimlik doğrulama hatası: ${error.message}';
+    } else if (error is FirebaseException) {
+      return 'Firebase hatası: ${error.message}';
+    } else {
+      return 'Beklenmeyen bir hata oluştu: $error';
+    }
+  }
+}

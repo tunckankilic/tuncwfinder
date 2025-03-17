@@ -2,6 +2,8 @@ import 'dart:math' show min;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tuncforwork/models/models.dart';
+import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 
 class CareerRecommendationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -471,5 +473,107 @@ class CareerRecommendationService {
       print('Yetenek açığı analizi yapılırken hata: $e');
       return {};
     }
+  }
+
+  void showAddWorkExperienceDialog(bool isTablet) {
+    final titleController = TextEditingController();
+    final companyController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final startDateController = TextEditingController();
+    final endDateController = TextEditingController();
+    final technologiesController = TextEditingController();
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Container(
+          width: isTablet ? Get.width * 0.7 : Get.width * 0.9,
+          padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'İş Deneyimi Ekle',
+                  style: TextStyle(
+                    fontSize: isTablet ? 24.0 : 20.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: titleController,
+                  decoration: InputDecoration(
+                    labelText: 'Pozisyon',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: companyController,
+                  decoration: InputDecoration(
+                    labelText: 'Şirket',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: descriptionController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: 'Açıklama',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: startDateController,
+                  decoration: InputDecoration(
+                    labelText: 'Başlangıç Tarihi (GG/AA/YYYY)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: endDateController,
+                  decoration: InputDecoration(
+                    labelText: 'Bitiş Tarihi (GG/AA/YYYY)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: technologiesController,
+                  decoration: InputDecoration(
+                    labelText: 'Teknolojiler (virgülle ayırın)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Get.back(),
+                      child: Text('İptal'),
+                    ),
+                    SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Validasyon ve kaydetme işlemleri
+                        Get.back();
+                      },
+                      child: Text('Kaydet'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

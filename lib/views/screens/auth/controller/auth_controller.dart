@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:http/http.dart' as http;
+import 'package:tuncforwork/models/models.dart';
 import 'package:tuncforwork/models/person.dart' as pM;
 import 'package:tuncforwork/service/validation.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
@@ -205,6 +206,18 @@ By accepting this privacy policy, you declare that you understand and agree to t
     "At least 1 special character (!,#...)",
   ];
   final RxBool isVisible = true.obs;
+
+  // Kariyer ve Beceri Alanları için Yeni Controller'lar
+  final TextEditingController careerGoalController = TextEditingController();
+  final TextEditingController targetPositionController =
+      TextEditingController();
+  final TextEditingController skillController = TextEditingController();
+
+  // Kariyer ve Beceri Alanları için Observable Değişkenler
+  final RxList<String> selectedSkills = <String>[].obs;
+  final RxList<WorkExperience> workExperiences = <WorkExperience>[].obs;
+  final RxList<Project> projects = <Project>[].obs;
+  final Rx<CareerGoal?> careerGoal = Rx<CareerGoal?>(null);
 
   @override
   void onInit() {
@@ -1115,6 +1128,294 @@ By accepting this privacy policy, you declare that you understand and agree to t
     _showError(message);
   }
 
+  // Beceri İşlemleri
+  void addSkill(String skill) {
+    if (!selectedSkills.contains(skill)) {
+      selectedSkills.add(skill);
+    }
+  }
+
+  void removeSkill(String skill) {
+    selectedSkills.remove(skill);
+  }
+
+  // İş Deneyimi İşlemleri
+  void addWorkExperience(WorkExperience experience) {
+    workExperiences.add(experience);
+  }
+
+  void removeWorkExperience(int index) {
+    if (index >= 0 && index < workExperiences.length) {
+      workExperiences.removeAt(index);
+    }
+  }
+
+  void showAddWorkExperienceDialog(bool isTablet) {
+    final titleController = TextEditingController();
+    final companyController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final startDateController = TextEditingController();
+    final endDateController = TextEditingController();
+    final technologiesController = TextEditingController();
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Container(
+          padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'İş Deneyimi Ekle',
+                style: TextStyle(
+                  fontSize: isTablet ? 20.0 : 18.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: isTablet ? 20.0 : 16.0),
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  labelText: 'Pozisyon',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              SizedBox(height: isTablet ? 16.0 : 12.0),
+              TextField(
+                controller: companyController,
+                decoration: InputDecoration(
+                  labelText: 'Şirket',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              SizedBox(height: isTablet ? 16.0 : 12.0),
+              TextField(
+                controller: descriptionController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Açıklama',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              SizedBox(height: isTablet ? 16.0 : 12.0),
+              TextField(
+                controller: startDateController,
+                decoration: InputDecoration(
+                  labelText: 'Başlangıç Tarihi (YYYY-MM-DD)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              SizedBox(height: isTablet ? 16.0 : 12.0),
+              TextField(
+                controller: endDateController,
+                decoration: InputDecoration(
+                  labelText: 'Bitiş Tarihi (YYYY-MM-DD)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              SizedBox(height: isTablet ? 16.0 : 12.0),
+              TextField(
+                controller: technologiesController,
+                decoration: InputDecoration(
+                  labelText: 'Teknolojiler (virgülle ayırın)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              SizedBox(height: isTablet ? 24.0 : 20.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: Text('İptal'),
+                  ),
+                  SizedBox(width: isTablet ? 16.0 : 12.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (titleController.text.isNotEmpty &&
+                          companyController.text.isNotEmpty &&
+                          descriptionController.text.isNotEmpty &&
+                          startDateController.text.isNotEmpty &&
+                          technologiesController.text.isNotEmpty) {
+                        try {
+                          final startDate =
+                              DateTime.parse(startDateController.text);
+                          final endDate = endDateController.text.isNotEmpty
+                              ? DateTime.parse(endDateController.text)
+                              : null;
+                          final technologies = technologiesController.text
+                              .split(',')
+                              .map((e) => e.trim())
+                              .toList();
+
+                          addWorkExperience(WorkExperience(
+                            title: titleController.text,
+                            company: companyController.text,
+                            description: descriptionController.text,
+                            startDate: startDate,
+                            endDate: endDate,
+                            technologies: technologies,
+                          ));
+                          Get.back();
+                        } catch (e) {
+                          Get.snackbar(
+                            'Hata',
+                            'Tarih formatı hatalı. Lütfen YYYY-MM-DD formatında girin.',
+                            snackPosition: SnackPosition.BOTTOM,
+                          );
+                        }
+                      }
+                    },
+                    child: Text('Ekle'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Proje İşlemleri
+  void addProject(Project project) {
+    projects.add(project);
+  }
+
+  void removeProject(int index) {
+    if (index >= 0 && index < projects.length) {
+      projects.removeAt(index);
+    }
+  }
+
+  void showAddProjectDialog(bool isTablet) {
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final technologiesController = TextEditingController();
+    final dateController = TextEditingController();
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Container(
+          padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Proje Ekle',
+                style: TextStyle(
+                  fontSize: isTablet ? 20.0 : 18.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: isTablet ? 20.0 : 16.0),
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  labelText: 'Proje Başlığı',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              SizedBox(height: isTablet ? 16.0 : 12.0),
+              TextField(
+                controller: descriptionController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Açıklama',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              SizedBox(height: isTablet ? 16.0 : 12.0),
+              TextField(
+                controller: technologiesController,
+                decoration: InputDecoration(
+                  labelText: 'Teknolojiler (virgülle ayırın)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              SizedBox(height: isTablet ? 16.0 : 12.0),
+              TextField(
+                controller: dateController,
+                decoration: InputDecoration(
+                  labelText: 'Tarih (YYYY-MM-DD)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              SizedBox(height: isTablet ? 24.0 : 20.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: Text('İptal'),
+                  ),
+                  SizedBox(width: isTablet ? 16.0 : 12.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (titleController.text.isNotEmpty &&
+                          descriptionController.text.isNotEmpty &&
+                          technologiesController.text.isNotEmpty &&
+                          dateController.text.isNotEmpty) {
+                        try {
+                          final date = DateTime.parse(dateController.text);
+                          final technologies = technologiesController.text
+                              .split(',')
+                              .map((e) => e.trim())
+                              .toList();
+
+                          addProject(Project(
+                            title: titleController.text,
+                            description: descriptionController.text,
+                            technologies: technologies,
+                            date: date,
+                          ));
+                          Get.back();
+                        } catch (e) {
+                          Get.snackbar(
+                            'Hata',
+                            'Tarih formatı hatalı. Lütfen YYYY-MM-DD formatında girin.',
+                            snackPosition: SnackPosition.BOTTOM,
+                          );
+                        }
+                      }
+                    },
+                    child: Text('Ekle'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void onClose() {
     pageController.dispose();
@@ -1149,6 +1450,9 @@ By accepting this privacy policy, you declare that you understand and agree to t
     languageSpokenController.dispose();
     religionController.dispose();
     ethnicityController.dispose();
+    careerGoalController.dispose();
+    targetPositionController.dispose();
+    skillController.dispose();
     super.onClose();
   }
 }

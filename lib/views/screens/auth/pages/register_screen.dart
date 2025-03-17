@@ -27,7 +27,7 @@ class RegistrationScreen extends GetView<AuthController> {
                   Expanded(
                     child: PageView.builder(
                       controller: controller.pageController,
-                      itemCount: 6,
+                      itemCount: 7,
                       physics: const NeverScrollableScrollPhysics(),
                       onPageChanged: (index) {
                         controller.currentPage.value = index;
@@ -67,7 +67,8 @@ class RegistrationScreen extends GetView<AuthController> {
               _buildNavItem('Appearance', 2, Icons.face_3_outlined),
               _buildNavItem('Lifestyle', 3, Icons.health_and_safety),
               _buildNavItem('Background', 4, Icons.history_edu),
-              _buildNavItem('Connections', 5, Icons.connect_without_contact),
+              _buildNavItem('Career', 5, Icons.work_outline),
+              _buildNavItem('Connections', 6, Icons.connect_without_contact),
             ],
           )),
     );
@@ -150,7 +151,7 @@ class RegistrationScreen extends GetView<AuthController> {
           ),
           SizedBox(height: isTablet ? 25.0 : 20.0),
           Obx(() => LinearProgressIndicator(
-                value: (controller.currentPage.value + 1) / 6,
+                value: (controller.currentPage.value + 1) / 7,
                 backgroundColor: ElegantTheme.primaryColor.withOpacity(0.2),
                 valueColor: const AlwaysStoppedAnimation<Color>(
                   ElegantTheme.primaryColor,
@@ -170,14 +171,14 @@ class RegistrationScreen extends GetView<AuthController> {
       2 => _buildAppearancePage(isTablet),
       3 => _buildLifestylePage(isTablet),
       4 => _buildBackgroundPage(isTablet),
-      5 => _buildConnectionsPage(isTablet),
+      5 => _buildCareerPage(isTablet),
+      6 => _buildConnectionsPage(isTablet),
       _ => Container(),
     };
 
     return _buildPageContent(content, isTablet);
   }
 
-// Form elemanları için temel stiller
   InputDecoration _getInputDecoration(
       String label, IconData icon, bool isTablet, bool password) {
     return InputDecoration(
@@ -354,7 +355,6 @@ class RegistrationScreen extends GetView<AuthController> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Previous Button
           Obx(() => controller.currentPage.value > 0
               ? ElevatedButton(
                   onPressed: controller.previousPage,
@@ -372,10 +372,8 @@ class RegistrationScreen extends GetView<AuthController> {
                   ),
                 )
               : const SizedBox.shrink()),
-
-          // Next/Create Account Button
           Obx(() {
-            final isLastPage = controller.currentPage.value == 5;
+            final isLastPage = controller.currentPage.value == 6;
             final isLoading = controller.showProgressBar.value;
 
             return ElevatedButton(
@@ -477,7 +475,6 @@ class RegistrationScreen extends GetView<AuthController> {
         ));
   }
 
-  // _buildStartPage güncellendi
   Widget _buildStartPage(bool isTablet, BuildContext context) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
@@ -506,7 +503,7 @@ class RegistrationScreen extends GetView<AuthController> {
                 label: "Password",
                 icon: Icons.lock_outline,
                 isTablet: isTablet,
-                controller: controller, // AuthController erişimi için
+                controller: controller,
               ),
               _buildPasswordField(
                 textController: controller.confirmPasswordController,
@@ -523,7 +520,6 @@ class RegistrationScreen extends GetView<AuthController> {
     );
   }
 
-// Yeni ve geliştirilmiş password field widget'ı
   Widget _buildPasswordField({
     required TextEditingController textController,
     required String label,
@@ -546,7 +542,6 @@ class RegistrationScreen extends GetView<AuthController> {
                 ),
                 onChanged: (value) {
                   if (!isConfirmPassword) {
-                    // Ana şifre alanı için kontroller
                     if (value.length >= 8) {
                       controller.checks[0].value = true;
                     } else {
@@ -579,7 +574,6 @@ class RegistrationScreen extends GetView<AuthController> {
                       }
                     }
 
-                    // Confirm password ile karşılaştırma
                     if (controller.confirmPasswordController.text.isNotEmpty) {
                       if (value != controller.confirmPasswordController.text) {
                         controller.confirmPasswordError.value =
@@ -589,7 +583,6 @@ class RegistrationScreen extends GetView<AuthController> {
                       }
                     }
                   } else {
-                    // Confirm password kontrolü
                     if (value != controller.passwordController.text) {
                       controller.confirmPasswordError.value =
                           'Passwords do not match';
@@ -874,7 +867,6 @@ class RegistrationScreen extends GetView<AuthController> {
     );
   }
 
-// Widget tarafındaki dialog kodları
   void _showTermsAndConditions() {
     final isTablet = Get.width >= 600;
     Get.dialog(
@@ -1023,7 +1015,6 @@ class RegistrationScreen extends GetView<AuthController> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Ana Checkbox ve EULA linki
             CheckboxListTile(
               title: Text.rich(
                 TextSpan(
@@ -1062,7 +1053,6 @@ class RegistrationScreen extends GetView<AuthController> {
                 vertical: isTablet ? 12.0 : 8.0,
               ),
             ),
-            // Kullanıcı İçeriği Politikası Bildirimi
             Container(
               padding: EdgeInsets.all(isTablet ? 20.0 : 16.0),
               margin: EdgeInsets.symmetric(
@@ -1101,7 +1091,6 @@ class RegistrationScreen extends GetView<AuthController> {
                 ],
               ),
             ),
-            // Moderasyon Bildirimi
             Container(
               padding: EdgeInsets.all(isTablet ? 20.0 : 16.0),
               margin: EdgeInsets.symmetric(
@@ -1221,6 +1210,232 @@ class RegistrationScreen extends GetView<AuthController> {
         child: content,
       ),
     );
+  }
+
+  Widget _buildCareerPage(bool isTablet) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
+      child: Center(
+        child: Container(
+          constraints:
+              BoxConstraints(maxWidth: isTablet ? 800.0 : double.infinity),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Career Information',
+                style: TextStyle(
+                  fontSize: isTablet ? 24.0 : 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: ElegantTheme.primaryColor,
+                ),
+              ),
+              SizedBox(height: isTablet ? 30.0 : 20.0),
+              _buildCareerGoalsSection(isTablet),
+              SizedBox(height: isTablet ? 30.0 : 20.0),
+              _buildSkillsSection(isTablet),
+              SizedBox(height: isTablet ? 30.0 : 20.0),
+              _buildWorkExperienceSection(isTablet),
+              SizedBox(height: isTablet ? 30.0 : 20.0),
+              _buildProjectsSection(isTablet),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCareerGoalsSection(bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Career Goals',
+          style: TextStyle(
+            fontSize: isTablet ? 20.0 : 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: isTablet ? 20.0 : 15.0),
+        TextField(
+          controller: controller.careerGoalController,
+          maxLines: 3,
+          decoration: InputDecoration(
+            hintText: 'Describe your career goals...',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
+            ),
+            contentPadding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+          ),
+        ),
+        SizedBox(height: isTablet ? 15.0 : 10.0),
+        TextField(
+          controller: controller.targetPositionController,
+          decoration: InputDecoration(
+            hintText: 'Target Position',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
+            ),
+            contentPadding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSkillsSection(bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Skills',
+          style: TextStyle(
+            fontSize: isTablet ? 20.0 : 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: isTablet ? 20.0 : 15.0),
+        Obx(() => Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: controller.selectedSkills
+                  .map((skill) => Chip(
+                        label: Text(skill),
+                        onDeleted: () => controller.removeSkill(skill),
+                        deleteIcon:
+                            Icon(Icons.close, size: isTablet ? 20.0 : 16.0),
+                      ))
+                  .toList(),
+            )),
+        SizedBox(height: isTablet ? 15.0 : 10.0),
+        TextField(
+          controller: controller.skillController,
+          decoration: InputDecoration(
+            hintText: 'Add a skill',
+            suffixIcon: IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                if (controller.skillController.text.isNotEmpty) {
+                  controller.addSkill(controller.skillController.text);
+                  controller.skillController.clear();
+                }
+              },
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
+            ),
+            contentPadding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWorkExperienceSection(bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Work Experience',
+          style: TextStyle(
+            fontSize: isTablet ? 20.0 : 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: isTablet ? 20.0 : 15.0),
+        Obx(() => ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: controller.workExperiences.length,
+              itemBuilder: (context, index) {
+                final experience = controller.workExperiences[index];
+                return Card(
+                  margin: EdgeInsets.only(bottom: isTablet ? 15.0 : 10.0),
+                  child: ListTile(
+                    title: Text(experience.title),
+                    subtitle: Text(
+                        '${experience.company} • ${_formatDuration(experience.startDate, experience.endDate)}'),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () => controller.removeWorkExperience(index),
+                    ),
+                  ),
+                );
+              },
+            )),
+        SizedBox(height: isTablet ? 15.0 : 10.0),
+        ElevatedButton.icon(
+          onPressed: () => controller.showAddWorkExperienceDialog(isTablet),
+          icon: Icon(Icons.add),
+          label: Text('Add Work Experience'),
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(
+              horizontal: isTablet ? 20.0 : 15.0,
+              vertical: isTablet ? 15.0 : 10.0,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProjectsSection(bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Projects',
+          style: TextStyle(
+            fontSize: isTablet ? 20.0 : 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: isTablet ? 20.0 : 15.0),
+        Obx(() => ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: controller.projects.length,
+              itemBuilder: (context, index) {
+                final project = controller.projects[index];
+                return Card(
+                  margin: EdgeInsets.only(bottom: isTablet ? 15.0 : 10.0),
+                  child: ListTile(
+                    title: Text(project.title),
+                    subtitle: Text(project.description),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () => controller.removeProject(index),
+                    ),
+                  ),
+                );
+              },
+            )),
+        SizedBox(height: isTablet ? 15.0 : 10.0),
+        ElevatedButton.icon(
+          onPressed: () => controller.showAddProjectDialog(isTablet),
+          icon: Icon(Icons.add),
+          label: Text('Add Project'),
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(
+              horizontal: isTablet ? 20.0 : 15.0,
+              vertical: isTablet ? 15.0 : 10.0,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDuration(DateTime startDate, DateTime? endDate) {
+    final end = endDate ?? DateTime.now();
+    final difference = end.difference(startDate);
+    final years = difference.inDays ~/ 365;
+    final months = (difference.inDays % 365) ~/ 30;
+
+    if (years > 0) {
+      return '$years yıl${months > 0 ? ' $months ay' : ''}';
+    }
+    return '$months ay';
   }
 }
 
