@@ -11,7 +11,44 @@ class LikeSentLikeReceived extends GetView<LslrController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildResponsiveAppBar(context),
-      body: Obx(() => _buildResponsiveBody(context)),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: ElegantTheme.primaryColor,
+            ),
+          );
+        }
+        return _buildResponsiveBody(context);
+      }),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.width >= 768;
+    final iconSize = isTablet ? 120.0 : 80.0;
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.favorite_border,
+            color: ElegantTheme.accentBordeaux,
+            size: iconSize,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            controller.isLikeSentClicked.value
+                ? 'You haven\'t liked anyone yet'
+                : 'No one has liked you yet',
+            style: TextStyle(
+              fontSize: isTablet ? 24.0 : 18.0,
+              color: ElegantTheme.accentBordeaux,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -118,32 +155,6 @@ class LikeSentLikeReceived extends GetView<LslrController> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.width >= 768;
-    final iconSize = isTablet ? 120.0 : 80.0;
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.favorite_border,
-            color: ElegantTheme.accentBordeaux,
-            size: iconSize,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No likes yet',
-            style: TextStyle(
-              fontSize: isTablet ? 24.0 : 18.0,
-              color: ElegantTheme.accentBordeaux,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

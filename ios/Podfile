@@ -1,80 +1,64 @@
 platform :ios, '16.0'
 
-# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+# CocoaPods analytics sending is disabled
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
-
-source 'https://github.com/CocoaPods/Specs.git'
-
-project 'Runner', {
-  'Debug' => :debug,
-  'Profile' => :release,
-  'Release' => :release,
-}
 
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)
-    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+    raise "Flutter pub get must be executed first"
   end
 
   File.foreach(generated_xcode_build_settings_path) do |line|
     matches = line.match(/FLUTTER_ROOT\=(.*)/)
     return matches[1].strip if matches
   end
-  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}"
+  raise "FLUTTER_ROOT not found"
 end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
-
 flutter_ios_podfile_setup
 
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
-  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  # Firebase pods
+  pod 'FirebaseCore', :modular_headers => true
+  pod 'FirebaseAuth', :modular_headers => true
+  pod 'FirebaseStorage', :modular_headers => true
+  pod 'FirebaseFirestore', :modular_headers => true
   
-  target 'RunnerTests' do
-    inherit! :search_paths
-  end
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
-    
+
     target.build_configurations.each do |config|
+      # M1 specific settings
+      config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386'
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphoneos*]'] = 'armv7'
+      
       # Basic settings
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
       config.build_settings['ENABLE_BITCODE'] = 'NO'
       config.build_settings['SWIFT_VERSION'] = '5.0'
       
-      # Architecture settings
-      if config.name == 'Debug'
-        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
-      end
-      
-      # Framework settings
+      # M1 specific framework settings
       config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
-      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
-      config.build_settings['DEFINES_MODULE'] = 'YES'
       
-      # Framework search paths
-      config.build_settings['FRAMEWORK_SEARCH_PATHS'] ||= [
-        '$(inherited)',
-        '${PODS_XCFRAMEWORKS_BUILD_DIR}/Flutter'
-      ]
-
-      # İzinler ve tanımlamalar
+      # Permissions
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
         'PERMISSION_CAMERA=1',
-        'PERMISSION_MICROPHONE=1',
         'PERMISSION_PHOTOS=1',
         'PERMISSION_NOTIFICATIONS=1',
-        'PERMISSION_MEDIA_LIBRARY=1'
+        'PERMISSION_MEDIA_LIBRARY=1',
+        'PERMISSION_MICROPHONE=1',
       ]
-      
     end
   end
 end

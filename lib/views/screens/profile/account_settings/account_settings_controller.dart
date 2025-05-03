@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -96,6 +97,175 @@ class AccountSettingsController extends GetxController {
     'connections': GlobalKey(),
   };
 
+  @override
+  void onInit() {
+    super.onInit();
+    log('AccountSettingsController onInit called');
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    try {
+      isLoading.value = true;
+      await retrieveUserData(); // Önce verileri getir
+      initializeDropdownValues(); // Sonra dropdown değerlerini ayarla
+    } catch (e) {
+      handleError('Error initializing controller: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> retrieveUserData() async {
+    try {
+      log('Retrieving user data for ID: $currentUserId');
+      var snapshot = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(currentUserId)
+          .get();
+
+      if (!snapshot.exists) {
+        log('Document does not exist for user: $currentUserId');
+        handleError("User document does not exist");
+        return;
+      }
+
+      var data = snapshot.data()!;
+      log('User data retrieved successfully');
+
+      // Verileri yükle
+      await _loadAllData(data);
+
+      log('All data loaded successfully');
+    } catch (e) {
+      log('Error retrieving user data: $e');
+      handleError('Error retrieving user data: $e');
+    }
+  }
+
+  Future<void> _loadAllData(Map<String, dynamic> data) async {
+    try {
+      // Personal Info
+      nameController.text = data['name']?.toString() ?? '';
+      emailController.text = data['email']?.toString() ?? '';
+      ageController.text = data['age']?.toString() ?? '';
+      phoneNoController.text = data['phoneNo']?.toString() ?? '';
+      cityController.text = data['city']?.toString() ?? '';
+      countryController.text = data['country']?.toString() ?? countries.first;
+      profileHeadingController.text = data['profileHeading']?.toString() ?? '';
+      genderController.text = data['gender']?.toString() ?? gender.first;
+
+      // Appearance
+      heightController.text = data['height']?.toString() ?? '';
+      weightController.text = data['weight']?.toString() ?? '';
+      bodyTypeController.text = data['bodyType']?.toString() ?? bodyTypes.first;
+
+      // Lifestyle
+      drinkController.text = data['drink']?.toString() ?? drinkingHabits.first;
+      smokeController.text = data['smoke']?.toString() ?? smokingHabits.first;
+      martialStatusController.text =
+          data['martialStatus']?.toString() ?? maritalStatuses.first;
+      childrenSelection.value =
+          data['haveChildren']?.toString() ?? childrenOptions.first;
+      noOfChildrenController.text = data['noOfChildren']?.toString() ?? '0';
+      professionController.text =
+          data['profession']?.toString() ?? itJobs.first;
+      employmentStatusController.text =
+          data['employmentStatus']?.toString() ?? employmentStatuses.first;
+      incomeController.text = data['income']?.toString() ?? '';
+      livingSituationController.text =
+          data['livingSituation']?.toString() ?? livingSituations.first;
+      relationshipSelection.value =
+          data['relationshipStatus']?.toString() ?? relationshipOptions.first;
+
+      // Background
+      nationalityController.text =
+          data['nationality']?.toString() ?? nationalities.first;
+      educationController.text =
+          data['education']?.toString() ?? highSchool.first;
+      languageSpokenController.text =
+          data['languageSpoken']?.toString() ?? languages.first;
+      religionController.text = data['religion']?.toString() ?? religion.first;
+      ethnicityController.text =
+          data['ethnicity']?.toString() ?? ethnicities.first;
+
+      // Social Links
+      linkedInController.text = data['linkedInUrl']?.toString() ?? '';
+      instagramController.text = data['instagramUrl']?.toString() ?? '';
+      gitHubController.text = data['githubUrl']?.toString() ?? '';
+
+      // Images
+      await _loadImages(data);
+
+      // Dropdown values
+      _updateDropdownValues(data);
+    } catch (e) {
+      log('Error in _loadAllData: $e');
+      handleError('Error loading data: $e');
+    }
+  }
+
+  Future<void> _loadImages(Map<String, dynamic> data) async {
+    try {
+      images.clear();
+      urlsList.clear();
+
+      // Profile image varsa ekle
+      if (data['profileImageUrl'] != null &&
+          data['profileImageUrl'].toString().isNotEmpty) {
+        urlsList.add(data['profileImageUrl']);
+        images.add(data['profileImageUrl']);
+      }
+
+      // Diğer resimleri ekle
+      for (int i = 1; i <= 5; i++) {
+        String? url = data['urlImage$i'];
+        if (url != null && url.isNotEmpty) {
+          urlsList.add(url);
+          images.add(url);
+        }
+      }
+    } catch (e) {
+      log('Error loading images: $e');
+    }
+  }
+
+  void _updateDropdownValues(Map<String, dynamic> data) {
+    selectedGender.value = data['gender']?.toString() ?? gender.first;
+    selectedCountry.value = data['country']?.toString() ?? countries.first;
+    selectedBodyType.value = data['bodyType']?.toString() ?? bodyTypes.first;
+    selectedDrink.value = data['drink']?.toString() ?? drinkingHabits.first;
+    selectedSmoke.value = data['smoke']?.toString() ?? smokingHabits.first;
+    selectedMaritalStatus.value =
+        data['martialStatus']?.toString() ?? maritalStatuses.first;
+    selectedProfession.value = data['profession']?.toString() ?? itJobs.first;
+    selectedEmploymentStatus.value =
+        data['employmentStatus']?.toString() ?? employmentStatuses.first;
+    selectedLivingSituation.value =
+        data['livingSituation']?.toString() ?? livingSituations.first;
+    selectedNationality.value =
+        data['nationality']?.toString() ?? nationalities.first;
+    selectedEducation.value = data['education']?.toString() ?? highSchool.first;
+    selectedLanguage.value =
+        data['languageSpoken']?.toString() ?? languages.first;
+    selectedReligion.value = data['religion']?.toString() ?? religion.first;
+    selectedEthnicity.value =
+        data['ethnicity']?.toString() ?? ethnicities.first;
+  }
+
+  void handleError(String message) {
+    log('Error: $message');
+    Get.snackbar(
+      'Error',
+      message,
+      backgroundColor: Colors.red.shade50,
+      colorText: Colors.red.shade900,
+      duration: const Duration(seconds: 3),
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(8),
+    );
+  }
+
   void scrollToSection(String sectionName) {
     currentSection.value = sectionName;
 
@@ -109,12 +279,12 @@ class AccountSettingsController extends GetxController {
     }
   }
 
-  @override
-  void onInit() {
-    super.onInit();
-    initializeDropdownValues();
-    retrieveUserData();
-  }
+  // @override
+  // void onInit() {
+  //   super.onInit();
+  //   initializeDropdownValues();
+  //   retrieveUserData();
+  // }
 
   void initializeDropdownValues() {
     // Set default values for all dropdown controllers
@@ -162,18 +332,6 @@ class AccountSettingsController extends GetxController {
 
     childrenSelection.value = childrenOptions.first;
     relationshipSelection.value = relationshipOptions.first;
-  }
-
-  // Error handling helper
-  void handleError(String message) {
-    print(message);
-    Get.snackbar(
-      'Error',
-      message,
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-    );
   }
 
   // Load section methods
@@ -281,9 +439,9 @@ class AccountSettingsController extends GetxController {
   }
 
   void loadConnectionsInfo(Map<String, dynamic> data) {
-    linkedInController.text = data['linkedIn'] ?? '';
-    instagramController.text = data['instagram'] ?? '';
-    gitHubController.text = data['github'] ?? '';
+    linkedInController.text = data['linkedInUrl'] ?? '';
+    instagramController.text = data['instagramUrl'] ?? '';
+    gitHubController.text = data['githubUrl'] ?? '';
   }
 
   void loadImages(Map<String, dynamic> data) {
@@ -303,31 +461,31 @@ class AccountSettingsController extends GetxController {
     }
   }
 
-  void retrieveUserData() async {
-    try {
-      isLoading.value = true;
-      var snapshot = await FirebaseFirestore.instance
-          .collection("users")
-          .doc(currentUserId)
-          .get();
+  // void retrieveUserData() async {
+  //   try {
+  //     isLoading.value = true;
+  //     var snapshot = await FirebaseFirestore.instance
+  //         .collection("users")
+  //         .doc(currentUserId)
+  //         .get();
 
-      if (snapshot.exists) {
-        var data = snapshot.data()!;
-        loadPersonalInfo(data);
-        loadAppearanceInfo(data);
-        loadLifestyleInfo(data);
-        loadBackgroundInfo(data);
-        loadConnectionsInfo(data);
-        loadImages(data);
-      } else {
-        handleError("User document does not exist");
-      }
-    } catch (e) {
-      handleError('Error retrieving user data: $e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
+  //     if (snapshot.exists) {
+  //       var data = snapshot.data()!;
+  //       loadPersonalInfo(data);
+  //       loadAppearanceInfo(data);
+  //       loadLifestyleInfo(data);
+  //       loadBackgroundInfo(data);
+  //       loadConnectionsInfo(data);
+  //       loadImages(data);
+  //     } else {
+  //       handleError("User document does not exist");
+  //     }
+  //   } catch (e) {
+  //     handleError('Error retrieving user data: $e');
+  //   } finally {
+  //     isLoading.value = false;
+  //   }
+  // }
 
   // Image handling methods
   Future<void> pickImage() async {
@@ -454,9 +612,9 @@ class AccountSettingsController extends GetxController {
         'ethnicity': ethnicityController.text,
 
         // Connections
-        'instagram': instagramController.text,
-        'linkedIn': linkedInController.text,
-        'github': gitHubController.text,
+        'instagramUrl': instagramController.text,
+        'linkedInUrl': linkedInController.text,
+        'githubUrl': gitHubController.text,
 
         // Images
         if (profileImageUrl != null) 'profileImageUrl': profileImageUrl,

@@ -1,7 +1,9 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'models.dart';
 
 class Person {
   //personal info
@@ -47,6 +49,26 @@ class Person {
   String? linkedInUrl;
   String? githubUrl;
 
+  // GitHub özel alanlar
+  String? githubUsername;
+  String? githubBio;
+  int? githubFollowers;
+  int? githubReposCount;
+  int? githubStarsCount;
+  int? githubForksCount;
+  Map<String, int>? githubLanguages;
+
+  // Kariyer ve beceri entegrasyonu için yeni alanlar
+  List<Skill>? skills;
+  List<WorkExperience>? workExperiences;
+  List<Project>? projects;
+  GitHubInfo? githubInfo;
+  LinkedInInfo? linkedInInfo;
+  List<String>? educationHistory;
+  CareerGoal? careerGoal;
+  Map<String, double>?
+      skillGaps; // Hedeflenen kariyere göre eksik beceriler ve seviyeleri
+
   Person({
     //personal info
     //Life style
@@ -84,100 +106,216 @@ class Person {
     this.instagramUrl,
     this.linkedInUrl,
     this.githubUrl,
+    // GitHub özel alanlar
+    this.githubUsername,
+    this.githubBio,
+    this.githubFollowers,
+    this.githubReposCount,
+    this.githubStarsCount,
+    this.githubForksCount,
+    this.githubLanguages,
+    // Yeni alanlar
+    this.skills,
+    this.workExperiences,
+    this.projects,
+    this.githubInfo,
+    this.linkedInInfo,
+    this.educationHistory,
+    this.careerGoal,
+    this.skillGaps,
   });
 
-  static Person fromDataSnapshot(DocumentSnapshot snapshot) {
-    var dataSnapshot = snapshot.data() as Map<String, dynamic>;
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> baseMap = {
+      //personal info
+      "uid": uid,
+      "imageProfile": imageProfile,
+      "email": email,
+      "password": password,
+      "name": name,
+      "age": age,
+      "phoneNo": phoneNo,
+      "city": city,
+      "country": country,
+      "profileHeading": profileHeading,
+      "publishedDateTime": publishedDateTime,
+      "gender": gender,
 
-    return Person(
-        //personal info
-        uid: dataSnapshot["uid"],
-        name: dataSnapshot["name"],
-        imageProfile: dataSnapshot["imageProfile"],
-        email: dataSnapshot["email"],
-        password: dataSnapshot["password"],
-        age: dataSnapshot["age"],
-        phoneNo: dataSnapshot["phoneNo"],
-        city: dataSnapshot["city"],
-        country: dataSnapshot["country"],
-        profileHeading: dataSnapshot["profileHeading"],
-        publishedDateTime: dataSnapshot["publishedDateTime"],
-        gender: dataSnapshot["gender"],
+      //Appearance
+      "height": height,
+      "weight": weight,
+      "bodyType": bodyType,
 
-        //Appearance
-        height: dataSnapshot["height"],
-        weight: dataSnapshot["weight"],
-        bodyType: dataSnapshot["bodyType"],
+      //Life style
+      "drink": drink,
+      "smoke": smoke,
+      "martialStatus": martialStatus,
+      "haveChildren": haveChildren,
+      "noOfChildren": noOfChildren,
+      "profession": profession,
+      "employmentStatus": employmentStatus,
+      "income": income,
+      "livingSituation": livingSituation,
+      "willingToRelocate": willingToRelocate,
 
-        //Life style
-        drink: dataSnapshot["drink"],
-        smoke: dataSnapshot["smoke"],
-        martialStatus: dataSnapshot["martialStatus"],
-        haveChildren: dataSnapshot["haveChildren"],
-        noOfChildren: dataSnapshot["noOfChildren"],
-        profession: dataSnapshot["profession"],
-        employmentStatus: dataSnapshot["employmentStatus"],
-        income: dataSnapshot["income"],
-        livingSituation: dataSnapshot["livingSituation"],
-        willingToRelocate: dataSnapshot["willingToRelocate"],
+      //Background - Cultural Values
+      "nationality": nationality,
+      "education": education,
+      "languageSpoken": languageSpoken,
+      "religion": religion,
+      "ethnicity": ethnicity,
 
-        //Background - Cultural Values
-        nationality: dataSnapshot["nationality"],
-        education: dataSnapshot["education"],
-        languageSpoken: dataSnapshot["languageSpoken"],
-        religion: dataSnapshot["religion"],
-        ethnicity: dataSnapshot["ethnicity"],
+      //Connections
+      "instagramUrl": instagramUrl,
+      "linkedInUrl": linkedInUrl,
+      "githubUrl": githubUrl,
 
-        //Connections
-        linkedInUrl: dataSnapshot["linkedIn"],
-        instagramUrl: dataSnapshot["instagram"],
-        githubUrl: dataSnapshot["github"]);
+      //GitHub özel alanlar
+      "githubUsername": githubUsername,
+      "githubBio": githubBio,
+      "githubFollowers": githubFollowers,
+      "githubReposCount": githubReposCount,
+      "githubStarsCount": githubStarsCount,
+      "githubForksCount": githubForksCount,
+      "githubLanguages": githubLanguages,
+    };
+
+    // Eğer kariyer ve beceri alanları varsa bunları da ekle
+    if (skills != null) {
+      baseMap["skills"] = skills!.map((skill) => skill.toMap()).toList();
+    }
+    if (workExperiences != null) {
+      baseMap["workExperiences"] =
+          workExperiences!.map((exp) => exp.toMap()).toList();
+    }
+    if (projects != null) {
+      baseMap["projects"] =
+          projects!.map((project) => project.toMap()).toList();
+    }
+    if (githubInfo != null) {
+      baseMap["githubInfo"] = githubInfo!.toMap();
+    }
+    if (linkedInInfo != null) {
+      baseMap["linkedInInfo"] = linkedInInfo!.toMap();
+    }
+    if (educationHistory != null) {
+      baseMap["educationHistory"] = educationHistory;
+    }
+    if (careerGoal != null) {
+      baseMap["careerGoal"] = careerGoal!.toMap();
+    }
+    if (skillGaps != null) {
+      baseMap["skillGaps"] = skillGaps;
+    }
+
+    return baseMap;
   }
 
-  Map<String, dynamic> toJson() => {
-        //personal info
-        "uid": uid,
-        "imageProfile": imageProfile,
-        "email": email,
-        "password": password,
-        "name": name,
-        "age": age,
-        "phoneNo": phoneNo,
-        "city": city,
-        "country": country,
-        "profileHeading": profileHeading,
-        "publishedDateTime": publishedDateTime,
-        "gender": gender,
+  static Person fromDataSnapshot(DocumentSnapshot snapshot) {
+    try {
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      log('Parsing document data: $data'); // Debug için
 
-        //Appearance
-        "height": height,
-        "weight": weight,
-        "bodyType": bodyType,
+      // Temel alanları doldur
+      Person person = Person(
+        uid: data['uid'] as String?,
+        email: data['email'] as String?,
+        imageProfile: data['imageProfile'] as String?,
+        name: data['name'] as String?,
+        age: data['age'] != null ? int.tryParse(data['age'].toString()) : null,
+        phoneNo: data['phoneNo'] as String?,
+        city: data['city'] as String?,
+        country: data['country'] as String?,
+        profileHeading: data['profileHeading'] as String?,
+        publishedDateTime: data['publishedDateTime'] as int?,
+        gender: data['gender'] as String?,
+        height: data['height'] as String?,
+        weight: data['weight'] as String?,
+        bodyType: data['bodyType'] as String?,
+        drink: data['drink'] as String?,
+        smoke: data['smoke'] as String?,
+        martialStatus: data['martialStatus'] as String?,
+        haveChildren: data['haveChildren'] as String?,
+        noOfChildren: data['noOfChildren'] as String?,
+        profession: data['profession'] as String?,
+        employmentStatus: data['employmentStatus'] as String?,
+        income: data['income'] as String?,
+        livingSituation: data['livingSituation'] as String?,
+        willingToRelocate: data['willingToRelocate'] as String?,
+        nationality: data['nationality'] as String?,
+        education: data['education'] as String?,
+        languageSpoken: data['languageSpoken'] as String?,
+        religion: data['religion'] as String?,
+        ethnicity: data['ethnicity'] as String?,
+        instagramUrl: data['instagramUrl'] as String?,
+        linkedInUrl: data['linkedInUrl'] as String?,
+        githubUrl: data['githubUrl'] as String?,
+        githubUsername: data['githubUsername'] as String?,
+        githubBio: data['githubBio'] as String?,
+        githubFollowers: data['githubFollowers'] as int?,
+        githubReposCount: data['githubReposCount'] as int?,
+        githubStarsCount: data['githubStarsCount'] as int?,
+        githubForksCount: data['githubForksCount'] as int?,
+        githubLanguages: data['githubLanguages'] != null
+            ? Map<String, int>.from(
+                data['githubLanguages'] as Map<String, dynamic>)
+            : null,
+      );
 
-        //Life style
-        "drink": drink,
-        "smoke": smoke,
-        "martialStatus": martialStatus,
-        "haveChildren": haveChildren,
-        "noOfChildren": noOfChildren,
-        "profession": profession,
-        "employmentStatus": employmentStatus,
-        "income": income,
-        "livingSituation": livingSituation,
-        "willingToRelocate": willingToRelocate,
+      // Kariyer ve beceri alanlarını doldur (eğer mevcutsa)
+      if (data.containsKey('skills') && data['skills'] != null) {
+        person.skills = (data['skills'] as List)
+            .map((skillMap) => Skill.fromMap(skillMap as Map<String, dynamic>))
+            .toList();
+      }
 
-        //Background - Cultural Values
-        "nationality": nationality,
-        "education": education,
-        "languageSpoken": languageSpoken,
-        "religion": religion,
-        "ethnicity": ethnicity,
+      if (data.containsKey('workExperiences') &&
+          data['workExperiences'] != null) {
+        person.workExperiences = (data['workExperiences'] as List)
+            .map((expMap) =>
+                WorkExperience.fromMap(expMap as Map<String, dynamic>))
+            .toList();
+      }
 
-        //Connections
-        "linkedIn": linkedInUrl,
-        "instagram": instagramUrl,
-        "github": githubUrl,
-      };
+      if (data.containsKey('projects') && data['projects'] != null) {
+        person.projects = (data['projects'] as List)
+            .map((projectMap) =>
+                Project.fromMap(projectMap as Map<String, dynamic>))
+            .toList();
+      }
+
+      if (data.containsKey('githubInfo') && data['githubInfo'] != null) {
+        person.githubInfo =
+            GitHubInfo.fromMap(data['githubInfo'] as Map<String, dynamic>);
+      }
+
+      if (data.containsKey('linkedInInfo') && data['linkedInInfo'] != null) {
+        person.linkedInInfo =
+            LinkedInInfo.fromMap(data['linkedInInfo'] as Map<String, dynamic>);
+      }
+
+      if (data.containsKey('educationHistory') &&
+          data['educationHistory'] != null) {
+        person.educationHistory =
+            List<String>.from(data['educationHistory'] as List<dynamic>);
+      }
+
+      if (data.containsKey('careerGoal') && data['careerGoal'] != null) {
+        person.careerGoal =
+            CareerGoal.fromMap(data['careerGoal'] as Map<String, dynamic>);
+      }
+
+      if (data.containsKey('skillGaps') && data['skillGaps'] != null) {
+        person.skillGaps =
+            Map<String, double>.from(data['skillGaps'] as Map<String, dynamic>);
+      }
+
+      return person;
+    } catch (e) {
+      log('Error in fromDataSnapshot: $e');
+      rethrow;
+    }
+  }
 
   Person copyWith({
     String? uid,
@@ -214,6 +352,21 @@ class Person {
     String? instagramUrl,
     String? linkedInUrl,
     String? githubUrl,
+    String? githubUsername,
+    String? githubBio,
+    int? githubFollowers,
+    int? githubReposCount,
+    int? githubStarsCount,
+    int? githubForksCount,
+    Map<String, int>? githubLanguages,
+    List<Skill>? skills,
+    List<WorkExperience>? workExperiences,
+    List<Project>? projects,
+    GitHubInfo? githubInfo,
+    LinkedInInfo? linkedInInfo,
+    List<String>? educationHistory,
+    CareerGoal? careerGoal,
+    Map<String, double>? skillGaps,
   }) {
     return Person(
       uid: uid ?? this.uid,
@@ -249,11 +402,26 @@ class Person {
       instagramUrl: instagramUrl ?? this.instagramUrl,
       linkedInUrl: linkedInUrl ?? this.linkedInUrl,
       githubUrl: githubUrl ?? this.githubUrl,
+      githubUsername: githubUsername ?? this.githubUsername,
+      githubBio: githubBio ?? this.githubBio,
+      githubFollowers: githubFollowers ?? this.githubFollowers,
+      githubReposCount: githubReposCount ?? this.githubReposCount,
+      githubStarsCount: githubStarsCount ?? this.githubStarsCount,
+      githubForksCount: githubForksCount ?? this.githubForksCount,
+      githubLanguages: githubLanguages ?? this.githubLanguages,
+      skills: skills ?? this.skills,
+      workExperiences: workExperiences ?? this.workExperiences,
+      projects: projects ?? this.projects,
+      githubInfo: githubInfo ?? this.githubInfo,
+      linkedInInfo: linkedInInfo ?? this.linkedInInfo,
+      educationHistory: educationHistory ?? this.educationHistory,
+      careerGoal: careerGoal ?? this.careerGoal,
+      skillGaps: skillGaps ?? this.skillGaps,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
+    Map<String, dynamic> baseMap = <String, dynamic>{
       'uid': uid,
       'imageProfile': imageProfile,
       'email': email,
@@ -287,11 +455,48 @@ class Person {
       'instagramUrl': instagramUrl,
       'linkedInUrl': linkedInUrl,
       'githubUrl': githubUrl,
+      'githubUsername': githubUsername,
+      'githubBio': githubBio,
+      'githubFollowers': githubFollowers,
+      'githubReposCount': githubReposCount,
+      'githubStarsCount': githubStarsCount,
+      'githubForksCount': githubForksCount,
+      'githubLanguages': githubLanguages,
     };
+
+    // Kariyer ve beceri alanları varsa ekle
+    if (skills != null) {
+      baseMap['skills'] = skills!.map((skill) => skill.toMap()).toList();
+    }
+    if (workExperiences != null) {
+      baseMap['workExperiences'] =
+          workExperiences!.map((exp) => exp.toMap()).toList();
+    }
+    if (projects != null) {
+      baseMap['projects'] =
+          projects!.map((project) => project.toMap()).toList();
+    }
+    if (githubInfo != null) {
+      baseMap['githubInfo'] = githubInfo!.toMap();
+    }
+    if (linkedInInfo != null) {
+      baseMap['linkedInInfo'] = linkedInInfo!.toMap();
+    }
+    if (educationHistory != null) {
+      baseMap['educationHistory'] = educationHistory;
+    }
+    if (careerGoal != null) {
+      baseMap['careerGoal'] = careerGoal!.toMap();
+    }
+    if (skillGaps != null) {
+      baseMap['skillGaps'] = skillGaps;
+    }
+
+    return baseMap;
   }
 
   factory Person.fromMap(Map<String, dynamic> map) {
-    return Person(
+    Person person = Person(
       uid: map['uid'] != null ? map['uid'] as String : null,
       imageProfile:
           map['imageProfile'] != null ? map['imageProfile'] as String : null,
@@ -345,7 +550,74 @@ class Person {
       linkedInUrl:
           map['linkedInUrl'] != null ? map['linkedInUrl'] as String : null,
       githubUrl: map['githubUrl'] != null ? map['githubUrl'] as String : null,
+      githubUsername: map['githubUsername'] != null
+          ? map['githubUsername'] as String
+          : null,
+      githubBio: map['githubBio'] != null ? map['githubBio'] as String : null,
+      githubFollowers:
+          map['githubFollowers'] != null ? map['githubFollowers'] as int : null,
+      githubReposCount: map['githubReposCount'] != null
+          ? map['githubReposCount'] as int
+          : null,
+      githubStarsCount: map['githubStarsCount'] != null
+          ? map['githubStarsCount'] as int
+          : null,
+      githubForksCount: map['githubForksCount'] != null
+          ? map['githubForksCount'] as int
+          : null,
+      githubLanguages: map['githubLanguages'] != null
+          ? Map<String, int>.from(
+              map['githubLanguages'] as Map<String, dynamic>)
+          : null,
     );
+
+    // Kariyer ve beceri alanlarını ekle
+    if (map.containsKey('skills') && map['skills'] != null) {
+      person.skills = (map['skills'] as List)
+          .map((skillMap) => Skill.fromMap(skillMap as Map<String, dynamic>))
+          .toList();
+    }
+
+    if (map.containsKey('workExperiences') && map['workExperiences'] != null) {
+      person.workExperiences = (map['workExperiences'] as List)
+          .map((expMap) =>
+              WorkExperience.fromMap(expMap as Map<String, dynamic>))
+          .toList();
+    }
+
+    if (map.containsKey('projects') && map['projects'] != null) {
+      person.projects = (map['projects'] as List)
+          .map((projectMap) =>
+              Project.fromMap(projectMap as Map<String, dynamic>))
+          .toList();
+    }
+    if (map.containsKey('githubInfo') && map['githubInfo'] != null) {
+      person.githubInfo =
+          GitHubInfo.fromMap(map['githubInfo'] as Map<String, dynamic>);
+    }
+
+    if (map.containsKey('linkedInInfo') && map['linkedInInfo'] != null) {
+      person.linkedInInfo =
+          LinkedInInfo.fromMap(map['linkedInInfo'] as Map<String, dynamic>);
+    }
+
+    if (map.containsKey('educationHistory') &&
+        map['educationHistory'] != null) {
+      person.educationHistory =
+          List<String>.from(map['educationHistory'] as List<dynamic>);
+    }
+
+    if (map.containsKey('careerGoal') && map['careerGoal'] != null) {
+      person.careerGoal =
+          CareerGoal.fromMap(map['careerGoal'] as Map<String, dynamic>);
+    }
+
+    if (map.containsKey('skillGaps') && map['skillGaps'] != null) {
+      person.skillGaps =
+          Map<String, double>.from(map['skillGaps'] as Map<String, dynamic>);
+    }
+
+    return person;
   }
 
   factory Person.fromJson(String source) =>
@@ -353,7 +625,7 @@ class Person {
 
   @override
   String toString() {
-    return 'Person(uid: $uid, imageProfile: $imageProfile, email: $email, password: $password, name: $name, age: $age, phoneNo: $phoneNo, city: $city, corelationuntry: $country, profileHeading: $profileHeading, publishedDateTime: $publishedDateTime, gender: $gender, height: $height, weight: $weight, bodyType: $bodyType, drink: $drink, smoke: $smoke, martialStatus: $martialStatus, haveChildren: $haveChildren, noOfChildren: $noOfChildren, profession: $profession, employmentStatus: $employmentStatus, income: $income, livingSituation: $livingSituation, willingToRelocate: $willingToRelocate,  nationality: $nationality, education: $education, languageSpoken: $languageSpoken, religion: $religion, ethnicity: $ethnicity, instagramUrl: $instagramUrl, linkedInUrl: $linkedInUrl, githubUrl: $githubUrl)';
+    return 'Person(uid: $uid, imageProfile: $imageProfile, email: $email, password: $password, name: $name, age: $age, phoneNo: $phoneNo, city: $city, country: $country, profileHeading: $profileHeading, publishedDateTime: $publishedDateTime, gender: $gender, height: $height, weight: $weight, bodyType: $bodyType, drink: $drink, smoke: $smoke, martialStatus: $martialStatus, haveChildren: $haveChildren, noOfChildren: $noOfChildren, profession: $profession, employmentStatus: $employmentStatus, income: $income, livingSituation: $livingSituation, willingToRelocate: $willingToRelocate, nationality: $nationality, education: $education, languageSpoken: $languageSpoken, religion: $religion, ethnicity: $ethnicity, instagramUrl: $instagramUrl, linkedInUrl: $linkedInUrl, githubUrl: $githubUrl, githubUsername: $githubUsername, githubBio: $githubBio, githubFollowers: $githubFollowers, githubReposCount: $githubReposCount, githubStarsCount: $githubStarsCount, githubForksCount: $githubForksCount, githubLanguages: $githubLanguages, skills: $skills, workExperiences: $workExperiences, projects: $projects, githubInfo: $githubInfo, linkedInInfo: $linkedInInfo, educationHistory: $educationHistory, careerGoal: $careerGoal, skillGaps: $skillGaps)';
   }
 
   @override
@@ -392,7 +664,22 @@ class Person {
         other.ethnicity == ethnicity &&
         other.instagramUrl == instagramUrl &&
         other.linkedInUrl == linkedInUrl &&
-        other.githubUrl == githubUrl;
+        other.githubUrl == githubUrl &&
+        other.githubUsername == githubUsername &&
+        other.githubBio == githubBio &&
+        other.githubFollowers == githubFollowers &&
+        other.githubReposCount == githubReposCount &&
+        other.githubStarsCount == githubStarsCount &&
+        other.githubForksCount == githubForksCount &&
+        other.githubLanguages.toString() == githubLanguages.toString() &&
+        other.skills.toString() == skills.toString() &&
+        other.workExperiences.toString() == workExperiences.toString() &&
+        other.projects.toString() == projects.toString() &&
+        other.githubInfo.toString() == githubInfo.toString() &&
+        other.linkedInInfo.toString() == linkedInInfo.toString() &&
+        other.educationHistory.toString() == educationHistory.toString() &&
+        other.careerGoal.toString() == careerGoal.toString() &&
+        other.skillGaps.toString() == skillGaps.toString();
   }
 
   @override
@@ -429,6 +716,21 @@ class Person {
         ethnicity.hashCode ^
         instagramUrl.hashCode ^
         linkedInUrl.hashCode ^
-        githubUrl.hashCode;
+        githubUrl.hashCode ^
+        githubUsername.hashCode ^
+        githubBio.hashCode ^
+        githubFollowers.hashCode ^
+        githubReposCount.hashCode ^
+        githubStarsCount.hashCode ^
+        githubForksCount.hashCode ^
+        githubLanguages.hashCode ^
+        skills.hashCode ^
+        workExperiences.hashCode ^
+        projects.hashCode ^
+        githubInfo.hashCode ^
+        linkedInInfo.hashCode ^
+        educationHistory.hashCode ^
+        careerGoal.hashCode ^
+        skillGaps.hashCode;
   }
 }

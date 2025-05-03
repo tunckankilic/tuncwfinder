@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -9,6 +10,7 @@ import 'package:tuncforwork/views/screens/screens.dart';
 class PushNotificationSystem extends GetxController {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   bool _isInitialized = false;
+  bool get isInitialized => _isInitialized;
 
   @override
   void onInit() {
@@ -18,24 +20,48 @@ class PushNotificationSystem extends GetxController {
     });
   }
 
+  // initialize metodunu ekleyelim
+  Future<void> initialize() async {
+    try {
+      if (_isInitialized) return;
+
+      log('Initializing push notification system...');
+
+      // iOS için özel yapılandırma
+      if (Platform.isIOS) {
+        await _setupIOSNotifications();
+      }
+
+      // İzinleri kontrol et ve token üret
+      await _setupNotifications();
+
+      _isInitialized = true;
+    } catch (e, stack) {
+      log('Error initializing push notification system: $e\n$stack');
+      // Hata durumunda bile bildirimleri dinlemeye başla
+      _setupNotificationListeners();
+      rethrow;
+    }
+  }
+
   Future<void> generateDeviceRegistrationToken() async {
     try {
-      print('Generating device registration token...');
+      log('Generating device registration token...');
 
       if (Platform.isIOS) {
         final apnsToken = await _messaging.getAPNSToken();
-        print('APNS Token: $apnsToken');
+        log('APNS Token: $apnsToken');
 
         // Simülatör kontrolü
         if (apnsToken ==
             '66616B652D61706E732D746F6B656E2D666F722D73696D756C61746F72') {
-          print('Running on simulator, skipping FCM token generation');
+          log('Running on simulator, skipping FCM token generation');
           return;
         }
       }
 
       final token = await _messaging.getToken();
-      print('FCM Token: $token');
+      log('FCM Token: $token');
 
       if (token != null) {
         final userId = currentUserId;
@@ -46,12 +72,12 @@ class PushNotificationSystem extends GetxController {
               .update({
             "userDeviceToken": token,
           });
-          print('Device token successfully updated in Firestore');
+          log('Device token successfully updated in Firestore');
         }
       }
     } catch (e, stack) {
-      print('Error generating token: $e');
-      print('Stack trace: $stack');
+      log('Error generating token: $e');
+      log('Stack trace: $stack');
       rethrow;
     }
   }
@@ -60,7 +86,7 @@ class PushNotificationSystem extends GetxController {
     try {
       if (_isInitialized) return;
 
-      print('Initializing push notification system...');
+      log('Initializing push notification system...');
 
       // iOS için özel yapılandırma
       if (Platform.isIOS) {
@@ -70,7 +96,7 @@ class PushNotificationSystem extends GetxController {
       // İzinleri kontrol et ve token üret
       await _setupNotifications();
     } catch (e, stack) {
-      print('Error initializing push notification system: $e\n$stack');
+      log('Error initializing push notification system: $e\n$stack');
       // Hata durumunda bile bildirimleri dinlemeye başla
       _setupNotificationListeners();
     }
@@ -86,9 +112,9 @@ class PushNotificationSystem extends GetxController {
 
       // APNs settings
       await FirebaseMessaging.instance.setAutoInitEnabled(true);
-      print('iOS notification settings configured');
+      log('iOS notification settings configured');
     } catch (e) {
-      print('Error setting up iOS notifications: $e');
+      log('Error setting up iOS notifications: $e');
     }
   }
 
@@ -101,7 +127,7 @@ class PushNotificationSystem extends GetxController {
         provisional: false,
       );
 
-      print('Notification permission status: ${settings.authorizationStatus}');
+      log('Notification permission status: ${settings.authorizationStatus}');
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         await _generateTokenWithFallback();
@@ -109,7 +135,7 @@ class PushNotificationSystem extends GetxController {
         _isInitialized = true;
       }
     } catch (e, stack) {
-      print('Error in _setupNotifications: $e\n$stack');
+      log('Error in _setupNotifications: $e\n$stack');
       // Hata durumunda bildirimleri yine de dinlemeye başla
       _setupNotificationListeners();
     }
@@ -117,16 +143,16 @@ class PushNotificationSystem extends GetxController {
 
   Future<void> _generateTokenWithFallback() async {
     try {
-      print('Attempting to generate device token...');
+      log('Attempting to generate device token...');
 
       if (Platform.isIOS) {
         final apnsToken = await _messaging.getAPNSToken();
-        print('APNS Token: $apnsToken');
+        log('APNS Token: $apnsToken');
 
         // Simülatör kontrolü
         if (apnsToken ==
             '66616B652D61706E732D746F6B656E2D666F722D73696D756C61746F72') {
-          print('Running on simulator, skipping FCM token generation');
+          log('Running on simulator, skipping FCM token generation');
           return;
         }
       }
@@ -136,7 +162,7 @@ class PushNotificationSystem extends GetxController {
         await _updateTokenInFirestore(token);
       }
     } catch (e) {
-      print('Error generating token: $e');
+      log('Error generating token: $e');
       // Token üretimi başarısız olsa bile devam et
     }
   }
@@ -151,10 +177,10 @@ class PushNotificationSystem extends GetxController {
             .update({
           "userDeviceToken": token,
         });
-        print('Device token successfully updated in Firestore');
+        log('Device token successfully updated in Firestore');
       }
     } catch (e) {
-      print('Error updating token in Firestore: $e');
+      log('Error updating token in Firestore: $e');
     }
   }
 
@@ -185,9 +211,9 @@ class PushNotificationSystem extends GetxController {
         await _handleNotificationMessage(message, context);
       });
 
-      print('Notification listeners set up successfully');
+      log('Notification listeners set up successfully');
     } catch (e) {
-      print('Error setting up notification listeners: $e');
+      log('Error setting up notification listeners: $e');
     }
   }
 
@@ -200,17 +226,17 @@ class PushNotificationSystem extends GetxController {
       if (senderID != null) {
         await openAppAndShowNotificationData(userID, senderID, context);
       } else {
-        print('Sender ID is null in notification data');
+        log('Sender ID is null in notification data');
       }
     } catch (e) {
-      print('Error handling notification message: $e');
+      log('Error handling notification message: $e');
     }
   }
 
   Future<void> openAppAndShowNotificationData(
       String? receiverID, String? senderID, BuildContext context) async {
     if (senderID == null) {
-      print('Sender ID is null');
+      log('Sender ID is null');
       return;
     }
 
@@ -221,22 +247,22 @@ class PushNotificationSystem extends GetxController {
           .get();
 
       if (!context.mounted) {
-        print('Context is no longer mounted');
+        log('Context is no longer mounted');
         return;
       }
 
       if (snapshot.exists && snapshot.data() != null) {
         Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-        await _showNotificationDiaprint(context, data, senderID);
+        await _showNotificationDialog(context, data, senderID);
       } else {
-        print('User data not found for sender ID: $senderID');
+        log('User data not found for sender ID: $senderID');
       }
     } catch (e) {
-      print('Error fetching user data: $e');
+      log('Error fetching user data: $e');
     }
   }
 
-  Future<void> _showNotificationDiaprint(BuildContext context,
+  Future<void> _showNotificationDialog(BuildContext context,
       Map<String, dynamic> userData, String senderID) async {
     if (!context.mounted) return;
 
@@ -249,7 +275,7 @@ class PushNotificationSystem extends GetxController {
 
     showDialog(
       context: context,
-      builder: (context) => notificationDiaprintBox(
+      builder: (context) => notificationDialogBox(
         senderID,
         profileImage,
         name,
@@ -262,7 +288,7 @@ class PushNotificationSystem extends GetxController {
     );
   }
 
-  Widget notificationDiaprintBox(
+  Widget notificationDialogBox(
       String senderID,
       String profileImage,
       String name,

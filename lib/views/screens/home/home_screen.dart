@@ -65,10 +65,20 @@ class HomeScreen extends GetView<HomeController> {
 
   // Phone Layout with Bottom Navigation
   Widget _buildPhoneLayout(BuildContext context) {
-    return Scaffold(
-      body: Obx(() => controller.currentScreen),
-      bottomNavigationBar: Obx(() => _buildBottomNavigationBar(context)),
-    );
+    return Obx(() {
+      if (!controller.isInitialized.value) {
+        return const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      return Scaffold(
+        body: Obx(() => controller.currentScreen),
+        bottomNavigationBar: _buildBottomNavigationBar(context),
+      );
+    });
   }
 
   // Tablet Navigation Item

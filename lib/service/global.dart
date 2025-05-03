@@ -6,7 +6,108 @@ String? chosenAge;
 String? chosenCountry;
 String? chosenGender;
 
+// EULA and Privacy Policy
+final String eula = '''
+   End User License Agreement (EULA)
+Last updated: November 12, 2024
+1. Introduction
+This End User License Agreement ("Agreement" or "EULA") is a legal agreement between you ("User", "you", or "your") and TuncForWork ("we", "us", "our", or "Company") for the use of the TuncForWork mobile application ("App").
+2. Acceptance of Terms
+By downloading, installing, or using the App, you agree to be bound by this Agreement. If you do not agree to these terms, do not use the App.
+3. License Grant
+Subject to your compliance with this Agreement, we grant you a limited, non-exclusive, non-transferable, revocable license to use the App for your personal, non-commercial purposes.
+4. User Registration and Account Security
+4.1. You must be at least 18 years old to use the App.
+4.2. You are responsible for maintaining the confidentiality of your account credentials.
+4.3. You agree to provide accurate, current, and complete information during registration.
+4.4. You are solely responsible for all activities that occur under your account.
+5. User Content and Conduct
+5.1. You retain ownership of content you submit to the App.
+5.2. You grant us a worldwide, non-exclusive license to use, modify, and display your content.
+5.3. You agree not to:
+
+Post illegal, harmful, or offensive content
+Impersonate others
+Use the App for unauthorized commercial purposes
+Attempt to bypass security measures
+Share malware or viruses
+
+6. Privacy
+6.1. Our Privacy Policy explains how we collect, use, and protect your information.
+6.2. By using the App, you consent to our privacy practices.
+7. Data Usage and Storage
+7.1. The App requires access to:
+
+Camera and photo library
+Location services
+Push notifications
+Network connectivity
+7.2. You are responsible for any data charges incurred while using the App.
+
+8. Intellectual Property Rights
+8.1. All rights, title, and interest in the App remain with us.
+8.2. You may not:
+
+Modify or create derivative works
+Reverse engineer the App
+Remove copyright notices
+Use branding without permission
+
+9. Termination
+9.1. We may terminate your access to the App at any time for violations of this Agreement.
+9.2. You may terminate this Agreement by uninstalling the App.
+10. Disclaimer of Warranties
+THE APP IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND.
+11. Limitation of Liability
+WE SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES.
+12. Changes to Agreement
+We reserve the right to modify this Agreement at any time.
+13. Governing Law
+This Agreement is governed by the laws of [Your Jurisdiction].
+  ''';
+
+final String privacyPolicy = '''
+   TuncForWork Privacy
+TuncWFinder Privacy Policy
+Last updated: 19/08/2024
+This privacy policy explains how information is collected, used, protected, and disclosed during the use of the TuncWFinder application. By using the application, you agree to the practices described in this policy.
+1. Information Collected
+The application may collect the following information:
+
+Camera and photo library access: For taking profile pictures and sharing content
+Microphone access: For voice messages and video recordings
+Apple Music access: For using music features (when necessary)
+Notification permissions: For sending important updates and information
+
+2. Use of Information
+The collected information is used for the following purposes:
+
+To provide and improve application functionality
+To personalize user experience
+To troubleshoot technical issues and analyze application performance
+To comply with legal obligations
+
+3. Information Sharing
+User information is not shared with third parties except in the following circumstances:
+
+When the user gives explicit permission
+When there is a legal obligation
+When necessary to protect the rights of the application
+
+4. Data Security
+Appropriate technical and organizational measures are taken to ensure the security of user information. However, please note that transmission methods over the internet or electronic storage are not 100% secure.
+5. Children’s Privacy
+The application does not knowingly collect personal information from children under 13 years of age. If you are a parent or guardian and believe that your child has provided us with personal information, please contact us.
+6. Changes to This Policy
+This privacy policy may be updated from time to time. Changes will be posted on this page, and users will be notified in case of significant changes.
+7. Contact
+If you have any questions about this privacy policy, please contact us at:
+email: ismail.tunc.kankilic@gmail.com
+By accepting this privacy policy, you declare that you understand and agree to the terms stated herein.
+  ''';
+
 List<String> religion = [
+  "Religion",
   "Christianity",
   "Islam",
   "Hinduism",
@@ -17,6 +118,7 @@ List<String> religion = [
 ];
 
 List<String> highSchool = [
+  "Education Level",
   "High School",
   "Bachelor's",
   "Master's",
@@ -25,6 +127,7 @@ List<String> highSchool = [
 ];
 
 final List<String> languages = [
+  "Language",
   'English',
   'Spanish',
   'French',
@@ -43,6 +146,7 @@ final List<String> languages = [
 ];
 
 final List<String> nationalities = [
+  "Nationalities",
   'American',
   'British',
   'Canadian',
@@ -66,6 +170,7 @@ final List<String> nationalities = [
 ];
 
 final List<String> ethnicities = [
+  "Ethnicities",
   'Han Chinese',
   'Arabs',
   'Bengalis',
@@ -94,6 +199,7 @@ final List<String> ethnicities = [
 ];
 
 final List<String> livingSituations = [
+  "Living Situations",
   'Single-family home',
   'Apartment',
   'Shared house/flat',
@@ -122,6 +228,7 @@ final List<String> livingSituations = [
 ];
 
 final List<String> employmentStatuses = [
+  "Employment Statuses",
   'Full-time employed',
   'Part-time employed',
   'Self-employed',
@@ -150,6 +257,7 @@ final List<String> employmentStatuses = [
 ];
 
 final List<String> maritalStatuses = [
+  "Marital Statuses",
   'Single (never married)',
   'Married',
   'Divorced',
@@ -173,6 +281,7 @@ final List<String> maritalStatuses = [
 ];
 
 final List<String> drinkingHabits = [
+  "Drinking Habits",
   'Non-drinker',
   'Social drinker',
   'Light drinker',
@@ -187,6 +296,7 @@ final List<String> drinkingHabits = [
 ];
 
 final List<String> smokingHabits = [
+  "Smoking Habits",
   'Non-smoker',
   'Light smoker',
   'Regular smoker',
@@ -200,6 +310,7 @@ final List<String> smokingHabits = [
 ];
 
 final List<String> bodyTypes = [
+  "Body Types",
   'Slim',
   'Athletic',
   'Average',
@@ -214,6 +325,7 @@ final List<String> bodyTypes = [
 ];
 
 final List<String> gender = [
+  "Gender",
   'Woman',
   'Man',
   'Transgender',
@@ -234,6 +346,7 @@ final List<String> gender = [
 
 // European Countries (Alphabetical Order)
 List<String> countries = [
+  "Countries",
   'Belize',
   'Canada',
   'Costa Rica',
@@ -308,6 +421,7 @@ List<String> countries = [
   'Yemen',
 ];
 List<String> itJobs = [
+  "Profession",
   // IT and Technical Roles
   'Software Developer',
   'Data Scientist',

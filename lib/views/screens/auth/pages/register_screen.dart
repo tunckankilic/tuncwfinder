@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/service/validation.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 
 class RegistrationScreen extends GetView<AuthController> {
@@ -25,13 +27,13 @@ class RegistrationScreen extends GetView<AuthController> {
                   Expanded(
                     child: PageView.builder(
                       controller: controller.pageController,
-                      itemCount: 5,
+                      itemCount: 7,
                       physics: const NeverScrollableScrollPhysics(),
                       onPageChanged: (index) {
                         controller.currentPage.value = index;
                       },
                       itemBuilder: (context, index) {
-                        return _buildPage(index, isTablet);
+                        return _buildPage(index, isTablet, context);
                       },
                     ),
                   ),
@@ -60,11 +62,13 @@ class RegistrationScreen extends GetView<AuthController> {
       ),
       child: Obx(() => Column(
             children: [
-              _buildNavItem('Personal Info', 0, Icons.person_outline),
-              _buildNavItem('Appearance', 1, Icons.face_3_outlined),
-              _buildNavItem('Lifestyle', 2, Icons.health_and_safety),
-              _buildNavItem('Background', 3, Icons.history_edu),
-              _buildNavItem('Connections', 4, Icons.connect_without_contact),
+              _buildNavItem('Start', 0, Icons.person),
+              _buildNavItem('Personal Info', 1, Icons.person_outline),
+              _buildNavItem('Appearance', 2, Icons.face_3_outlined),
+              _buildNavItem('Lifestyle', 3, Icons.health_and_safety),
+              _buildNavItem('Background', 4, Icons.history_edu),
+              _buildNavItem('Career', 5, Icons.work_outline),
+              _buildNavItem('Connections', 6, Icons.connect_without_contact),
             ],
           )),
     );
@@ -119,7 +123,10 @@ class RegistrationScreen extends GetView<AuthController> {
           Row(
             children: [
               IconButton(
-                onPressed: () => Get.back(),
+                onPressed: () {
+                  controller.clearAllFields();
+                  Get.back();
+                },
                 icon: const Icon(Icons.arrow_back_ios),
                 iconSize: isTablet ? 28.0 : 24.0,
                 padding: EdgeInsets.all(isTablet ? 12.0 : 8.0),
@@ -144,7 +151,7 @@ class RegistrationScreen extends GetView<AuthController> {
           ),
           SizedBox(height: isTablet ? 25.0 : 20.0),
           Obx(() => LinearProgressIndicator(
-                value: (controller.currentPage.value + 1) / 5,
+                value: (controller.currentPage.value + 1) / 7,
                 backgroundColor: ElegantTheme.primaryColor.withOpacity(0.2),
                 valueColor: const AlwaysStoppedAnimation<Color>(
                   ElegantTheme.primaryColor,
@@ -157,22 +164,23 @@ class RegistrationScreen extends GetView<AuthController> {
     );
   }
 
-  Widget _buildPage(int index, bool isTablet) {
+  Widget _buildPage(int index, bool isTablet, BuildContext context) {
     final content = switch (index) {
-      0 => _buildPersonalInfoPage(isTablet),
-      1 => _buildAppearancePage(isTablet),
-      2 => _buildLifestylePage(isTablet),
-      3 => _buildBackgroundPage(isTablet),
-      4 => _buildConnectionsPage(isTablet),
+      0 => _buildStartPage(isTablet, context),
+      1 => _buildPersonalInfoPage(isTablet),
+      2 => _buildAppearancePage(isTablet),
+      3 => _buildLifestylePage(isTablet),
+      4 => _buildBackgroundPage(isTablet),
+      5 => _buildCareerPage(isTablet),
+      6 => _buildConnectionsPage(isTablet),
       _ => Container(),
     };
 
     return _buildPageContent(content, isTablet);
   }
 
-// Form elemanları için temel stiller
   InputDecoration _getInputDecoration(
-      String label, IconData icon, bool isTablet) {
+      String label, IconData icon, bool isTablet, bool password) {
     return InputDecoration(
       labelText: label,
       labelStyle: TextStyle(
@@ -184,6 +192,13 @@ class RegistrationScreen extends GetView<AuthController> {
         color: ElegantTheme.primaryColor,
         size: isTablet ? 28.0 : 24.0,
       ),
+      suffixIcon: password
+          ? IconButton(
+              onPressed: () {
+                controller.obsPass.value = !controller.obsPass.value;
+              },
+              icon: Icon(Icons.remove_red_eye))
+          : null,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
         borderSide: const BorderSide(color: ElegantTheme.primaryColor),
@@ -223,7 +238,7 @@ class RegistrationScreen extends GetView<AuthController> {
         controller: controller,
         obscureText: isObscure,
         style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
-        decoration: _getInputDecoration(label, icon, isTablet),
+        decoration: _getInputDecoration(label, icon, isTablet, false),
       ),
     );
   }
@@ -245,11 +260,11 @@ class RegistrationScreen extends GetView<AuthController> {
             value: value,
             child: Text(
               value,
-              style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
+              style: TextStyle(fontSize: isTablet ? 15.0 : 13.0),
             ),
           );
         }).toList(),
-        decoration: _getInputDecoration(label, icon, isTablet),
+        decoration: _getInputDecoration(label, icon, isTablet, false),
         dropdownColor: ElegantTheme.backgroundColor,
         style: TextStyle(fontSize: isTablet ? 18.0 : 16.0, color: Colors.black),
       ),
@@ -321,67 +336,12 @@ class RegistrationScreen extends GetView<AuthController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTextField(
-                controller.linkedInController,
-                "LinkedIn Profile",
-                Icons.link_outlined,
-                isTablet,
+              SocialLinksSection(
+                controller: controller,
+                isTablet: isTablet,
               ),
-              _buildTextField(
-                controller.instagramController,
-                "Instagram Handle",
-                Icons.camera_alt_outlined,
-                isTablet,
-              ),
-              _buildTextField(
-                controller.githubController,
-                "GitHub Profile",
-                Icons.code_outlined,
-                isTablet,
-              ),
-              SizedBox(height: isTablet ? 30.0 : 20.0),
+              SizedBox(height: isTablet ? 30.0 : 24.0),
               _buildTermsAndConditions(isTablet),
-              SizedBox(height: isTablet ? 30.0 : 20.0),
-              SizedBox(
-                width: double.infinity,
-                height: isTablet ? 60.0 : 50.0,
-                child: Obx(() => ElevatedButton(
-                      onPressed: controller.showProgressBar.value
-                          ? null
-                          : () async {
-                              if (!controller.termsAccepted.value) {
-                                Get.snackbar(
-                                  'Error',
-                                  'Please accept the terms and conditions',
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  backgroundColor: Colors.red,
-                                  colorText: Colors.white,
-                                );
-                                return;
-                              }
-                              await controller.register();
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ElegantTheme.primaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(isTablet ? 12.0 : 8.0),
-                        ),
-                      ),
-                      child: controller.showProgressBar.value
-                          ? CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 3,
-                            )
-                          : Text(
-                              'Create Account',
-                              style: TextStyle(
-                                fontSize: isTablet ? 20.0 : 16.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    )),
-              ),
             ],
           ),
         ),
@@ -391,59 +351,72 @@ class RegistrationScreen extends GetView<AuthController> {
 
   Widget _buildNavigationButtons(bool isTablet) {
     return Padding(
-      padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
+      padding: EdgeInsets.all(isTablet ? 15.0 : 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (controller.currentPage.value > 0)
-            ElevatedButton(
-              onPressed: controller.previousPage,
+          Obx(() => controller.currentPage.value > 0
+              ? ElevatedButton(
+                  onPressed: controller.previousPage,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ElegantTheme.secondaryColor,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 30.0 : 20.0,
+                      vertical: isTablet ? 15.0 : 10.0,
+                    ),
+                    minimumSize: Size(isTablet ? 120.0 : 100.0, 0),
+                  ),
+                  child: Text(
+                    "Previous",
+                    style: TextStyle(fontSize: isTablet ? 18.0 : 14.0),
+                  ),
+                )
+              : const SizedBox.shrink()),
+          Obx(() {
+            final isLastPage = controller.currentPage.value == 6;
+            final isLoading = controller.showProgressBar.value;
+
+            return ElevatedButton(
+              onPressed: isLoading
+                  ? null
+                  : isLastPage
+                      ? () async {
+                          if (!controller.termsAccepted.value) {
+                            Get.snackbar(
+                              'Error',
+                              'Please accept the terms and conditions',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                            return;
+                          }
+                          await controller.register();
+                        }
+                      : controller.nextPage,
               style: ElevatedButton.styleFrom(
-                backgroundColor: ElegantTheme.secondaryColor,
+                backgroundColor: ElegantTheme.primaryColor,
                 padding: EdgeInsets.symmetric(
                   horizontal: isTablet ? 30.0 : 20.0,
                   vertical: isTablet ? 15.0 : 10.0,
                 ),
                 minimumSize: Size(isTablet ? 120.0 : 100.0, 0),
               ),
-              child: Text(
-                "Previous",
-                style: TextStyle(fontSize: isTablet ? 18.0 : 14.0),
-              ),
-            ),
-          Obx(() => ElevatedButton(
-                onPressed: controller.showProgressBar.value
-                    ? null
-                    : controller.currentPage.value == 4
-                        ? () async {
-                            await controller.register();
-                          }
-                        : controller.nextPage,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ElegantTheme.primaryColor,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 30.0 : 20.0,
-                    vertical: isTablet ? 15.0 : 10.0,
-                  ),
-                  minimumSize: Size(isTablet ? 120.0 : 100.0, 0),
-                ),
-                child: controller.showProgressBar.value &&
-                        controller.currentPage.value == 4
-                    ? SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        controller.currentPage.value == 4
-                            ? "Create Account"
-                            : "Next",
-                        style: TextStyle(fontSize: isTablet ? 18.0 : 14.0),
+              child: isLoading && isLastPage
+                  ? SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
                       ),
-              )),
+                    )
+                  : Text(
+                      isLastPage ? "Create Account" : "Next",
+                      style: TextStyle(fontSize: isTablet ? 18.0 : 14.0),
+                    ),
+            );
+          }),
         ],
       ),
     );
@@ -502,7 +475,7 @@ class RegistrationScreen extends GetView<AuthController> {
         ));
   }
 
-  Widget _buildPersonalInfoPage(bool isTablet) {
+  Widget _buildStartPage(bool isTablet, BuildContext context) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
       child: Center(
@@ -525,13 +498,206 @@ class RegistrationScreen extends GetView<AuthController> {
                 Icons.email_outlined,
                 isTablet,
               ),
-              _buildTextField(
-                controller.passwordController,
-                "Password",
-                Icons.lock_outline,
-                isTablet,
-                isObscure: true,
+              _buildPasswordField(
+                textController: controller.passwordController,
+                label: "Password",
+                icon: Icons.lock_outline,
+                isTablet: isTablet,
+                controller: controller,
               ),
+              _buildPasswordField(
+                textController: controller.confirmPasswordController,
+                label: "Confirm Password",
+                icon: Icons.lock_outline,
+                isTablet: isTablet,
+                controller: controller,
+                isConfirmPassword: true,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController textController,
+    required String label,
+    required IconData icon,
+    required bool isTablet,
+    required AuthController controller,
+    bool isConfirmPassword = false,
+  }) {
+    return Obx(() => Padding(
+          padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: textController,
+                obscureText: controller.obsPass.value,
+                style: TextStyle(
+                  fontSize: isTablet ? 18.0 : 16.0,
+                  color: Colors.black,
+                ),
+                onChanged: (value) {
+                  if (!isConfirmPassword) {
+                    if (value.length >= 8) {
+                      controller.checks[0].value = true;
+                    } else {
+                      controller.checks[0].value = false;
+                    }
+                    if (value.contains(RegExp(r'[A-Z]'))) {
+                      controller.checks[1].value = true;
+                    } else {
+                      controller.checks[1].value = false;
+                    }
+                    if (value.contains(RegExp(r'[a-z]'))) {
+                      controller.checks[2].value = true;
+                    } else {
+                      controller.checks[2].value = false;
+                    }
+                    if (value.contains(RegExp(r'[0-9]'))) {
+                      controller.checks[3].value = true;
+                    } else {
+                      controller.checks[3].value = false;
+                    }
+                    if (value.contains(
+                        RegExp(r'[!@#$%^&*()_+\-=\[\]{};:\\\|,.<>\/?]+'))) {
+                      controller.checks[4].value = true;
+                    } else {
+                      controller.checks[4].value = false;
+                    }
+                    if (value.isEmpty) {
+                      for (var i = 0; i < 5; i++) {
+                        controller.checks[i].value = false;
+                      }
+                    }
+
+                    if (controller.confirmPasswordController.text.isNotEmpty) {
+                      if (value != controller.confirmPasswordController.text) {
+                        controller.confirmPasswordError.value =
+                            'Passwords do not match';
+                      } else {
+                        controller.confirmPasswordError.value = '';
+                      }
+                    }
+                  } else {
+                    if (value != controller.passwordController.text) {
+                      controller.confirmPasswordError.value =
+                          'Passwords do not match';
+                    } else {
+                      controller.confirmPasswordError.value = '';
+                    }
+                  }
+                },
+                decoration: InputDecoration(
+                  labelText: label,
+                  labelStyle: TextStyle(
+                    fontSize: isTablet ? 18.0 : 16.0,
+                    color: Colors.black,
+                  ),
+                  prefixIcon: Icon(
+                    icon,
+                    color: ElegantTheme.primaryColor,
+                    size: isTablet ? 28.0 : 24.0,
+                  ),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      controller.obsPass.value = !controller.obsPass.value;
+                    },
+                    icon: Icon(
+                      controller.obsPass.value
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: ElegantTheme.primaryColor,
+                    ),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
+                    borderSide:
+                        const BorderSide(color: ElegantTheme.primaryColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
+                    borderSide: BorderSide(
+                      color: Colors.black,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
+                    borderSide: BorderSide(
+                      color: ElegantTheme.primaryColor,
+                      width: isTablet ? 2.5 : 2.0,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 20.0 : 15.0,
+                    vertical: isTablet ? 20.0 : 15.0,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  errorText: isConfirmPassword
+                      ? controller.confirmPasswordError.value.isNotEmpty
+                          ? controller.confirmPasswordError.value
+                          : null
+                      : controller.passwordError.value.isNotEmpty
+                          ? controller.passwordError.value
+                          : null,
+                ),
+              ),
+              if (!isConfirmPassword) ...[
+                SizedBox(height: isTablet ? 20.0 : 15.0),
+                Text(
+                  "Password Strength",
+                  style: TextStyle(
+                    color: Color(0xFF787A8D),
+                    fontSize: isTablet ? 14.0 : 12.0,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 5.0),
+                SizedBox(
+                  width: double.infinity,
+                  height: 12.0,
+                  child: CustomProgressBar(
+                    var1: controller.checks[0].value,
+                    var2: controller.checks[1].value,
+                    var3: controller.checks[2].value,
+                    var4: controller.checks[3].value,
+                    var5: controller.checks[4].value,
+                    isTablet: isTablet,
+                  ),
+                ),
+                SizedBox(height: 10.0),
+                Column(
+                  children: List.generate(
+                    5,
+                    (index) => Padding(
+                      padding: EdgeInsets.only(bottom: 5.0),
+                      child: CheckList(
+                        index: index,
+                        isTablet: isTablet,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ));
+  }
+
+  Widget _buildPersonalInfoPage(bool isTablet) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
+      child: Center(
+        child: Container(
+          constraints:
+              BoxConstraints(maxWidth: isTablet ? 800.0 : double.infinity),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               _buildTextField(
                 controller.ageController,
                 "Age",
@@ -701,7 +867,6 @@ class RegistrationScreen extends GetView<AuthController> {
     );
   }
 
-// Widget tarafındaki dialog kodları
   void _showTermsAndConditions() {
     final isTablet = Get.width >= 600;
     Get.dialog(
@@ -850,7 +1015,6 @@ class RegistrationScreen extends GetView<AuthController> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Ana Checkbox ve EULA linki
             CheckboxListTile(
               title: Text.rich(
                 TextSpan(
@@ -889,7 +1053,6 @@ class RegistrationScreen extends GetView<AuthController> {
                 vertical: isTablet ? 12.0 : 8.0,
               ),
             ),
-            // Kullanıcı İçeriği Politikası Bildirimi
             Container(
               padding: EdgeInsets.all(isTablet ? 20.0 : 16.0),
               margin: EdgeInsets.symmetric(
@@ -928,7 +1091,6 @@ class RegistrationScreen extends GetView<AuthController> {
                 ],
               ),
             ),
-            // Moderasyon Bildirimi
             Container(
               padding: EdgeInsets.all(isTablet ? 20.0 : 16.0),
               margin: EdgeInsets.symmetric(
@@ -1048,5 +1210,580 @@ class RegistrationScreen extends GetView<AuthController> {
         child: content,
       ),
     );
+  }
+
+  Widget _buildCareerPage(bool isTablet) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
+      child: Center(
+        child: Container(
+          constraints:
+              BoxConstraints(maxWidth: isTablet ? 800.0 : double.infinity),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Career Information',
+                style: TextStyle(
+                  fontSize: isTablet ? 24.0 : 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: ElegantTheme.primaryColor,
+                ),
+              ),
+              SizedBox(height: isTablet ? 30.0 : 20.0),
+              _buildCareerGoalsSection(isTablet),
+              SizedBox(height: isTablet ? 30.0 : 20.0),
+              _buildSkillsSection(isTablet),
+              SizedBox(height: isTablet ? 30.0 : 20.0),
+              _buildWorkExperienceSection(isTablet),
+              SizedBox(height: isTablet ? 30.0 : 20.0),
+              _buildProjectsSection(isTablet),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCareerGoalsSection(bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Career Goals',
+          style: TextStyle(
+            fontSize: isTablet ? 20.0 : 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: isTablet ? 20.0 : 15.0),
+        TextField(
+          controller: controller.careerGoalController,
+          maxLines: 3,
+          decoration: InputDecoration(
+            hintText: 'Describe your career goals...',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
+            ),
+            contentPadding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+          ),
+        ),
+        SizedBox(height: isTablet ? 15.0 : 10.0),
+        TextField(
+          controller: controller.targetPositionController,
+          decoration: InputDecoration(
+            hintText: 'Target Position',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
+            ),
+            contentPadding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSkillsSection(bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Skills',
+          style: TextStyle(
+            fontSize: isTablet ? 20.0 : 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: isTablet ? 20.0 : 15.0),
+        Obx(() => Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: controller.selectedSkills
+                  .map((skill) => Chip(
+                        label: Text(skill),
+                        onDeleted: () => controller.removeSkill(skill),
+                        deleteIcon:
+                            Icon(Icons.close, size: isTablet ? 20.0 : 16.0),
+                      ))
+                  .toList(),
+            )),
+        SizedBox(height: isTablet ? 15.0 : 10.0),
+        TextField(
+          controller: controller.skillController,
+          decoration: InputDecoration(
+            hintText: 'Add a skill',
+            suffixIcon: IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                if (controller.skillController.text.isNotEmpty) {
+                  controller.addSkill(controller.skillController.text);
+                  controller.skillController.clear();
+                }
+              },
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
+            ),
+            contentPadding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWorkExperienceSection(bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Work Experience',
+          style: TextStyle(
+            fontSize: isTablet ? 20.0 : 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: isTablet ? 20.0 : 15.0),
+        Obx(() => ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: controller.workExperiences.length,
+              itemBuilder: (context, index) {
+                final experience = controller.workExperiences[index];
+                return Card(
+                  margin: EdgeInsets.only(bottom: isTablet ? 15.0 : 10.0),
+                  child: ListTile(
+                    title: Text(experience.title),
+                    subtitle: Text(
+                        '${experience.company} • ${_formatDuration(experience.startDate, experience.endDate)}'),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () => controller.removeWorkExperience(index),
+                    ),
+                  ),
+                );
+              },
+            )),
+        SizedBox(height: isTablet ? 15.0 : 10.0),
+        ElevatedButton.icon(
+          onPressed: () => controller.showAddWorkExperienceDialog(isTablet),
+          icon: Icon(Icons.add),
+          label: Text('Add Work Experience'),
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(
+              horizontal: isTablet ? 20.0 : 15.0,
+              vertical: isTablet ? 15.0 : 10.0,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProjectsSection(bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Projects',
+          style: TextStyle(
+            fontSize: isTablet ? 20.0 : 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: isTablet ? 20.0 : 15.0),
+        Obx(() => ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: controller.projects.length,
+              itemBuilder: (context, index) {
+                final project = controller.projects[index];
+                return Card(
+                  margin: EdgeInsets.only(bottom: isTablet ? 15.0 : 10.0),
+                  child: ListTile(
+                    title: Text(project.title),
+                    subtitle: Text(project.description),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () => controller.removeProject(index),
+                    ),
+                  ),
+                );
+              },
+            )),
+        SizedBox(height: isTablet ? 15.0 : 10.0),
+        ElevatedButton.icon(
+          onPressed: () => controller.showAddProjectDialog(isTablet),
+          icon: Icon(Icons.add),
+          label: Text('Add Project'),
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(
+              horizontal: isTablet ? 20.0 : 15.0,
+              vertical: isTablet ? 15.0 : 10.0,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDuration(DateTime startDate, DateTime? endDate) {
+    final end = endDate ?? DateTime.now();
+    final difference = end.difference(startDate);
+    final years = difference.inDays ~/ 365;
+    final months = (difference.inDays % 365) ~/ 30;
+
+    if (years > 0) {
+      return '$years yıl${months > 0 ? ' $months ay' : ''}';
+    }
+    return '$months ay';
+  }
+}
+
+class PasswordInputField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final bool isConfirmField;
+  final Function(String) onChanged;
+
+  const PasswordInputField({
+    super.key,
+    required this.controller,
+    required this.label,
+    this.isConfirmField = false,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Obx(() {
+          final strength = !isConfirmField
+              ? PasswordValidator.validatePassword(controller.text)
+              : null;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: controller,
+                obscureText: true,
+                onChanged: onChanged,
+                decoration: InputDecoration(
+                  labelText: label,
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.visibility_outlined),
+                    onPressed: () {
+                      // Toggle password visibility
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                value: strength!.score / 100,
+                backgroundColor: Colors.grey[200],
+                valueColor: AlwaysStoppedAnimation<Color>(strength.color),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: strength.requirements.map((req) {
+                  return Chip(
+                    avatar: Icon(
+                      req.isMet ? Icons.check : Icons.close,
+                      color: req.isMet ? Colors.green : Colors.red,
+                      size: 16,
+                    ),
+                    label: Text(
+                      req.description,
+                      style: TextStyle(
+                        color: req.isMet ? Colors.green : Colors.red,
+                        fontSize: 12,
+                      ),
+                    ),
+                    backgroundColor: req.isMet
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.red.withOpacity(0.1),
+                  );
+                }).toList(),
+              ),
+            ],
+          );
+        }),
+      ],
+    );
+  }
+}
+
+class CustomProgressBar extends StatelessWidget {
+  final bool isTablet;
+  final bool var1;
+  final bool var2;
+  final bool var3;
+  final bool var4;
+  final bool var5;
+
+  const CustomProgressBar({
+    super.key,
+    required this.isTablet,
+    required this.var1,
+    required this.var2,
+    required this.var3,
+    required this.var4,
+    required this.var5,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final progress =
+        [var1, var2, var3, var4, var5].where((element) => element).length;
+
+    return Container(
+      width: screenWidth,
+      height: isTablet ? 36 : 24,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Stack(
+        children: [
+          FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: progress / 5,
+            child: Container(
+              height: isTablet ? 18 : 12,
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIndicator(bool value) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: value ? Colors.green : Colors.grey,
+      ),
+    );
+  }
+}
+
+class CheckList extends StatelessWidget {
+  final bool isTablet;
+  final int index;
+  CheckList({
+    super.key,
+    required this.isTablet,
+    required this.index,
+  });
+
+  AuthController controller = Get.put(AuthController());
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          controller.checks[index].value ? Icons.done : Icons.close,
+          color: controller.checks[index].value ? Colors.green : Colors.red,
+          size: isTablet ? 18 : 14,
+        ),
+        SizedBox(
+          width: isTablet ? 12 : 5,
+        ),
+        Text(controller.textler[index],
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: isTablet ? 18 : 14,
+              color: controller.checks[index].value ? Colors.green : Colors.red,
+            ))
+      ],
+    );
+  }
+}
+
+class SocialLinksSection extends StatelessWidget {
+  final AuthController controller;
+  final bool isTablet;
+
+  const SocialLinksSection({
+    super.key,
+    required this.controller,
+    required this.isTablet,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Social Media Profiles',
+            style: TextStyle(
+              fontSize: isTablet ? 20.0 : 18.0,
+              fontWeight: FontWeight.bold,
+              color: ElegantTheme.primaryColor,
+            ),
+          ),
+          SizedBox(height: 16),
+          _buildSocialInput(
+            controller: controller.linkedInController,
+            prefix: 'linkedin.com/in/',
+            icon: Icons.business,
+            label: 'LinkedIn',
+            color: Color(0xFF0A66C2),
+            placeholder: 'username',
+          ),
+          SizedBox(height: isTablet ? 20.0 : 16.0),
+          _buildSocialInput(
+            controller: controller.instagramController,
+            prefix: '@',
+            icon: Icons.camera_alt,
+            label: 'Instagram',
+            color: Color(0xFFE4405F),
+            placeholder: 'username',
+          ),
+          SizedBox(height: isTablet ? 20.0 : 16.0),
+          _buildSocialInput(
+            controller: controller.githubController,
+            prefix: 'github.com/',
+            icon: Icons.code,
+            label: 'GitHub',
+            color: Color(0xFF24292E),
+            placeholder: 'username',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSocialInput({
+    required TextEditingController controller,
+    required String prefix,
+    required IconData icon,
+    required String label,
+    required Color color,
+    required String placeholder,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: color, size: isTablet ? 24.0 : 20.0),
+            SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: isTablet ? 16.0 : 14.0,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 16.0 : 12.0,
+                  vertical: isTablet ? 12.0 : 10.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius:
+                      BorderRadius.horizontal(left: Radius.circular(8)),
+                  border:
+                      Border(right: BorderSide(color: Colors.grey.shade300)),
+                ),
+                child: Text(
+                  prefix,
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontSize: isTablet ? 14.0 : 12.0,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: placeholder,
+                    hintStyle: TextStyle(color: Colors.grey.shade400),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 16.0 : 12.0,
+                    ),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.content_paste, color: Colors.grey.shade600),
+                onPressed: () async {
+                  final data = await Clipboard.getData('text/plain');
+                  if (data?.text != null) {
+                    final url = data!.text!;
+                    final username = _extractUsername(url, label);
+                    if (username != null) {
+                      controller.text = username;
+                    }
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String? _extractUsername(String text, String platform) {
+    switch (platform) {
+      case 'LinkedIn':
+        final match = RegExp(r'linkedin\.com/in/([^/]+)').firstMatch(text);
+        return match?.group(1);
+      case 'GitHub':
+        final match = RegExp(r'github\.com/([^/]+)').firstMatch(text);
+        return match?.group(1);
+      case 'Instagram':
+        if (text.contains('instagram.com')) {
+          final match = RegExp(r'instagram\.com/([^/]+)').firstMatch(text);
+          return match?.group(1);
+        }
+        return text.replaceAll('@', '');
+      default:
+        return text;
+    }
   }
 }

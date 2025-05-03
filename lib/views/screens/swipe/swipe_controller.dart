@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -41,10 +42,15 @@ class SwipeController extends GetxController {
   @override
   void onInit() {
     currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    super.onInit();
-    readCurrentUserData();
-    ageRange();
-    getResults();
+    if (currentUserId.isNotEmpty) {
+      super.onInit();
+      readCurrentUserData();
+      ageRange();
+      getResults();
+    } else {
+      log("No user is currently signed in");
+      // Kullanıcı girişi olmadığında yapılacak işlemler
+    }
   }
 
   void readCurrentUserData() async {
@@ -488,7 +494,7 @@ class SwipeController extends GetxController {
       // Analytics logging (isteğe bağlı)
       await _logBlockAction(blockedUserId);
     } catch (e) {
-      print("Error in blockUser: $e");
+      log("Error in blockUser: $e");
       Get.snackbar(
         'Error',
         'Failed to block user. Please try again.',
@@ -521,7 +527,7 @@ class SwipeController extends GetxController {
       });
     } catch (e) {
       // Analytics hatası kritik değil, sessizce devam et
-      print("Analytics error: $e");
+      log("Analytics error: $e");
     }
   }
 
@@ -597,7 +603,7 @@ class SwipeController extends GetxController {
 
   void openLinkedInProfile(
       {required String linkedInUsername, required BuildContext context}) async {
-    var url = linkedInUsername;
+    var url = "https://www.linkedin.com/in/$linkedInUsername";
 
     try {
       if (await canLaunchUrl(Uri.parse(url))) {
@@ -628,7 +634,7 @@ class SwipeController extends GetxController {
   void openInstagramProfile(
       {required String instagramUsername,
       required BuildContext context}) async {
-    var webUrl = instagramUsername;
+    var webUrl = "https://www.instagram.com/$instagramUsername";
 
     try {
       if (await canLaunchUrl(Uri.parse(webUrl))) {
@@ -659,7 +665,7 @@ class SwipeController extends GetxController {
 
   void openGitHubProfile(
       {required String gitHubUsername, required BuildContext context}) async {
-    var url = gitHubUsername;
+    var url = "https://github.com/$gitHubUsername";
 
     try {
       if (await canLaunchUrl(Uri.parse(url))) {
@@ -798,7 +804,7 @@ class SwipeController extends GetxController {
         'Failed to fetch results. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
       );
-      print("Error in getResults: $e"); // For debugging
+      log("Error in getResults: $e"); // For debugging
     }
   }
 

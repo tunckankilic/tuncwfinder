@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -67,7 +69,7 @@ class ModerationPanel extends StatelessWidget {
         // user block or much more
       }
     } catch (e) {
-      print('Moderasyon işlemi başarısız: $e');
+      log('Moderasyon işlemi başarısız: $e');
     }
   }
 }

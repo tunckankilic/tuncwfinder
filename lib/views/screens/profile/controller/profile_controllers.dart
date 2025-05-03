@@ -16,12 +16,12 @@ class ProfileController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
     _initializeProfileStream();
   }
 
-  void _initializeProfileStream() {
+  Future<void> _initializeProfileStream() async {
     Query query = _firestore
         .collection("users")
         .where("uid", isNotEqualTo: _auth.currentUser!.uid);
@@ -162,6 +162,18 @@ class ProfileController extends GetxController {
       Get.snackbar('Success', 'Account deleted successfully');
     } catch (error) {
       Get.snackbar('Error', 'Failed to delete account: ${error.toString()}');
+    }
+  }
+}
+
+class SocialMediaErrorHandler {
+  static String handleError(dynamic error) {
+    if (error is FirebaseAuthException) {
+      return 'Kimlik doğrulama hatası: ${error.message}';
+    } else if (error is FirebaseException) {
+      return 'Firebase hatası: ${error.message}';
+    } else {
+      return 'Beklenmeyen bir hata oluştu: $error';
     }
   }
 }

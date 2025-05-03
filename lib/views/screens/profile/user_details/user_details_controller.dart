@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
 import 'package:tuncforwork/views/screens/auth/pages/screens.dart';
+import 'package:tuncforwork/views/screens/profile/account_settings/account_settings_controller.dart';
 import 'package:tuncforwork/views/screens/profile/account_settings/pages/account_info_settings.dart';
 import 'package:tuncforwork/views/screens/profile/account_settings/pages/photo_settings_screen.dart';
 import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
@@ -99,9 +100,9 @@ class UserDetailsController extends GetxController {
           religion.value = data['religion'] as String? ?? '';
           ethnicity.value = data['ethnicity'] as String? ?? '';
 
-          linkedInUrl.value = data['linkedIn'] as String? ?? '';
-          instagramUrl.value = data['instagram'] as String? ?? '';
-          githubUrl.value = data['github'] as String? ?? '';
+          linkedInUrl.value = data['linkedInUrl'] as String? ?? '';
+          instagramUrl.value = data['instagramUrl'] as String? ?? '';
+          githubUrl.value = data['githubUrl'] as String? ?? '';
 
           imageUrls.value = [
             data['urlImage1'] as String?,
@@ -148,10 +149,12 @@ class UserDetailsController extends GetxController {
                   Text('Edit Photos', style: ElegantTheme.textTheme.bodyLarge),
               onTap: () {
                 Get.back();
-                Get.to(
-                  () => const PhotoSettingsScreen(),
-                  binding: ProfileBindings(userId: currentUser!.uid),
-                );
+                // PhotoSettingsScreen'e geçiş yapmadan önce binding'i ayarla
+                Get.delete<AccountSettingsController>(
+                    force: true); // Eski controller'ı temizle
+                Get.to(() => const PhotoSettingsScreen(),
+                    binding: ProfileBindings(userId: currentUser!.uid),
+                    preventDuplicates: false);
               },
             ),
             ListTile(
@@ -160,10 +163,12 @@ class UserDetailsController extends GetxController {
                   style: ElegantTheme.textTheme.bodyLarge),
               onTap: () {
                 Get.back();
-                Get.to(
-                  () => const ProfileInfoScreen(),
-                  binding: ProfileBindings(userId: currentUser!.uid),
-                );
+                // ProfileInfoScreen'e geçiş yapmadan önce binding'i ayarla
+                Get.delete<AccountSettingsController>(
+                    force: true); // Eski controller'ı temizle
+                Get.to(() => ProfileInfoScreen(),
+                    binding: ProfileBindings(userId: currentUser!.uid),
+                    preventDuplicates: false);
               },
             ),
           ],

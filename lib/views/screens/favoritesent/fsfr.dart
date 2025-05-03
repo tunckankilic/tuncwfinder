@@ -13,7 +13,16 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
       final isTablet = constraints.maxWidth > 768;
       return Scaffold(
         appBar: _buildAppBar(context, isTablet),
-        body: Obx(() => _buildBody(context, isTablet)),
+        body: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: ElegantTheme.primaryColor,
+              ),
+            );
+          }
+          return _buildBody(context, isTablet);
+        }),
       );
     });
   }
@@ -55,10 +64,25 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
 
     if (filteredFavorites.isEmpty) {
       return Center(
-        child: Icon(
-          Icons.favorite_border,
-          color: ElegantTheme.accentBordeaux,
-          size: isTablet ? 100 : 80,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.favorite_border,
+              color: ElegantTheme.accentBordeaux,
+              size: isTablet ? 100 : 80,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              controller.isFavoriteSentClicked.value
+                  ? 'No favorites added yet'
+                  : 'No one has favorited you yet',
+              style: TextStyle(
+                fontSize: isTablet ? 20 : 16,
+                color: ElegantTheme.accentBordeaux,
+              ),
+            ),
+          ],
         ),
       );
     }

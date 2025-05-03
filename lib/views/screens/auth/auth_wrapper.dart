@@ -1,6 +1,10 @@
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:tuncforwork/views/screens/auth/auth_service.dart';
+import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 
 class AuthenticationWrapper extends StatelessWidget {
@@ -11,25 +15,67 @@ class AuthenticationWrapper extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const LoadingScreen();
+        }
+
         if (snapshot.hasData) {
-          return FutureBuilder<bool>(
-            future: AuthService().checkUserBanStatus(snapshot.data!.uid),
-            builder: (context, banSnapshot) {
-              if (banSnapshot.hasData && banSnapshot.data == true) {
-                return BannedUserScreen();
+          return FutureBuilder<Map<String, dynamic>>(
+            future: _initializeUserData(snapshot.data!.uid),
+            builder: (context, statusSnapshot) {
+              if (statusSnapshot.connectionState == ConnectionState.waiting) {
+                return const LoadingScreen();
               }
 
-              if (banSnapshot.hasData && banSnapshot.data == false) {
-                return HomeScreen();
+              if (statusSnapshot.hasData) {
+                final status = statusSnapshot.data!;
+
+                if (status['isBanned'] == true) {
+                  return const BannedUserScreen();
+                }
+
+                if (status['exists'] == true) {
+                  return const HomeScreen();
+                }
               }
 
-              return LoadingScreen();
+              return const LoginScreen();
             },
           );
         }
-        return LoginScreen();
+
+        return const LoginScreen();
       },
     );
+  }
+
+  Future<Map<String, dynamic>> _initializeUserData(String uid) async {
+    try {
+      // Get UserController
+      final userController = Get.find<UserController>();
+
+      // Check user document
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      if (!userDoc.exists) {
+        return {'exists': false, 'isBanned': false};
+      }
+
+      // Initialize user data
+      await userController.initializeUserStream(uid);
+
+      // Wait for data to be loaded
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      return {
+        'exists': true,
+        'isBanned': userDoc.data()?['isBanned'] ?? false,
+      };
+    } catch (e) {
+      log('Error initializing user data: $e');
+      return {'exists': false, 'isBanned': false};
+    }
   }
 }
 

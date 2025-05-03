@@ -1,83 +1,166 @@
+import 'dart:async';
+import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tuncforwork/service/global.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FsfrController extends GetxController {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   RxBool isFavoriteSentClicked = true.obs;
   RxList<String> favoriteSentList = <String>[].obs;
   RxList<String> favoriteReceivedList = <String>[].obs;
   RxList favoritesList = [].obs;
   RxBool isLoading = true.obs;
 
+  StreamSubscription? _authSubscription;
+  StreamSubscription? _favoriteSentSubscription;
+  StreamSubscription? _favoriteReceivedSubscription;
+
   @override
   void onInit() {
     super.onInit();
-    getFavoriteListKeys();
+    _initializeController();
+
+    // Listen for changes in the selected tab
+    ever(isFavoriteSentClicked, (_) => getFavoriteListKeys());
+  }
+
+  Future<void> _initializeController() async {
+    try {
+      // Listen to auth state changes
+      _authSubscription = _auth.authStateChanges().listen((user) {
+        if (user != null) {
+          // User is logged in, start listening to favorite data
+          _setupFavoriteListeners(user.uid);
+          getFavoriteListKeys(); // Initial load
+        } else {
+          // User logged out, clear data
+          _clearData();
+        }
+      });
+    } catch (e) {
+      log('Error in _initializeController: $e');
+    }
+  }
+
+  void _setupFavoriteListeners(String userId) {
+    // Cancel existing subscriptions
+    _favoriteSentSubscription?.cancel();
+    _favoriteReceivedSubscription?.cancel();
+
+    // Listen to favoriteSent collection changes
+    _favoriteSentSubscription = _firestore
+        .collection("users")
+        .doc(userId)
+        .collection("favoriteSent")
+        .snapshots()
+        .listen((snapshot) {
+      if (isFavoriteSentClicked.value) {
+        getFavoriteListKeys();
+      }
+    });
+
+    // Listen to favoriteReceived collection changes
+    _favoriteReceivedSubscription = _firestore
+        .collection("users")
+        .doc(userId)
+        .collection("favoriteReceived")
+        .snapshots()
+        .listen((snapshot) {
+      if (!isFavoriteSentClicked.value) {
+        getFavoriteListKeys();
+      }
+    });
   }
 
   Future<void> getFavoriteListKeys() async {
     try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return;
+
       isLoading.value = true;
+      favoritesList.clear();
+
       if (isFavoriteSentClicked.value) {
-        await _getFavoriteSent();
+        await _getFavoriteSent(userId);
       } else {
-        await _getFavoriteReceived();
+        await _getFavoriteReceived(userId);
       }
-      await getKeysDataFromUsersCollection(isFavoriteSentClicked.value
-          ? favoriteSentList
-          : favoriteReceivedList);
+
+      await _fetchUserData(
+        isFavoriteSentClicked.value ? favoriteSentList : favoriteReceivedList,
+      );
     } catch (e) {
-      print("Error in getFavoriteListKeys: $e");
-      // Handle error (e.g., show a snackbar to the user)
+      log("Error in getFavoriteListKeys: $e");
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> _getFavoriteSent() async {
-    var favoriteSentDocument = await FirebaseFirestore.instance
-        .collection("users")
-        .doc(currentUserId.toString())
-        .collection("favoriteSent")
-        .get();
-
-    favoriteSentList.value =
-        favoriteSentDocument.docs.map((doc) => doc.id).toList();
-  }
-
-  Future<void> _getFavoriteReceived() async {
-    var favoriteReceivedDocument = await FirebaseFirestore.instance
-        .collection("users")
-        .doc(currentUserId.toString())
-        .collection("favoriteReceived")
-        .get();
-
-    favoriteReceivedList.value =
-        favoriteReceivedDocument.docs.map((doc) => doc.id).toList();
-  }
-
-  Future<void> getKeysDataFromUsersCollection(RxList<String> keysList) async {
+  Future<void> _getFavoriteSent(String userId) async {
     try {
-      var allUsersDocument =
-          await FirebaseFirestore.instance.collection("users").get();
+      final snapshot = await _firestore
+          .collection("users")
+          .doc(userId)
+          .collection("favoriteSent")
+          .get();
 
-      favoritesList.value = allUsersDocument.docs
-          .where((doc) => keysList.contains(doc.data()["uid"]))
-          .map((doc) => doc.data())
+      favoriteSentList.value = snapshot.docs.map((doc) => doc.id).toList();
+    } catch (e) {
+      log("Error in _getFavoriteSent: $e");
+    }
+  }
+
+  Future<void> _getFavoriteReceived(String userId) async {
+    try {
+      final snapshot = await _firestore
+          .collection("users")
+          .doc(userId)
+          .collection("favoriteReceived")
+          .get();
+
+      favoriteReceivedList.value = snapshot.docs.map((doc) => doc.id).toList();
+    } catch (e) {
+      log("Error in _getFavoriteReceived: $e");
+    }
+  }
+
+  Future<void> _fetchUserData(RxList<String> userIds) async {
+    try {
+      if (userIds.isEmpty) return;
+
+      final QuerySnapshot usersSnapshot = await _firestore
+          .collection("users")
+          .where("uid", whereIn: userIds)
+          .get();
+
+      favoritesList.value = usersSnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
     } catch (e) {
-      print("Error in getKeysDataFromUsersCollection: $e");
-      // Handle error
+      log("Error fetching user data: $e");
     }
   }
 
   void toggleFavoriteList(bool isSent) {
     if (isFavoriteSentClicked.value != isSent) {
       isFavoriteSentClicked.value = isSent;
-      favoriteSentList.clear();
-      favoriteReceivedList.clear();
-      favoritesList.clear();
-      getFavoriteListKeys();
     }
+  }
+
+  void _clearData() {
+    favoriteSentList.clear();
+    favoriteReceivedList.clear();
+    favoritesList.clear();
+  }
+
+  @override
+  void onClose() {
+    _authSubscription?.cancel();
+    _favoriteSentSubscription?.cancel();
+    _favoriteReceivedSubscription?.cancel();
+    super.onClose();
   }
 }
