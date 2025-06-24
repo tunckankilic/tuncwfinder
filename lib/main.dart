@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/auth/auth_service.dart';
 import 'package:tuncforwork/views/screens/auth/auth_wrapper.dart';
@@ -11,9 +10,18 @@ import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'firebase_options.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get/get.dart';
+import 'package:tuncforwork/theme/app_theme.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 void main() async {
-  await initializeApp();
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await dotenv.load();
   runApp(const MyApp());
 }
 
@@ -24,14 +32,29 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(375, 812),
-      builder: (context, child) {
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (_, child) {
         return GetMaterialApp(
-          title: 'TuncForWork',
+          title: AppStrings.appName,
           debugShowCheckedModeBanner: false,
-          theme: ElegantTheme.themeData,
-          initialBinding: InitialBindings(),
-          home: AuthenticationWrapper(),
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.light,
+          defaultTransition: Transition.cupertino,
+          home: const AuthenticationWrapper(),
           getPages: AppRoutes.routes,
+          unknownRoute: AppRoutes.unknownRoute,
+          initialBinding: BindingsBuilder(() {
+            Get.put(PushNotificationSystem(), permanent: true);
+          }),
+          builder: (context, widget) {
+            ScreenUtil.init(context);
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+              child: widget!,
+            );
+          },
         );
       },
     );

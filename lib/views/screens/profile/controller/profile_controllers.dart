@@ -7,6 +7,7 @@ import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/service/global.dart';
 import 'package:http/http.dart' as http;
 import 'package:tuncforwork/views/screens/auth/pages/screens.dart';
+import 'package:tuncforwork/service/push_notification_system.dart';
 
 class ProfileController extends GetxController {
   final Rx<List<Person>> usersProfileList = Rx<List<Person>>([]);
@@ -14,10 +15,12 @@ class ProfileController extends GetxController {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  late final String currentUserId;
 
   @override
-  void onInit() async {
+  void onInit() {
     super.onInit();
+    currentUserId = _auth.currentUser?.uid ?? '';
     _initializeProfileStream();
   }
 
@@ -107,48 +110,47 @@ class ProfileController extends GetxController {
 
   Future<void> sendNotificationToUser(
       String receiverID, String featureType, String senderName) async {
-    final userDeviceToken = await _firestore
-        .collection("users")
-        .doc(receiverID)
-        .get()
-        .then((snapshot) => snapshot.data()?["userDeviceToken"] as String?);
-
-    if (userDeviceToken != null) {
-      await _sendNotification(
-          userDeviceToken, receiverID, featureType, senderName);
-    }
-  }
-
-  Future<void> _sendNotification(String userDeviceToken, String receiverID,
-      String featureType, String senderName) async {
-    final url = Uri.parse("https://fcm.googleapis.com/fcm/send");
-    final headers = {
-      "Content-Type": "application/json",
-      "Authorization": "key=$fcmServerToken",
-    };
-
-    final body = jsonEncode({
-      "notification": {
-        "body":
-            "You have received a new $featureType from $senderName. Click to see.",
-        "title": "New $featureType",
-      },
-      "data": {
-        "click_action": "FLUTTER_NOTIFICATION_CLICK",
-        "id": "1",
-        "status": "done",
-        "userID": receiverID,
-        "senderID": currentUserId,
-      },
-      "priority": "high",
-      "to": userDeviceToken,
-    });
-
     try {
-      final response = await http.post(url, headers: headers, body: body);
-      if (response.statusCode != 200) {
-        log('Failed to send notification. Status code: ${response.statusCode}');
+      if (currentUserId.isEmpty) {
+        log('Current user ID is empty');
+        return;
       }
+
+      final userDoc =
+          await _firestore.collection("users").doc(receiverID).get();
+
+      final userDeviceToken = userDoc.data()?["userDeviceToken"] as String?;
+
+      if (userDeviceToken == null) {
+        log('User device token not found for user: $receiverID');
+        return;
+      }
+
+      final notificationSystem = Get.find<PushNotificationSystem>();
+
+      NotificationType type;
+      switch (featureType.toLowerCase()) {
+        case "like":
+          type = NotificationType.like;
+          break;
+        case "view":
+          type = NotificationType.view;
+          break;
+        case "favorite":
+          type = NotificationType.favorite;
+          break;
+        default:
+          log('Invalid feature type: $featureType');
+          return;
+      }
+
+      await notificationSystem.sendInteractionNotification(
+        userDeviceToken: userDeviceToken,
+        senderName: senderName,
+        type: type,
+        receiverId: receiverID,
+        senderId: currentUserId,
+      );
     } catch (e) {
       log('Error sending notification: $e');
     }

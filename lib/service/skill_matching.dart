@@ -118,7 +118,7 @@ class SkillMatchingService {
     // İş deneyimlerini ekle
     if (user.workExperiences != null && user.workExperiences!.isNotEmpty) {
       for (var exp in user.workExperiences!) {
-        userExperience.addAll(exp.description.toLowerCase().split(' '));
+        userExperience.addAll((exp.description ?? '').toLowerCase().split(' '));
         userExperience.addAll(exp.title.toLowerCase().split(' '));
       }
     }

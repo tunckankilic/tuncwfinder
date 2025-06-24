@@ -182,7 +182,7 @@ class AccountSettingsController extends GetxController {
       nationalityController.text =
           data['nationality']?.toString() ?? nationalities.first;
       educationController.text =
-          data['education']?.toString() ?? highSchool.first;
+          data['education']?.toString() ?? educationLevels.first;
       languageSpokenController.text =
           data['languageSpoken']?.toString() ?? languages.first;
       religionController.text = data['religion']?.toString() ?? religion.first;
@@ -245,7 +245,8 @@ class AccountSettingsController extends GetxController {
         data['livingSituation']?.toString() ?? livingSituations.first;
     selectedNationality.value =
         data['nationality']?.toString() ?? nationalities.first;
-    selectedEducation.value = data['education']?.toString() ?? highSchool.first;
+    selectedEducation.value =
+        data['education']?.toString() ?? educationLevels.first;
     selectedLanguage.value =
         data['languageSpoken']?.toString() ?? languages.first;
     selectedReligion.value = data['religion']?.toString() ?? religion.first;
@@ -318,8 +319,8 @@ class AccountSettingsController extends GetxController {
     nationalityController.text = nationalities.first;
     selectedNationality.value = nationalities.first;
 
-    educationController.text = highSchool.first;
-    selectedEducation.value = highSchool.first;
+    educationController.text = educationLevels.first;
+    selectedEducation.value = educationLevels.first;
 
     languageSpokenController.text = languages.first;
     selectedLanguage.value = languages.first;
@@ -417,9 +418,10 @@ class AccountSettingsController extends GetxController {
         : nationalities.first;
     nationalityController.text = selectedNationality.value;
 
-    String educationData = data['education'] ?? highSchool.first;
-    selectedEducation.value =
-        highSchool.contains(educationData) ? educationData : highSchool.first;
+    String educationData = data['education'] ?? educationLevels.first;
+    selectedEducation.value = educationLevels.contains(educationData)
+        ? educationData
+        : educationLevels.first;
     educationController.text = selectedEducation.value;
 
     String languageData = data['languageSpoken'] ?? languages.first;

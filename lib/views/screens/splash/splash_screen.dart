@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class SplashScreen extends StatefulWidget {
-  static const routeName = "/splash";
+  static const routeName = AppStrings.routeSplash;
   const SplashScreen({super.key});
 
   @override
@@ -30,7 +31,8 @@ class _SplashScreenState extends State<SplashScreen>
 
     // 3 saniye sonra ana sayfaya yönlendir
     Future.delayed(const Duration(seconds: 3), () {
-      Get.offNamed('/login'); // Ana sayfa route'unuzu buraya ekleyin
+      Get.offNamed(
+          AppStrings.routeLogin); // Ana sayfa route'unuzu buraya ekleyin
     });
   }
 
@@ -64,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen>
             FadeTransition(
               opacity: _animation,
               child: Text(
-                'TuncWFinder',
+                AppStrings.splashTitle,
                 style: TextStyle(
                   fontSize: 32.sp,
                   fontWeight: FontWeight.bold,

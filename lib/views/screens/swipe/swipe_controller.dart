@@ -306,7 +306,7 @@ class SwipeController extends GetxController {
                   icon: Icons.school,
                   title: "Education",
                   value: chosenEducation,
-                  items: highSchool,
+                  items: educationLevels,
                   isTablet: isTablet),
               _buildDropdownListTile(
                   icon: Icons.work,

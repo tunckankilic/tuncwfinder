@@ -13,6 +13,9 @@ import 'package:tuncforwork/views/screens/profile/user_details/user_details_cont
 import 'package:tuncforwork/views/screens/screens.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_bindings.dart';
 import 'package:tuncforwork/views/screens/viewsent/vsvr_controller.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
+import 'package:tuncforwork/models/tech_event.dart';
+import 'package:tuncforwork/views/screens/community/community_screen.dart';
 
 class HomeController extends GetxController {
   static HomeController instance = Get.find();
@@ -35,26 +38,26 @@ class HomeController extends GetxController {
 
   final List<GetPage> tabScreensList = [
     GetPage(
-      name: '/swipe',
+      name: AppStrings.routeSwipe,
       page: () => const SwipeScreen(),
       binding: SwipeBindings(),
     ),
     GetPage(
-      name: '/favorites',
+      name: AppStrings.routeFavorites,
       page: () => const FavoriteSendFavoriteReceived(),
       binding: BindingsBuilder(() {
         Get.lazyPut(() => FsfrController());
       }),
     ),
     GetPage(
-      name: '/likes',
+      name: AppStrings.routeLikes,
       page: () => const LikeSentLikeReceived(),
       binding: BindingsBuilder(() {
         Get.lazyPut(() => LslrController());
       }),
     ),
     GetPage(
-      name: '/profile',
+      name: AppStrings.routeProfile,
       page: () {
         final userId = Get.arguments?['userId'] as String? ??
             FirebaseAuth.instance.currentUser?.uid ??
@@ -67,6 +70,10 @@ class HomeController extends GetxController {
             '';
         Get.lazyPut(() => UserDetailsController(userId: userId), tag: userId);
       }),
+    ),
+    GetPage(
+      name: AppStrings.routeCommunity,
+      page: () => const CommunityScreen(),
     ),
   ];
 
@@ -187,5 +194,26 @@ class HomeController extends GetxController {
     lslrController = null;
     profileController = null;
     super.onClose();
+  }
+
+  // Navigation Methods
+  void navigateToEventDetails(TechEvent event) {
+    Get.toNamed(AppStrings.routeEventDetails, arguments: event);
+  }
+
+  void navigateToCreateEvent() {
+    Get.toNamed(AppStrings.routeCreateEvent);
+  }
+
+  void navigateToMap() {
+    Get.toNamed(AppStrings.routeMap);
+  }
+
+  void navigateToEventList() {
+    Get.toNamed(AppStrings.routeEventList);
+  }
+
+  void navigateToCommunity() {
+    Get.toNamed(AppStrings.routeCommunity);
   }
 }

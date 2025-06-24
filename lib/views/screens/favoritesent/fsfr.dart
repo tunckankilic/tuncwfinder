@@ -226,16 +226,3 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
     );
   }
 }
-
-// class ResponsiveValues {
-//   static const tabletBreakpoint = 768.0;
-  
-//   static const tabletPadding = 16.0;
-//   static const mobilePadding = 8.0;
-  
-//   static const tabletIconSize = 20.0;
-//   static const mobileIconSize = 16.0;
-  
-//   static const tabletFontSize = 18.0;
-//   static const mobileFontSize = 16.0;
-// }

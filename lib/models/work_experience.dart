@@ -3,41 +3,39 @@ import 'dart:convert';
 class WorkExperience {
   final String title;
   final String company;
-  final String description;
-  final DateTime startDate;
-  final DateTime? endDate;
+  final String startDate;
+  final String? endDate;
+  final String? description;
   final List<String> technologies;
 
   WorkExperience({
     required this.title,
     required this.company,
-    required this.description,
     required this.startDate,
     this.endDate,
-    required this.technologies,
+    this.description,
+    this.technologies = const [],
   });
 
   Map<String, dynamic> toMap() {
     return {
       'title': title,
       'company': company,
+      'startDate': startDate,
+      'endDate': endDate,
       'description': description,
-      'startDate': startDate.millisecondsSinceEpoch,
-      'endDate': endDate?.millisecondsSinceEpoch,
       'technologies': technologies,
     };
   }
 
   factory WorkExperience.fromMap(Map<String, dynamic> map) {
     return WorkExperience(
-      title: map['title'] as String,
-      company: map['company'] as String,
-      description: map['description'] as String,
-      startDate: DateTime.fromMillisecondsSinceEpoch(map['startDate'] as int),
-      endDate: map['endDate'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['endDate'] as int)
-          : null,
-      technologies: List<String>.from(map['technologies'] as List<dynamic>),
+      title: map['title'] ?? '',
+      company: map['company'] ?? '',
+      startDate: map['startDate'] ?? '',
+      endDate: map['endDate'],
+      description: map['description'],
+      technologies: List<String>.from(map['technologies'] ?? []),
     );
   }
 

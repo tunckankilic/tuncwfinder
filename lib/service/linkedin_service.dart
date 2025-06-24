@@ -177,11 +177,10 @@ class LinkedInApiService {
           title: exp['title'],
           company: exp['companyName'],
           description: exp['description'] ?? '',
-          startDate: DateTime.parse(
-              '${exp['startDate']['year']}-${exp['startDate']['month']}-01'),
+          startDate:
+              '${exp['startDate']['year']}-${exp['startDate']['month']}-01',
           endDate: exp['endDate'] != null
-              ? DateTime.parse(
-                  '${exp['endDate']['year']}-${exp['endDate']['month']}-01')
+              ? '${exp['endDate']['year']}-${exp['endDate']['month']}-01'
               : null,
           technologies: [], // LinkedIn API'den teknoloji bilgisi alamıyoruz
         ));
@@ -284,11 +283,17 @@ class LinkedInApiService {
           person.workExperiences!.isNotEmpty) {
         for (var exp in person.workExperiences!) {
           // Yetenek adı iş tanımında geçiyorsa, deneyim yılını güncelle
-          if (exp.description.toLowerCase().contains(skillName.toLowerCase()) ||
+          if ((exp.description
+                      ?.toLowerCase()
+                      .contains(skillName.toLowerCase()) ??
+                  false) ||
               exp.title.toLowerCase().contains(skillName.toLowerCase())) {
             // İş deneyimi süresi hesapla
-            final endDate = exp.endDate ?? DateTime.now();
-            final duration = endDate.difference(exp.startDate);
+            final endDate = exp.endDate != null
+                ? DateTime.parse(exp.endDate!)
+                : DateTime.now();
+            final startDate = DateTime.parse(exp.startDate);
+            final duration = endDate.difference(startDate);
             final years = duration.inDays ~/ 365;
 
             if (years > estimatedYears) {

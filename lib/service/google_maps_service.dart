@@ -1,20 +1,19 @@
-/*
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:yandex_mapkit/yandex_mapkit.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 
-class YandexMapService extends GetxController {
+class GoogleMapsService extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final Rx<YandexMapController?> mapController = Rx<YandexMapController?>(null);
+  final Rx<GoogleMapController?> mapController = Rx<GoogleMapController?>(null);
   final Rx<Position?> currentLocation = Rx<Position?>(null);
-  final RxList<MapObject> mapObjects = <MapObject>[].obs;
+  final RxSet<Marker> markers = <Marker>{}.obs;
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
 
-  //Harita
+  // Harita başlatma
   Future<void> initializeMap() async {
     try {
       isLoading.value = true;
@@ -33,21 +32,8 @@ class YandexMapService extends GetxController {
       // Mevcut konumu al
       currentLocation.value = await Geolocator.getCurrentPosition();
 
-      // Harita kontrolcüsünü başlatma YandexMap widget'ı içinde yapılacak
-      // Aşağıdaki satırları kaldırın:
-      // mapController.value = await YandexMapController.create(
-      //   mapId: MapObjectId('main_map'),
-      //   initialCameraPosition: CameraPosition(
-      //     target: Point(
-      //       latitude: currentLocation.value!.latitude,
-      //       longitude: currentLocation.value!.longitude,
-      //     ),
-      //     zoom: 15,
-      //   ),
-      // );
-
       // Harita nesnelerini temizle
-      mapObjects.clear();
+      markers.clear();
 
       // Kullanıcı konumunu haritaya ekle
       addUserLocationMarker();
@@ -64,28 +50,16 @@ class YandexMapService extends GetxController {
   // Kullanıcı konumunu haritaya ekle
   void addUserLocationMarker() {
     if (currentLocation.value != null) {
-      final userMarker = PlacemarkMapObject(
-        mapId: MapObjectId('user_location'),
-        point: Point(
-          latitude: currentLocation.value!.latitude,
-          longitude: currentLocation.value!.longitude,
+      final marker = Marker(
+        markerId: MarkerId('user_location'),
+        position: LatLng(
+          currentLocation.value!.latitude,
+          currentLocation.value!.longitude,
         ),
-        onTap: (PlacemarkMapObject self, Point point) =>
-            onMarkerTap('user_location'),
-        direction: 0,
-        isDraggable: false,
-        opacity: 1,
-        isVisible: true,
-        text: PlacemarkText(
-          text: 'Konumunuz',
-          style: PlacemarkTextStyle(
-            color: Colors.blue,
-            size: 12,
-            outlineColor: Colors.white,
-          ),
-        ),
+        infoWindow: InfoWindow(title: 'Konumunuz'),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
       );
-      mapObjects.add(userMarker);
+      markers.add(marker);
     }
   }
 
@@ -97,7 +71,6 @@ class YandexMapService extends GetxController {
 
       if (currentLocation.value == null) return;
 
-      // Firestore'dan yakındaki yerleri getir
       final userLocation = GeoPoint(
         currentLocation.value!.latitude,
         currentLocation.value!.longitude,
@@ -121,7 +94,7 @@ class YandexMapService extends GetxController {
 
         // 10km içindeki eventleri göster
         if (distance <= 10) {
-          addEventMarker(event);
+          addEventMarker(event, doc.id);
         }
       }
 
@@ -137,7 +110,7 @@ class YandexMapService extends GetxController {
         );
 
         if (distance <= 10) {
-          addCoWorkingSpaceMarker(space);
+          addCoWorkingSpaceMarker(space, doc.id);
         }
       }
 
@@ -153,7 +126,7 @@ class YandexMapService extends GetxController {
         );
 
         if (distance <= 10) {
-          addTechCafeMarker(cafe);
+          addTechCafeMarker(cafe, doc.id);
         }
       }
     } catch (e) {
@@ -164,117 +137,57 @@ class YandexMapService extends GetxController {
   }
 
   // Event marker'ı ekle
-  void addEventMarker(Map<String, dynamic> event) {
-    final marker = PlacemarkMapObject(
-      mapId: MapObjectId('event_${event['id']}'),
-      point: Point(
-        latitude: (event['coordinates'] as GeoPoint).latitude,
-        longitude: (event['coordinates'] as GeoPoint).longitude,
+  void addEventMarker(Map<String, dynamic> event, String id) {
+    final marker = Marker(
+      markerId: MarkerId('event_$id'),
+      position: LatLng(
+        (event['coordinates'] as GeoPoint).latitude,
+        (event['coordinates'] as GeoPoint).longitude,
       ),
-      onTap: (PlacemarkMapObject self, Point point) =>
-          onMarkerTap('event_${event['id']}'),
-      direction: 0,
-      isDraggable: false,
-      opacity: 1,
-      isVisible: true,
-      text: PlacemarkText(
-        text: event['title'],
-        style: PlacemarkTextStyle(
-          color: Colors.red,
-          size: 12,
-          outlineColor: Colors.white,
-        ),
+      infoWindow: InfoWindow(
+        title: event['title'],
+        snippet: 'Detaylar için tıklayın',
+        onTap: () => showEventDetails(event),
       ),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
     );
-    mapObjects.add(marker);
+    markers.add(marker);
   }
 
   // Co-working Space marker'ı ekle
-  void addCoWorkingSpaceMarker(Map<String, dynamic> space) {
-    final marker = PlacemarkMapObject(
-      mapId: MapObjectId('space_${space['id']}'),
-      point: Point(
-        latitude: (space['coordinates'] as GeoPoint).latitude,
-        longitude: (space['coordinates'] as GeoPoint).longitude,
+  void addCoWorkingSpaceMarker(Map<String, dynamic> space, String id) {
+    final marker = Marker(
+      markerId: MarkerId('space_$id'),
+      position: LatLng(
+        (space['coordinates'] as GeoPoint).latitude,
+        (space['coordinates'] as GeoPoint).longitude,
       ),
-      onTap: (PlacemarkMapObject self, Point point) =>
-          onMarkerTap('space_${space['id']}'),
-      direction: 0,
-      isDraggable: false,
-      opacity: 1,
-      isVisible: true,
-      text: PlacemarkText(
-        text: space['name'],
-        style: PlacemarkTextStyle(
-          color: Colors.green,
-          size: 12,
-          outlineColor: Colors.white,
-        ),
+      infoWindow: InfoWindow(
+        title: space['name'],
+        snippet: 'Detaylar için tıklayın',
+        onTap: () => showCoWorkingSpaceDetails(space),
       ),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
     );
-    mapObjects.add(marker);
+    markers.add(marker);
   }
 
   // Tech Cafe marker'ı ekle
-  void addTechCafeMarker(Map<String, dynamic> cafe) {
-    final marker = PlacemarkMapObject(
-      mapId: MapObjectId('cafe_${cafe['id']}'),
-      point: Point(
-        latitude: (cafe['coordinates'] as GeoPoint).latitude,
-        longitude: (cafe['coordinates'] as GeoPoint).longitude,
+  void addTechCafeMarker(Map<String, dynamic> cafe, String id) {
+    final marker = Marker(
+      markerId: MarkerId('cafe_$id'),
+      position: LatLng(
+        (cafe['coordinates'] as GeoPoint).latitude,
+        (cafe['coordinates'] as GeoPoint).longitude,
       ),
-      onTap: (PlacemarkMapObject self, Point point) =>
-          onMarkerTap('cafe_${cafe['id']}'),
-      direction: 0,
-      isDraggable: false,
-      opacity: 1,
-      isVisible: true,
-      text: PlacemarkText(
-        text: cafe['name'],
-        style: PlacemarkTextStyle(
-          color: Colors.orange,
-          size: 12,
-          outlineColor: Colors.white,
-        ),
+      infoWindow: InfoWindow(
+        title: cafe['name'],
+        snippet: 'Detaylar için tıklayın',
+        onTap: () => showTechCafeDetails(cafe),
       ),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
     );
-    mapObjects.add(marker);
-  }
-
-  // Marker'a tıklandığında
-  void onMarkerTap(String markerId) async {
-    try {
-      final parts = markerId.split('_');
-      if (parts.length != 2) return;
-
-      final type = parts[0];
-      final id = parts[1];
-
-      // Detay sayfasını göster
-      switch (type) {
-        case 'event':
-          final doc = await _firestore.collection('tech_events').doc(id).get();
-          if (doc.exists) {
-            showEventDetails(doc.data()!);
-          }
-          break;
-        case 'space':
-          final doc =
-              await _firestore.collection('coworking_spaces').doc(id).get();
-          if (doc.exists) {
-            showCoWorkingSpaceDetails(doc.data()!);
-          }
-          break;
-        case 'cafe':
-          final doc = await _firestore.collection('tech_cafes').doc(id).get();
-          if (doc.exists) {
-            showTechCafeDetails(doc.data()!);
-          }
-          break;
-      }
-    } catch (e) {
-      errorMessage.value = 'Detaylar gösterilirken hata: $e';
-    }
+    markers.add(marker);
   }
 
   // Event detaylarını göster
@@ -382,7 +295,7 @@ class YandexMapService extends GetxController {
 
   // Haritayı temizle
   void clearMap() {
-    mapObjects.clear();
+    markers.clear();
   }
 
   // Haritayı yenile
@@ -397,4 +310,3 @@ class YandexMapService extends GetxController {
     super.onClose();
   }
 }
-*/

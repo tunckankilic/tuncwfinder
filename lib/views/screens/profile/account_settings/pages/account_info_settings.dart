@@ -1532,7 +1532,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
           context: context,
           label: "Education Level",
           icon: Icons.school_outlined,
-          items: highSchool,
+          items: educationLevels,
           value: controller.educationController.text,
           onChanged: (value) =>
               controller.educationController.text = value ?? '',

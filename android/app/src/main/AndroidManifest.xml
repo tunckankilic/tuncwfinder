@@ -11,6 +11,11 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         
+        <!-- Google Maps API Key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${GOOGLE_MAPS_API_KEY}"/>
+
         <!-- Firebase Messaging Service -->
         <service
             android:name=".java.MyFirebaseMessagingService"

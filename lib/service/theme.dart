@@ -106,7 +106,7 @@ class ElegantTheme {
           borderRadius: BorderRadius.circular(8),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 2,
         shape: RoundedRectangleBorder(

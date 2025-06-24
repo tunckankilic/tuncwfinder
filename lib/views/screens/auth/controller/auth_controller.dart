@@ -20,6 +20,7 @@ import 'package:tuncforwork/views/screens/home/home_bindings.dart';
 import 'package:tuncforwork/views/screens/home/home_controller.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
@@ -198,13 +199,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
   ''';
 
   final List<RxBool> checks = List.generate(5, (index) => false.obs);
-  final List<String> textler = [
-    "At least 8 character",
-    "At least one capital letter (A-Z)",
-    "At least 1 small letter (a-z)",
-    "At least 1 digit (0-9)",
-    "At least 1 special character (!,#...)",
-  ];
+  final List<String> textler = AppStrings.passwordRequirements;
   final RxBool isVisible = true.obs;
 
   // Kariyer ve Beceri Alanları için Yeni Controller'lar
@@ -251,9 +246,173 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
   }
 
+  Future<bool> _checkEmailExists(String email) async {
+    try {
+      // Firebase Auth'da email kontrolü
+      final methods = await _auth.fetchSignInMethodsForEmail(email);
+      return methods.isNotEmpty;
+    } catch (e) {
+      log('Error checking email existence: $e');
+      return false;
+    }
+  }
+
+  Future<void> handleSocialLogin(SocialLoginType type) async {
+    try {
+      isLoading.value = true;
+      UserCredential? userCredential;
+      Map<String, dynamic> userData = {};
+
+      switch (type) {
+        case SocialLoginType.google:
+          userCredential = await _handleGoogleSignIn();
+          if (userCredential?.user != null) {
+            userData = {
+              'email': userCredential!.user!.email,
+              'name': userCredential.user!.displayName,
+              'imageProfile': userCredential.user!.photoURL,
+            };
+          }
+          break;
+        case SocialLoginType.apple:
+          userCredential = await _handleAppleSignIn();
+          if (userCredential?.user != null) {
+            userData = {
+              'email': userCredential!.user!.email,
+              'name': userCredential.user!.displayName,
+              'imageProfile': userCredential.user!.photoURL,
+            };
+          }
+          break;
+      }
+
+      if (userCredential == null || userCredential.user == null) {
+        throw 'Login failed';
+      }
+
+      // Kullanıcının daha önce kayıt olup olmadığını kontrol et
+      final userDoc = await _firestore
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      if (!userDoc.exists) {
+        // Yeni kullanıcı - Register ekranına yönlendir
+        await _preFillRegistrationData(userData);
+        Get.offAll(() => const RegistrationScreen());
+      } else {
+        // Mevcut kullanıcı - Ana ekrana yönlendir
+        await _handleExistingUserLogin(userCredential.user!.uid);
+      }
+    } catch (e) {
+      log('Social login error: $e');
+      _showError('Login failed: ${e.toString()}');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<UserCredential?> _handleGoogleSignIn() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return null;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      return await _auth.signInWithCredential(credential);
+    } catch (e) {
+      log('Google sign in error: $e');
+      rethrow;
+    }
+  }
+
+  Future<UserCredential?> _handleAppleSignIn() async {
+    try {
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      final oauthCredential = OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      return await _auth.signInWithCredential(oauthCredential);
+    } catch (e) {
+      log('Apple sign in error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> _preFillRegistrationData(Map<String, dynamic> userData) async {
+    // Form kontrolcülerini temizle
+    clearAllFields();
+
+    // Varsayılan verileri doldur
+    emailController.text = userData['email'] ?? '';
+    nameController.text = userData['name'] ?? '';
+
+    if (userData['imageProfile'] != null) {
+      try {
+        // URL'den resmi indir ve geçici dosya olarak kaydet
+        final response = await http.get(Uri.parse(userData['imageProfile']));
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File('${tempDir.path}/temp_profile.jpg');
+        await tempFile.writeAsBytes(response.bodyBytes);
+        pickedImage.value = tempFile;
+      } catch (e) {
+        log('Error downloading profile image: $e');
+      }
+    }
+  }
+
+  Future<void> _handleExistingUserLogin(String userId) async {
+    try {
+      // UserController'ı initialize et
+      final userController = Get.find<UserController>();
+      await userController.initializeUserStream(userId);
+
+      // Verilerin yüklenmesini bekle
+      await Future.doWhile(() async {
+        await Future.delayed(const Duration(milliseconds: 100));
+        return userController.currentUser.value == null;
+      });
+
+      // HomeController'ı yükle ve initialize et
+      final homeController = Get.put(HomeController(), permanent: true);
+      await homeController.initializeControllers();
+
+      // Ana ekrana yönlendir
+      await Get.offAll(
+        () => const HomeScreen(),
+        transition: Transition.fadeIn,
+        duration: const Duration(milliseconds: 500),
+      );
+    } catch (e) {
+      log('Error handling existing user login: $e');
+      rethrow;
+    }
+  }
+
   Future<void> register() async {
     try {
       showProgressBar.value = true;
+
+      // Email kontrolü
+      final emailExists = await _checkEmailExists(emailController.text.trim());
+      if (emailExists) {
+        _showError(AppStrings.errorEmailExists);
+        return;
+      }
 
       // Debug için sosyal medya değerlerini kontrol edelim
       log('LinkedIn URL: ${linkedInController.text}');
@@ -268,7 +427,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
       final User? user = userCredential.user;
       if (user == null) {
-        throw 'User creation failed';
+        throw AppStrings.errorUserCreationFailed;
       }
 
       String profileImageUrl = '';
@@ -348,8 +507,8 @@ By accepting this privacy policy, you declare that you understand and agree to t
       ]);
 
       Get.snackbar(
-        'Success',
-        'Account created successfully!',
+        AppStrings.successTitle,
+        AppStrings.successAccountCreated,
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green.shade50,
         colorText: Colors.green.shade900,
@@ -372,7 +531,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     } on FirebaseAuthException catch (e) {
       handleAuthError(e);
     } catch (e) {
-      _showError('Registration failed: ${e.toString()}');
+      _showError('${AppStrings.errorRegistrationFailed}${e.toString()}');
       log('Registration error: $e');
     } finally {
       showProgressBar.value = false;
@@ -505,13 +664,22 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
   Future<void> login() async {
     if (!termsAccepted.value) {
-      Get.snackbar('Terms Required',
-          'Please accept the terms and conditions to continue');
+      Get.snackbar(
+          AppStrings.termsAndConditions, AppStrings.validateTermsAccept);
       return;
     }
 
     try {
       isLoading.value = true;
+
+      // Email kontrolü
+      final methods =
+          await _auth.fetchSignInMethodsForEmail(emailController.text.trim());
+
+      if (methods.isEmpty) {
+        _showError(AppStrings.errorNoAccount);
+        return;
+      }
 
       // 1. Auth işlemi
       final userCredential = await _auth.signInWithEmailAndPassword(
@@ -552,7 +720,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       handleAuthError(e);
     } catch (e) {
       log('Login error: $e');
-      _showError('Login failed: ${e.toString()}');
+      _showError('${AppStrings.errorLoginFailed}${e.toString()}');
     } finally {
       isLoading.value = false;
     }
@@ -601,7 +769,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
   Future<void> resetPassword(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
-      _showSuccess('Password reset email sent');
+      _showSuccess(AppStrings.successPasswordReset);
     } catch (error) {
       _showError(error.toString());
     }
@@ -624,7 +792,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     } on FirebaseAuthException catch (e) {
       await handleSignInError(e);
     } catch (e) {
-      _showError('Failed to sign in with Google: $e');
+      _showError('${AppStrings.errorSignInGoogle}$e');
     } finally {
       isLoading.value = false;
     }
@@ -661,11 +829,11 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
       await _handleSignIn(() => _auth.signInWithCredential(oauthCredential));
     } on SignInWithAppleAuthorizationException catch (e) {
-      _showError('Apple sign in failed: ${e.message}');
+      _showError('${AppStrings.errorSignInApple}${e.message}');
     } on FirebaseAuthException catch (e) {
       await handleSignInError(e);
     } catch (e) {
-      _showError('Failed to sign in with Apple: $e');
+      _showError('${AppStrings.errorSignInApple}$e');
     } finally {
       isLoading.value = false;
     }
@@ -711,34 +879,34 @@ By accepting this privacy policy, you declare that you understand and agree to t
             'Sign in using $providerName.');
         break;
       case 'invalid-credential':
-        _showError('The credential is malformed or has expired.');
+        _showError(AppStrings.errorInvalidCredential);
         break;
       case 'user-disabled':
-        _showError('This user account has been disabled.');
+        _showError(AppStrings.errorUserDisabled);
         break;
       case 'user-not-found':
-        _showError('No user found for that email.');
+        _showError(AppStrings.errorUserNotFound);
         break;
       case 'wrong-password':
-        _showError('Wrong password provided for that user.');
+        _showError(AppStrings.errorWrongPassword);
         break;
       default:
-        _showError('An undefined error occurred: ${e.message}');
+        _showError('${AppStrings.errorUndefined}${e.message}');
     }
   }
 
   String _getProviderName(String providerId) {
     switch (providerId) {
       case 'google.com':
-        return 'Google';
+        return AppStrings.providerGoogle;
       case 'facebook.com':
-        return 'Facebook';
+        return AppStrings.providerFacebook;
       case 'apple.com':
-        return 'Apple';
+        return AppStrings.providerApple;
       case 'password':
-        return 'Email/Password';
+        return AppStrings.providerEmailPassword;
       default:
-        return 'Unknown Provider';
+        return AppStrings.providerUnknown;
     }
   }
 
@@ -1074,11 +1242,11 @@ By accepting this privacy policy, you declare that you understand and agree to t
       if (result.additionalUserInfo?.username != null) {
         githubController.text = result.additionalUserInfo!.username!;
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('GitHub profile connected successfully!')));
+            SnackBar(content: Text(AppStrings.successGithubConnected)));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to connect GitHub: ${e.toString()}')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('${AppStrings.errorGithubConnection}${e.toString()}')));
     }
   }
 
@@ -1267,8 +1435,9 @@ By accepting this privacy policy, you declare that you understand and agree to t
                             title: titleController.text,
                             company: companyController.text,
                             description: descriptionController.text,
-                            startDate: startDate,
-                            endDate: endDate,
+                            startDate:
+                                startDate.toIso8601String().split('T')[0],
+                            endDate: endDate?.toIso8601String().split('T')[0],
                             technologies: technologies,
                           ));
                           Get.back();
@@ -1456,3 +1625,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
     super.onClose();
   }
 }
+
+// Enum for social login types
+enum SocialLoginType { google, apple }

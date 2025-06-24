@@ -1,111 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:tuncforwork/service/google_maps_service.dart';
 import 'package:get/get.dart';
-import 'package:yandex_mapkit/yandex_mapkit.dart';
-import 'package:tuncforwork/service/yandex_map_service.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MapScreen extends StatelessWidget {
-  final YandexMapService mapService = Get.put(YandexMapService());
+  final GoogleMapsService mapService = Get.put(GoogleMapsService());
+
+  MapScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Yakındaki Etkinlikler'),
+        title: Text(AppStrings.nearbyPlaces),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, size: 24.w),
             onPressed: () => mapService.refreshMap(),
           ),
         ],
       ),
-      body: Obx(() {
-        if (mapService.isLoading.value) {
-          return Center(child: CircularProgressIndicator());
-        }
-
-        if (mapService.errorMessage.isNotEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(mapService.errorMessage.value),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => mapService.refreshMap(),
-                  child: Text('Tekrar Dene'),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return Stack(
+      body: Obx(
+        () => Stack(
           children: [
-            YandexMap(
-              onMapCreated: (YandexMapController controller) {
-                mapService.mapController.value = controller;
-                mapService.initializeMap();
-              },
-              mapObjects: mapService.mapObjects,
-              onMapTap: (Point point) => print('Tapped map at $point'),
-              onCameraPositionChanged: (CameraPosition position,
-                  CameraUpdateReason reason, bool finished) {
-                if (finished) {
-                  print('Camera position changed to $position');
-                }
-              },
-            ),
-            Positioned(
-              bottom: 16,
-              left: 16,
-              right: 16,
-              child: Card(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Yakındaki Yerler',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _buildLegendItem('Etkinlikler', Colors.red),
-                          _buildLegendItem('Co-working', Colors.green),
-                          _buildLegendItem('Tech Cafe', Colors.orange),
-                        ],
-                      ),
-                    ],
+            if (mapService.currentLocation.value != null)
+              GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(
+                    mapService.currentLocation.value!.latitude,
+                    mapService.currentLocation.value!.longitude,
+                  ),
+                  zoom: 15,
+                ),
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
+                markers: mapService.markers,
+                onMapCreated: (GoogleMapController controller) {
+                  mapService.mapController.value = controller;
+                },
+              )
+            else
+              Center(
+                child: Text(
+                  AppStrings.gettingLocation,
+                  style: TextStyle(fontSize: 16.sp),
+                ),
+              ),
+            if (mapService.isLoading.value)
+              const Center(child: CircularProgressIndicator()),
+            if (mapService.errorMessage.value.isNotEmpty)
+              Center(
+                child: Container(
+                  margin: EdgeInsets.all(16.w),
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text(
+                    mapService.errorMessage.value,
+                    style: TextStyle(
+                      color: Colors.red.shade900,
+                      fontSize: 14.sp,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
-            ),
           ],
-        );
-      }),
-    );
-  }
-
-  Widget _buildLegendItem(String label, Color color) {
-    return Row(
-      children: [
-        Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
         ),
-        SizedBox(width: 4),
-        Text(label),
-      ],
+      ),
     );
   }
 }
