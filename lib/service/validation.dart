@@ -19,14 +19,6 @@ class RegistrationValidator {
     required String password,
     required String confirmPassword,
   }) {
-    // Profile Image Check
-    if (profileImage == null) {
-      return ValidationResult(
-        isValid: false,
-        errorMessage: 'Please select a profile picture',
-      );
-    }
-
     // Name Validation
     if (name.trim().isEmpty) {
       return ValidationResult(
@@ -162,10 +154,11 @@ class RegistrationValidator {
       );
     }
 
-    if (profileHeading.trim().length < 10) {
+    final heading = profileHeading.trim();
+    if (heading.length < 8 || heading.length > 30) {
       return ValidationResult(
         isValid: false,
-        errorMessage: 'Profile heading must be at least 10 characters long',
+        errorMessage: 'Profile heading must be between 10 and 40 characters',
       );
     }
 
@@ -406,11 +399,12 @@ class RegistrationValidator {
 
     // Instagram Validation (Optional)
     if (instagram.isNotEmpty) {
-      final instagramPattern = RegExp(r'^@?[A-Za-z0-9_.]+$');
+      final instagramPattern = RegExp(r'^@?[A-Za-z0-9_.]{3,30}$');
       if (!instagramPattern.hasMatch(instagram.trim())) {
         return ValidationResult(
           isValid: false,
-          errorMessage: 'Please enter a valid Instagram handle',
+          errorMessage:
+              'Please enter a valid Instagram handle (3-30 characters)',
         );
       }
     }
@@ -418,7 +412,7 @@ class RegistrationValidator {
     // GitHub Validation (Optional)
     if (github.isNotEmpty) {
       final githubPattern = RegExp(
-        r'^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9_-]+\/?$',
+        r'^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$',
       );
       if (!githubPattern.hasMatch(github.trim())) {
         return ValidationResult(
@@ -667,7 +661,7 @@ extension StringValidationExtension on String {
       RegExp(r'^@?[A-Za-z0-9_.]+$').hasMatch(this);
 
   bool get isValidGithubUrl => RegExp(
-        r'^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9_-]+\/?$',
+        r'^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$',
       ).hasMatch(this);
 
   bool get isValidNumber {
