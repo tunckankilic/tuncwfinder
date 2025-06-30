@@ -5,11 +5,9 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:http/http.dart' as http;
 import 'package:tuncforwork/models/models.dart';
 import 'package:tuncforwork/models/person.dart' as pM;
@@ -29,12 +27,6 @@ class AuthController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: [
-      'email',
-      'https://www.googleapis.com/auth/userinfo.profile',
-    ],
-  );
   final ImagePicker _imagePicker = ImagePicker();
 
   // Observable variables
@@ -259,152 +251,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
     } catch (e) {
       log('Error checking email existence: $e');
       return false;
-    }
-  }
-
-  Future<void> handleSocialLogin(SocialLoginType type) async {
-    try {
-      isLoading.value = true;
-      UserCredential? userCredential;
-      Map<String, dynamic> userData = {};
-
-      switch (type) {
-        case SocialLoginType.google:
-          userCredential = await _handleGoogleSignIn();
-          if (userCredential?.user != null) {
-            userData = {
-              'email': userCredential!.user!.email,
-              'name': userCredential.user!.displayName,
-              'imageProfile': userCredential.user!.photoURL,
-            };
-          }
-          break;
-        case SocialLoginType.apple:
-          userCredential = await _handleAppleSignIn();
-          if (userCredential?.user != null) {
-            userData = {
-              'email': userCredential!.user!.email,
-              'name': userCredential.user!.displayName,
-              'imageProfile': userCredential.user!.photoURL,
-            };
-          }
-          break;
-      }
-
-      if (userCredential == null || userCredential.user == null) {
-        throw 'Login failed';
-      }
-
-      // Kullanıcının daha önce kayıt olup olmadığını kontrol et
-      final userDoc = await _firestore
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .get();
-
-      if (!userDoc.exists) {
-        // Yeni kullanıcı - Register ekranına yönlendir
-        await _preFillRegistrationData(userData);
-        Get.offAll(() => const RegistrationScreen());
-      } else {
-        // Mevcut kullanıcı - Ana ekrana yönlendir
-        await _handleExistingUserLogin(userCredential.user!.uid);
-      }
-    } catch (e) {
-      log('Social login error: $e');
-      _showError('Login failed: ${e.toString()}');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  Future<UserCredential?> _handleGoogleSignIn() async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.idToken,
-        idToken: googleAuth.idToken,
-      );
-
-      return await _auth.signInWithCredential(credential);
-    } catch (e) {
-      log('Google sign in error: $e');
-      rethrow;
-    }
-  }
-
-  Future<UserCredential?> _handleAppleSignIn() async {
-    try {
-      final appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-
-      final oauthCredential = OAuthProvider("apple.com").credential(
-        idToken: appleCredential.identityToken,
-        accessToken: appleCredential.authorizationCode,
-      );
-
-      return await _auth.signInWithCredential(oauthCredential);
-    } catch (e) {
-      log('Apple sign in error: $e');
-      rethrow;
-    }
-  }
-
-  Future<void> _preFillRegistrationData(Map<String, dynamic> userData) async {
-    // Form kontrolcülerini temizle
-    clearAllFields();
-
-    // Varsayılan verileri doldur
-    emailController.text = userData['email'] ?? '';
-    nameController.text = userData['name'] ?? '';
-
-    if (userData['imageProfile'] != null) {
-      try {
-        // URL'den resmi indir ve geçici dosya olarak kaydet
-        final response = await http.get(Uri.parse(userData['imageProfile']));
-        final tempDir = await getTemporaryDirectory();
-        final tempFile = File('${tempDir.path}/temp_profile.jpg');
-        await tempFile.writeAsBytes(response.bodyBytes);
-        pickedImage.value = tempFile;
-      } catch (e) {
-        log('Error downloading profile image: $e');
-      }
-    }
-  }
-
-  Future<void> _handleExistingUserLogin(String userId) async {
-    try {
-      // UserController'ı initialize et
-      final userController = Get.find<UserController>();
-      await userController.initializeUserStream(userId);
-
-      // Verilerin yüklenmesini bekle
-      await Future.doWhile(() async {
-        await Future.delayed(const Duration(milliseconds: 100));
-        return userController.currentUser.value == null;
-      });
-
-      // HomeController'ı yükle ve initialize et
-      final homeController = Get.put(HomeController(), permanent: true);
-      await homeController.initializeControllers();
-
-      // Ana ekrana yönlendir
-      await Get.offAll(
-        () => const HomeScreen(),
-        transition: Transition.fadeIn,
-        duration: const Duration(milliseconds: 500),
-      );
-    } catch (e) {
-      log('Error handling existing user login: $e');
-      rethrow;
     }
   }
 
@@ -715,7 +561,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       final homeController = Get.put(HomeController(), permanent: true);
       await homeController.initializeControllers();
 
-      // 6. Ana ekrana yönlendir - HomeBindings kullanma
+      // 6. Ana ekrana yönlendir
       await Get.offAll(
         () => const HomeScreen(),
         transition: Transition.fadeIn,
@@ -731,7 +577,29 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
   }
 
-  void _handleLoginError(dynamic error) {
+  Future<void> handleAuthError(FirebaseAuthException e) {
+    String message;
+    switch (e.code) {
+      case 'email-already-in-use':
+        message = 'This email is already registered';
+        break;
+      case 'invalid-email':
+        message = 'Invalid email address';
+        break;
+      case 'operation-not-allowed':
+        message = 'Email/password registration is disabled';
+        break;
+      case 'weak-password':
+        message = 'Password is too weak';
+        break;
+      default:
+        message = e.message ?? 'An error occurred';
+    }
+    _showError(message);
+    return Future.value();
+  }
+
+  Future<void> _handleLoginError(dynamic error) {
     String message = 'An error occurred while signing in';
 
     if (error is FirebaseAuthException) {
@@ -760,6 +628,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
 
     _showError(message);
+    return Future.value();
   }
 
   Future<void> logout() async {
@@ -780,29 +649,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
   }
 
-  Future<void> signInWithGoogle() async {
-    try {
-      isLoading.value = true;
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return;
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.idToken,
-        idToken: googleAuth.idToken,
-      );
-
-      await _handleSignIn(() => _auth.signInWithCredential(credential));
-    } on FirebaseAuthException catch (e) {
-      await handleSignInError(e);
-    } catch (e) {
-      _showError('${AppStrings.errorSignInGoogle}$e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
   Future<void> fpSend() async {
     isLoading.value = true;
     try {
@@ -814,141 +660,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
       Get.snackbar('Error', error.toString());
     } finally {
       isLoading.value = false;
-    }
-  }
-
-  Future<void> signInWithApple() async {
-    try {
-      isLoading.value = true;
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-
-      final oauthCredential = OAuthProvider("apple.com").credential(
-        idToken: credential.identityToken,
-        accessToken: credential.authorizationCode,
-      );
-
-      await _handleSignIn(() => _auth.signInWithCredential(oauthCredential));
-    } on SignInWithAppleAuthorizationException catch (e) {
-      _showError('${AppStrings.errorSignInApple}${e.message}');
-    } on FirebaseAuthException catch (e) {
-      await handleSignInError(e);
-    } catch (e) {
-      _showError('${AppStrings.errorSignInApple}$e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  Future<void> _handleSignIn(
-      Future<UserCredential> Function() signInMethod) async {
-    try {
-      final userCredential = await signInMethod();
-      final user = userCredential.user!;
-      final isRegistered = await isUserRegistered(user.uid);
-      if (isRegistered) {
-        Get.offAllNamed('/home');
-      } else {
-        await _prefillUserData(user);
-        Get.toNamed('/register');
-      }
-    } on FirebaseAuthException catch (e) {
-      await handleSignInError(e);
-    } catch (e) {
-      _showError('Sign in failed: $e');
-    }
-  }
-
-  Future<bool> isUserRegistered(String uid) async {
-    try {
-      final userDoc = await _firestore.collection('users').doc(uid).get();
-      return userDoc.exists;
-    } catch (e) {
-      _showError('Failed to check user registration: $e');
-      return false;
-    }
-  }
-
-  Future<void> handleSignInError(FirebaseAuthException e) async {
-    switch (e.code) {
-      case 'account-exists-with-different-credential':
-        List<String> providers =
-            await _auth.fetchSignInMethodsForEmail(e.email!);
-        String providerName = _getProviderName(providers.first);
-        _showError(
-            'An account already exists with the same email address but different sign-in credentials. '
-            'Sign in using $providerName.');
-        break;
-      case 'invalid-credential':
-        _showError(AppStrings.errorInvalidCredential);
-        break;
-      case 'user-disabled':
-        _showError(AppStrings.errorUserDisabled);
-        break;
-      case 'user-not-found':
-        _showError(AppStrings.errorUserNotFound);
-        break;
-      case 'wrong-password':
-        _showError(AppStrings.errorWrongPassword);
-        break;
-      default:
-        _showError('${AppStrings.errorUndefined}${e.message}');
-    }
-  }
-
-  String _getProviderName(String providerId) {
-    switch (providerId) {
-      case 'google.com':
-        return AppStrings.providerGoogle;
-      case 'facebook.com':
-        return AppStrings.providerFacebook;
-      case 'apple.com':
-        return AppStrings.providerApple;
-      case 'password':
-        return AppStrings.providerEmailPassword;
-      default:
-        return AppStrings.providerUnknown;
-    }
-  }
-
-  Future<void> _prefillUserData(User user) async {
-    emailController.text = user.email ?? '';
-    nameController.text = user.displayName ?? '';
-    phoneNoController.text = user.phoneNumber ?? '';
-
-    if (user.photoURL != null) {
-      try {
-        final response = await http.get(Uri.parse(user.photoURL!));
-        final bytes = response.bodyBytes;
-        final temp = await File(
-                '${(await getTemporaryDirectory()).path}/temp_profile.jpg')
-            .create();
-        await temp.writeAsBytes(bytes);
-        pickedImage.value = temp;
-      } catch (e) {
-        log('Error downloading profile picture: $e');
-      }
-    }
-
-    profileHeadingController.text = 'Hey there! I\'m new here.';
-    termsAccepted.value = false;
-
-    try {
-      DocumentSnapshot doc =
-          await _firestore.collection('users').doc(user.uid).get();
-      if (doc.exists) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        cityController.text = data['city'] ?? '';
-        countryController.text = data['country'] ?? '';
-        ageController.text = data['age']?.toString() ?? '';
-        genderController.text = data['gender'] ?? '';
-      }
-    } catch (e) {
-      log('Error fetching user data from Firestore: $e');
     }
   }
 
@@ -1238,23 +949,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
     return true;
   }
 
-  Future<void> _connectGithub(BuildContext context) async {
-    try {
-      final GithubAuthProvider githubProvider = GithubAuthProvider();
-      final UserCredential result =
-          await FirebaseAuth.instance.signInWithProvider(githubProvider);
-
-      if (result.additionalUserInfo?.username != null) {
-        githubController.text = result.additionalUserInfo!.username!;
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppStrings.successGithubConnected)));
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('${AppStrings.errorGithubConnection}${e.toString()}')));
-    }
-  }
-
   // Validate Background Page (Page 3)
   bool _validateBackground() {
     if (nationalityController.text.trim().isEmpty) {
@@ -1278,27 +972,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
       return false;
     }
     return true;
-  }
-
-  void handleAuthError(FirebaseAuthException e) {
-    String message;
-    switch (e.code) {
-      case 'email-already-in-use':
-        message = 'This email is already registered';
-        break;
-      case 'invalid-email':
-        message = 'Invalid email address';
-        break;
-      case 'operation-not-allowed':
-        message = 'Email/password registration is disabled';
-        break;
-      case 'weak-password':
-        message = 'Password is too weak';
-        break;
-      default:
-        message = e.message ?? 'An error occurred';
-    }
-    _showError(message);
   }
 
   // Beceri İşlemleri
@@ -1630,6 +1303,3 @@ By accepting this privacy policy, you declare that you understand and agree to t
     super.onClose();
   }
 }
-
-// Enum for social login types
-enum SocialLoginType { google, apple }

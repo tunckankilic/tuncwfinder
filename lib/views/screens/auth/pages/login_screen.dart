@@ -40,8 +40,6 @@ class LoginScreen extends GetView<AuthController> {
             const SizedBox(height: 40),
             _buildLoginForm(false),
             const SizedBox(height: 24),
-            _buildSocialLogin(false),
-            const SizedBox(height: 24),
             _buildLinks(false),
           ],
         ),
@@ -91,8 +89,6 @@ class LoginScreen extends GetView<AuthController> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildLoginForm(true),
-                  const SizedBox(height: 32),
-                  _buildSocialLogin(true),
                   const SizedBox(height: 32),
                   _buildLinks(true),
                 ],
@@ -178,41 +174,6 @@ class LoginScreen extends GetView<AuthController> {
               )),
         ],
       ),
-    );
-  }
-
-  Widget _buildSocialLogin(bool isTablet) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            const Expanded(child: Divider()),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'OR',
-                style: AppTheme.textTheme.bodyMedium,
-              ),
-            ),
-            const Expanded(child: Divider()),
-          ],
-        ),
-        const SizedBox(height: 24),
-        ModernButton(
-          text: 'Continue with Google',
-          onPressed: () => controller.handleSocialLogin(SocialLoginType.google),
-          isOutlined: true,
-        ),
-        if (Platform.isIOS) ...[
-          const SizedBox(height: 16),
-          ModernButton(
-            text: 'Continue with Apple',
-            onPressed: () =>
-                controller.handleSocialLogin(SocialLoginType.apple),
-            isOutlined: true,
-          ),
-        ],
-      ],
     );
   }
 
