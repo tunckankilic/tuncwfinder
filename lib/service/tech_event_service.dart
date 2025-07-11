@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/tech_event.dart';
 import 'package:tuncforwork/service/push_notification_system.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:math' hide log;
@@ -132,9 +132,9 @@ class TechEventService extends GetxController {
     }
   }
 
-  // Katılımcı sayısına göre mekan önerisi
+  // Katılımcı sayısına göre mekan önerisi - Google Maps kaldırıldı
   Future<List<Map<String, dynamic>>> suggestVenues(
-      int participantCount, LatLng location) async {
+      int participantCount, dynamic location) async {
     try {
       final snapshot = await _firestore
           .collection('venues')
@@ -142,24 +142,6 @@ class TechEventService extends GetxController {
           .get();
 
       final venues = snapshot.docs.map((doc) => doc.data()).toList();
-
-      // Mekanları mesafeye göre sırala
-      venues.sort((a, b) {
-        final aLocation = a['location'] as GeoPoint;
-        final bLocation = b['location'] as GeoPoint;
-
-        final aDist = _calculateDistance(
-          location,
-          LatLng(aLocation.latitude, aLocation.longitude),
-        );
-        final bDist = _calculateDistance(
-          location,
-          LatLng(bLocation.latitude, bLocation.longitude),
-        );
-
-        return aDist.compareTo(bDist);
-      });
-
       return venues;
     } catch (e) {
       errorMessage.value = 'Mekan önerileri alınırken hata: $e';
@@ -167,38 +149,22 @@ class TechEventService extends GetxController {
     }
   }
 
-  // Toplu taşıma bilgilerini getir
+  // Toplu taşıma bilgilerini getir - Google Maps kaldırıldı
   Future<Map<String, dynamic>> getTransportationInfo(
-      LatLng origin, LatLng destination) async {
+      dynamic origin, dynamic destination) async {
     try {
-      final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
-      final url =
-          Uri.parse('https://maps.googleapis.com/maps/api/directions/json?'
-              'origin=${origin.latitude},${origin.longitude}'
-              '&destination=${destination.latitude},${destination.longitude}'
-              '&mode=transit'
-              '&key=$apiKey');
-
-      final response = await http.get(url);
-      return json.decode(response.body);
+      // Google Maps API kaldırıldı
+      return {};
     } catch (e) {
       errorMessage.value = 'Ulaşım bilgileri alınırken hata: $e';
       return {};
     }
   }
 
-  // İki nokta arası mesafe hesaplama
-  double _calculateDistance(LatLng point1, LatLng point2) {
-    const double earthRadius = 6371; // km
-    final lat1 = point1.latitude * (pi / 180);
-    final lat2 = point2.latitude * (pi / 180);
-    final dLat = (point2.latitude - point1.latitude) * (pi / 180);
-    final dLon = (point2.longitude - point1.longitude) * (pi / 180);
-
-    final a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(lat1) * cos(lat2) * sin(dLon / 2) * sin(dLon / 2);
-    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    return earthRadius * c;
+  // İki nokta arası mesafe hesaplama - Google Maps kaldırıldı
+  double _calculateDistance(dynamic point1, dynamic point2) {
+    // Google Maps kaldırıldı - varsayılan değer döndür
+    return 0.0;
   }
 
   // Etkinlik bildirimi gönder

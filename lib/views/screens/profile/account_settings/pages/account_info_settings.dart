@@ -971,26 +971,10 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         children: [
           _buildSocialLinkField(
             context: context,
-            controller: controller.linkedInController,
-            label: "LinkedIn Profile",
-            icon: Icons.link,
-            prefix: "linkedin.com/in/",
-            isTablet: isTablet,
-          ),
-          _buildSocialLinkField(
-            context: context,
             controller: controller.instagramController,
             label: "Instagram",
             icon: Icons.camera_alt_outlined,
             prefix: "@",
-            isTablet: isTablet,
-          ),
-          _buildSocialLinkField(
-            context: context,
-            controller: controller.gitHubController,
-            label: "GitHub Profile",
-            icon: Icons.code,
-            prefix: "github.com/",
             isTablet: isTablet,
           ),
         ],

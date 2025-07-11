@@ -12,9 +12,7 @@ void main() {
 
       for (var url in validUrls) {
         final result = RegistrationValidator.validateSocialLinks(
-          linkedIn: url,
           instagram: '',
-          github: '',
           termsAccepted: true,
         );
         expect(result.isValid, true, reason: 'URL geçerli olmalı: $url');
@@ -30,9 +28,7 @@ void main() {
 
       for (var url in invalidUrls) {
         final result = RegistrationValidator.validateSocialLinks(
-          linkedIn: url,
           instagram: '',
-          github: '',
           termsAccepted: true,
         );
         expect(result.isValid, false, reason: 'URL geçersiz olmalı: $url');
@@ -51,9 +47,7 @@ void main() {
 
       for (var handle in validHandles) {
         final result = RegistrationValidator.validateSocialLinks(
-          linkedIn: '',
           instagram: handle,
-          github: '',
           termsAccepted: true,
         );
         expect(result.isValid, true,
@@ -71,9 +65,7 @@ void main() {
 
       for (var handle in invalidHandles) {
         final result = RegistrationValidator.validateSocialLinks(
-          linkedIn: '',
           instagram: handle,
-          github: '',
           termsAccepted: true,
         );
         expect(result.isValid, false,
@@ -92,9 +84,7 @@ void main() {
 
       for (var url in validUrls) {
         final result = RegistrationValidator.validateSocialLinks(
-          linkedIn: '',
           instagram: '',
-          github: url,
           termsAccepted: true,
         );
         expect(result.isValid, true, reason: 'URL geçerli olmalı: $url');
@@ -110,9 +100,7 @@ void main() {
 
       for (var url in invalidUrls) {
         final result = RegistrationValidator.validateSocialLinks(
-          linkedIn: '',
           instagram: '',
-          github: url,
           termsAccepted: true,
         );
         expect(result.isValid, false, reason: 'URL geçersiz olmalı: $url');

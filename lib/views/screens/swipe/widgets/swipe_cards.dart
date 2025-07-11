@@ -29,6 +29,7 @@ class _SwipeCardsState extends State<SwipeCards>
   Alignment _dragAlignment = Alignment.center;
   late Animation<Alignment> _animation;
   Person? _currentProfile;
+  final SwipeController _swipeController = Get.find<SwipeController>();
 
   void _runAnimation(Offset pixelsPerSecond, Size size) {
     _animation = _controller.drive(
@@ -87,6 +88,17 @@ class _SwipeCardsState extends State<SwipeCards>
   }
 
   @override
+  void didUpdateWidget(SwipeCards oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Profil listesi güncellendiğinde mevcut profili güncelle
+    if (widget.profiles.isNotEmpty && _currentProfile == null) {
+      setState(() {
+        _currentProfile = widget.profiles[0];
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -100,33 +112,72 @@ class _SwipeCardsState extends State<SwipeCards>
         final isTablet = size.shortestSide >= 600;
 
         return Center(
-          child: GestureDetector(
-            onLongPress: () {
-              if (_currentProfile != null) {
-                Get.find<SwipeController>().showReportDialog(_currentProfile!);
-              }
-            },
-            onPanDown: (details) {
-              _controller.stop();
-            },
-            onPanUpdate: (details) {
-              setState(() {
-                _dragAlignment += Alignment(
-                  details.delta.dx / (constraints.maxWidth / 2),
-                  details.delta.dy / (constraints.maxHeight / 2),
-                );
-              });
-            },
-            onPanEnd: (details) {
-              _runAnimation(details.velocity.pixelsPerSecond, size);
-            },
-            child: SwipeCardContent(
-              dragAlignment: _dragAlignment,
-              currentProfile: _currentProfile,
-              isTablet: isTablet,
-              constraints: constraints,
-            ),
-          ),
+          child: Obx(() {
+            // Batch işlem durumunu kontrol et
+            if (_swipeController.isBatchProcessing.value) {
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('İşlemler işleniyor...'),
+                  ],
+                ),
+              );
+            }
+
+            // Profil yoksa mesaj göster
+            if (widget.profiles.isEmpty) {
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.sentiment_dissatisfied,
+                        size: 64, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text(
+                      'Gösterilecek profil kalmadı',
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Filtreleri değiştirip tekrar deneyin',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return GestureDetector(
+              onLongPress: () {
+                if (_currentProfile != null) {
+                  _swipeController.showReportDialog(_currentProfile!);
+                }
+              },
+              onPanDown: (details) {
+                _controller.stop();
+              },
+              onPanUpdate: (details) {
+                setState(() {
+                  _dragAlignment += Alignment(
+                    details.delta.dx / (constraints.maxWidth / 2),
+                    details.delta.dy / (constraints.maxHeight / 2),
+                  );
+                });
+              },
+              onPanEnd: (details) {
+                _runAnimation(details.velocity.pixelsPerSecond, size);
+              },
+              child: SwipeCardContent(
+                dragAlignment: _dragAlignment,
+                currentProfile: _currentProfile,
+                isTablet: isTablet,
+                constraints: constraints,
+              ),
+            );
+          }),
         );
       },
     );
@@ -205,7 +256,48 @@ class SwipeCardContent extends StatelessWidget {
             isTablet: isTablet,
           ),
         ),
+        // Swipe yönü göstergesi
+        Positioned(
+          top: isTablet ? 20 : 10,
+          left: isTablet ? 20 : 10,
+          child: _buildSwipeIndicator(),
+        ),
       ],
+    );
+  }
+
+  Widget _buildSwipeIndicator() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.thumb_down, color: Colors.red, size: 16),
+          SizedBox(width: 4),
+          Text(
+            'Sola',
+            style: TextStyle(color: Colors.white, fontSize: 12),
+          ),
+          SizedBox(width: 8),
+          Icon(Icons.thumb_up, color: Colors.green, size: 16),
+          SizedBox(width: 4),
+          Text(
+            'Sağa',
+            style: TextStyle(color: Colors.white, fontSize: 12),
+          ),
+          SizedBox(width: 8),
+          Icon(Icons.favorite, color: Colors.pink, size: 16),
+          SizedBox(width: 4),
+          Text(
+            'Yukarı',
+            style: TextStyle(color: Colors.white, fontSize: 12),
+          ),
+        ],
+      ),
     );
   }
 
@@ -232,6 +324,37 @@ class SwipeCardContent extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _buildInfoChips(person),
+          // Kariyer bilgileri ekle
+          if (person.profession?.isNotEmpty ?? false) ...[
+            const SizedBox(height: 8),
+            _buildCareerInfo(person),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCareerInfo(Person person) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.work, color: Colors.blue, size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              person.profession ?? '',
+              style: const TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -296,27 +419,11 @@ class ResponsiveSocialButtons extends GetView<SwipeController> {
                 context: context,
               ),
             ),
-          if (person.linkedInUrl?.isNotEmpty ?? false)
-            _buildSocialButton(
-              'assets/linkedin.svg',
-              () => controller.openLinkedInProfile(
-                linkedInUsername: person.linkedInUrl!,
-                context: context,
-              ),
-            ),
           if (person.phoneNo?.isNotEmpty ?? false)
             _buildSocialButton(
               'assets/whatsapp.svg',
               () => controller.startChattingInWhatsApp(
                 receiverPhoneNumber: person.phoneNo!,
-                context: context,
-              ),
-            ),
-          if (person.githubUrl?.isNotEmpty ?? false)
-            _buildSocialButton(
-              'assets/github.svg',
-              () => controller.openGitHubProfile(
-                gitHubUsername: person.githubUrl!,
                 context: context,
               ),
             ),

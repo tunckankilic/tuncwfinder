@@ -46,24 +46,11 @@ class Person {
 
   //Connections
   String? instagramUrl;
-  String? linkedInUrl;
-  String? githubUrl;
-
-  // GitHub özel alanlar
-  String? githubUsername;
-  String? githubBio;
-  int? githubFollowers;
-  int? githubReposCount;
-  int? githubStarsCount;
-  int? githubForksCount;
-  Map<String, int>? githubLanguages;
 
   // Kariyer ve beceri entegrasyonu için yeni alanlar
   List<Skill>? skills;
   List<WorkExperience>? workExperiences;
   List<Project>? projects;
-  GitHubInfo? githubInfo;
-  LinkedInInfo? linkedInInfo;
   List<String>? educationHistory;
   CareerGoal? careerGoal;
   Map<String, double>?
@@ -104,22 +91,10 @@ class Person {
     this.religion,
     this.ethnicity,
     this.instagramUrl,
-    this.linkedInUrl,
-    this.githubUrl,
-    // GitHub özel alanlar
-    this.githubUsername,
-    this.githubBio,
-    this.githubFollowers,
-    this.githubReposCount,
-    this.githubStarsCount,
-    this.githubForksCount,
-    this.githubLanguages,
     // Yeni alanlar
     this.skills,
     this.workExperiences,
     this.projects,
-    this.githubInfo,
-    this.linkedInInfo,
     this.educationHistory,
     this.careerGoal,
     this.skillGaps,
@@ -167,17 +142,6 @@ class Person {
 
       //Connections
       "instagramUrl": instagramUrl,
-      "linkedInUrl": linkedInUrl,
-      "githubUrl": githubUrl,
-
-      //GitHub özel alanlar
-      "githubUsername": githubUsername,
-      "githubBio": githubBio,
-      "githubFollowers": githubFollowers,
-      "githubReposCount": githubReposCount,
-      "githubStarsCount": githubStarsCount,
-      "githubForksCount": githubForksCount,
-      "githubLanguages": githubLanguages,
     };
 
     // Eğer kariyer ve beceri alanları varsa bunları da ekle
@@ -191,12 +155,6 @@ class Person {
     if (projects != null) {
       baseMap["projects"] =
           projects!.map((project) => project.toMap()).toList();
-    }
-    if (githubInfo != null) {
-      baseMap["githubInfo"] = githubInfo!.toMap();
-    }
-    if (linkedInInfo != null) {
-      baseMap["linkedInInfo"] = linkedInInfo!.toMap();
     }
     if (educationHistory != null) {
       baseMap["educationHistory"] = educationHistory;
@@ -248,18 +206,6 @@ class Person {
         religion: data['religion'] as String?,
         ethnicity: data['ethnicity'] as String?,
         instagramUrl: data['instagramUrl'] as String?,
-        linkedInUrl: data['linkedInUrl'] as String?,
-        githubUrl: data['githubUrl'] as String?,
-        githubUsername: data['githubUsername'] as String?,
-        githubBio: data['githubBio'] as String?,
-        githubFollowers: data['githubFollowers'] as int?,
-        githubReposCount: data['githubReposCount'] as int?,
-        githubStarsCount: data['githubStarsCount'] as int?,
-        githubForksCount: data['githubForksCount'] as int?,
-        githubLanguages: data['githubLanguages'] != null
-            ? Map<String, int>.from(
-                data['githubLanguages'] as Map<String, dynamic>)
-            : null,
       );
 
       // Kariyer ve beceri alanlarını doldur (eğer mevcutsa)
@@ -282,16 +228,6 @@ class Person {
             .map((projectMap) =>
                 Project.fromMap(projectMap as Map<String, dynamic>))
             .toList();
-      }
-
-      if (data.containsKey('githubInfo') && data['githubInfo'] != null) {
-        person.githubInfo =
-            GitHubInfo.fromMap(data['githubInfo'] as Map<String, dynamic>);
-      }
-
-      if (data.containsKey('linkedInInfo') && data['linkedInInfo'] != null) {
-        person.linkedInInfo =
-            LinkedInInfo.fromMap(data['linkedInInfo'] as Map<String, dynamic>);
       }
 
       if (data.containsKey('educationHistory') &&
@@ -350,20 +286,9 @@ class Person {
     String? religion,
     String? ethnicity,
     String? instagramUrl,
-    String? linkedInUrl,
-    String? githubUrl,
-    String? githubUsername,
-    String? githubBio,
-    int? githubFollowers,
-    int? githubReposCount,
-    int? githubStarsCount,
-    int? githubForksCount,
-    Map<String, int>? githubLanguages,
     List<Skill>? skills,
     List<WorkExperience>? workExperiences,
     List<Project>? projects,
-    GitHubInfo? githubInfo,
-    LinkedInInfo? linkedInInfo,
     List<String>? educationHistory,
     CareerGoal? careerGoal,
     Map<String, double>? skillGaps,
@@ -400,20 +325,9 @@ class Person {
       religion: religion ?? this.religion,
       ethnicity: ethnicity ?? this.ethnicity,
       instagramUrl: instagramUrl ?? this.instagramUrl,
-      linkedInUrl: linkedInUrl ?? this.linkedInUrl,
-      githubUrl: githubUrl ?? this.githubUrl,
-      githubUsername: githubUsername ?? this.githubUsername,
-      githubBio: githubBio ?? this.githubBio,
-      githubFollowers: githubFollowers ?? this.githubFollowers,
-      githubReposCount: githubReposCount ?? this.githubReposCount,
-      githubStarsCount: githubStarsCount ?? this.githubStarsCount,
-      githubForksCount: githubForksCount ?? this.githubForksCount,
-      githubLanguages: githubLanguages ?? this.githubLanguages,
       skills: skills ?? this.skills,
       workExperiences: workExperiences ?? this.workExperiences,
       projects: projects ?? this.projects,
-      githubInfo: githubInfo ?? this.githubInfo,
-      linkedInInfo: linkedInInfo ?? this.linkedInInfo,
       educationHistory: educationHistory ?? this.educationHistory,
       careerGoal: careerGoal ?? this.careerGoal,
       skillGaps: skillGaps ?? this.skillGaps,
@@ -453,18 +367,9 @@ class Person {
       'religion': religion,
       'ethnicity': ethnicity,
       'instagramUrl': instagramUrl,
-      'linkedInUrl': linkedInUrl,
-      'githubUrl': githubUrl,
-      'githubUsername': githubUsername,
-      'githubBio': githubBio,
-      'githubFollowers': githubFollowers,
-      'githubReposCount': githubReposCount,
-      'githubStarsCount': githubStarsCount,
-      'githubForksCount': githubForksCount,
-      'githubLanguages': githubLanguages,
     };
 
-    // Kariyer ve beceri alanları varsa ekle
+    // Kariyer ve beceri alanlarını ekle
     if (skills != null) {
       baseMap['skills'] = skills!.map((skill) => skill.toMap()).toList();
     }
@@ -475,12 +380,6 @@ class Person {
     if (projects != null) {
       baseMap['projects'] =
           projects!.map((project) => project.toMap()).toList();
-    }
-    if (githubInfo != null) {
-      baseMap['githubInfo'] = githubInfo!.toMap();
-    }
-    if (linkedInInfo != null) {
-      baseMap['linkedInInfo'] = linkedInInfo!.toMap();
     }
     if (educationHistory != null) {
       baseMap['educationHistory'] = educationHistory;
@@ -547,28 +446,6 @@ class Person {
       ethnicity: map['ethnicity'] != null ? map['ethnicity'] as String : null,
       instagramUrl:
           map['instagramUrl'] != null ? map['instagramUrl'] as String : null,
-      linkedInUrl:
-          map['linkedInUrl'] != null ? map['linkedInUrl'] as String : null,
-      githubUrl: map['githubUrl'] != null ? map['githubUrl'] as String : null,
-      githubUsername: map['githubUsername'] != null
-          ? map['githubUsername'] as String
-          : null,
-      githubBio: map['githubBio'] != null ? map['githubBio'] as String : null,
-      githubFollowers:
-          map['githubFollowers'] != null ? map['githubFollowers'] as int : null,
-      githubReposCount: map['githubReposCount'] != null
-          ? map['githubReposCount'] as int
-          : null,
-      githubStarsCount: map['githubStarsCount'] != null
-          ? map['githubStarsCount'] as int
-          : null,
-      githubForksCount: map['githubForksCount'] != null
-          ? map['githubForksCount'] as int
-          : null,
-      githubLanguages: map['githubLanguages'] != null
-          ? Map<String, int>.from(
-              map['githubLanguages'] as Map<String, dynamic>)
-          : null,
     );
 
     // Kariyer ve beceri alanlarını ekle
@@ -591,16 +468,6 @@ class Person {
               Project.fromMap(projectMap as Map<String, dynamic>))
           .toList();
     }
-    if (map.containsKey('githubInfo') && map['githubInfo'] != null) {
-      person.githubInfo =
-          GitHubInfo.fromMap(map['githubInfo'] as Map<String, dynamic>);
-    }
-
-    if (map.containsKey('linkedInInfo') && map['linkedInInfo'] != null) {
-      person.linkedInInfo =
-          LinkedInInfo.fromMap(map['linkedInInfo'] as Map<String, dynamic>);
-    }
-
     if (map.containsKey('educationHistory') &&
         map['educationHistory'] != null) {
       person.educationHistory =
@@ -625,7 +492,7 @@ class Person {
 
   @override
   String toString() {
-    return 'Person(uid: $uid, imageProfile: $imageProfile, email: $email, password: $password, name: $name, age: $age, phoneNo: $phoneNo, city: $city, country: $country, profileHeading: $profileHeading, publishedDateTime: $publishedDateTime, gender: $gender, height: $height, weight: $weight, bodyType: $bodyType, drink: $drink, smoke: $smoke, martialStatus: $martialStatus, haveChildren: $haveChildren, noOfChildren: $noOfChildren, profession: $profession, employmentStatus: $employmentStatus, income: $income, livingSituation: $livingSituation, willingToRelocate: $willingToRelocate, nationality: $nationality, education: $education, languageSpoken: $languageSpoken, religion: $religion, ethnicity: $ethnicity, instagramUrl: $instagramUrl, linkedInUrl: $linkedInUrl, githubUrl: $githubUrl, githubUsername: $githubUsername, githubBio: $githubBio, githubFollowers: $githubFollowers, githubReposCount: $githubReposCount, githubStarsCount: $githubStarsCount, githubForksCount: $githubForksCount, githubLanguages: $githubLanguages, skills: $skills, workExperiences: $workExperiences, projects: $projects, githubInfo: $githubInfo, linkedInInfo: $linkedInInfo, educationHistory: $educationHistory, careerGoal: $careerGoal, skillGaps: $skillGaps)';
+    return 'Person(uid: $uid, imageProfile: $imageProfile, email: $email, password: $password, name: $name, age: $age, phoneNo: $phoneNo, city: $city, country: $country, profileHeading: $profileHeading, publishedDateTime: $publishedDateTime, gender: $gender, height: $height, weight: $weight, bodyType: $bodyType, drink: $drink, smoke: $smoke, martialStatus: $martialStatus, haveChildren: $haveChildren, noOfChildren: $noOfChildren, profession: $profession, employmentStatus: $employmentStatus, income: $income, livingSituation: $livingSituation, willingToRelocate: $willingToRelocate, nationality: $nationality, education: $education, languageSpoken: $languageSpoken, religion: $religion, ethnicity: $ethnicity, instagramUrl: $instagramUrl, skills: $skills, workExperiences: $workExperiences, projects: $projects, educationHistory: $educationHistory, careerGoal: $careerGoal, skillGaps: $skillGaps)';
   }
 
   @override
@@ -663,20 +530,9 @@ class Person {
         other.religion == religion &&
         other.ethnicity == ethnicity &&
         other.instagramUrl == instagramUrl &&
-        other.linkedInUrl == linkedInUrl &&
-        other.githubUrl == githubUrl &&
-        other.githubUsername == githubUsername &&
-        other.githubBio == githubBio &&
-        other.githubFollowers == githubFollowers &&
-        other.githubReposCount == githubReposCount &&
-        other.githubStarsCount == githubStarsCount &&
-        other.githubForksCount == githubForksCount &&
-        other.githubLanguages.toString() == githubLanguages.toString() &&
         other.skills.toString() == skills.toString() &&
         other.workExperiences.toString() == workExperiences.toString() &&
         other.projects.toString() == projects.toString() &&
-        other.githubInfo.toString() == githubInfo.toString() &&
-        other.linkedInInfo.toString() == linkedInInfo.toString() &&
         other.educationHistory.toString() == educationHistory.toString() &&
         other.careerGoal.toString() == careerGoal.toString() &&
         other.skillGaps.toString() == skillGaps.toString();
@@ -715,20 +571,9 @@ class Person {
         religion.hashCode ^
         ethnicity.hashCode ^
         instagramUrl.hashCode ^
-        linkedInUrl.hashCode ^
-        githubUrl.hashCode ^
-        githubUsername.hashCode ^
-        githubBio.hashCode ^
-        githubFollowers.hashCode ^
-        githubReposCount.hashCode ^
-        githubStarsCount.hashCode ^
-        githubForksCount.hashCode ^
-        githubLanguages.hashCode ^
         skills.hashCode ^
         workExperiences.hashCode ^
         projects.hashCode ^
-        githubInfo.hashCode ^
-        linkedInInfo.hashCode ^
         educationHistory.hashCode ^
         careerGoal.hashCode ^
         skillGaps.hashCode;

@@ -25,9 +25,13 @@ class UserDetails extends GetView<UserDetailsController> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
-        child: ResponsiveLayout(
-          mobile: _buildMobileLayout(context),
-          tablet: _buildTabletLayout(context),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth >= 768) {
+              return _buildTabletLayout(context);
+            }
+            return _buildMobileLayout(context);
+          },
         ),
       ),
     );
@@ -342,18 +346,6 @@ class UserDetails extends GetView<UserDetailsController> {
                 style: AppTheme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
-              if (controller.linkedInUrl.value.isNotEmpty)
-                _buildSocialLink(
-                  'LinkedIn',
-                  controller.linkedInUrl.value,
-                  'assets/linkedin.svg',
-                ),
-              if (controller.githubUrl.value.isNotEmpty)
-                _buildSocialLink(
-                  'GitHub',
-                  controller.githubUrl.value,
-                  'assets/github.svg',
-                ),
               if (controller.instagramUrl.value.isNotEmpty)
                 _buildSocialLink(
                   'Instagram',
@@ -392,16 +384,12 @@ class UserDetails extends GetView<UserDetailsController> {
 
 class ProfileActionButtons extends GetView<SwipeController> {
   final String instagramUsername;
-  final String linkedInUsername;
-  final String github;
   final String phoneNo;
   final bool isTablet;
 
   const ProfileActionButtons({
     super.key,
     required this.instagramUsername,
-    required this.linkedInUsername,
-    required this.github,
     required this.phoneNo,
     required this.isTablet,
   });
@@ -431,31 +419,11 @@ class ProfileActionButtons extends GetView<SwipeController> {
             ),
             _buildConnectionButton(
               context: context,
-              icon: 'assets/linkedin.svg',
-              title: "LinkedIn",
-              value: linkedInUsername,
-              onTap: () => controller.openLinkedInProfile(
-                linkedInUsername: linkedInUsername,
-                context: context,
-              ),
-            ),
-            _buildConnectionButton(
-              context: context,
               icon: 'assets/whatsapp.svg',
               title: "WhatsApp",
               value: phoneNo,
               onTap: () => controller.startChattingInWhatsApp(
                 receiverPhoneNumber: phoneNo,
-                context: context,
-              ),
-            ),
-            _buildConnectionButton(
-              context: context,
-              icon: 'assets/github.svg',
-              title: "GitHub",
-              value: github,
-              onTap: () => controller.openGitHubProfile(
-                gitHubUsername: github,
                 context: context,
               ),
             ),

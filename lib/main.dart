@@ -12,15 +12,13 @@ import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
-import 'package:tuncforwork/theme/app_theme.dart';
+import 'package:tuncforwork/theme/modern_theme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await initializeApp();
   await dotenv.load();
   runApp(const MyApp());
 }
@@ -38,8 +36,7 @@ class MyApp extends StatelessWidget {
         return GetMaterialApp(
           title: AppStrings.appName,
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
+          theme: ModernTheme.themeData,
           themeMode: ThemeMode.light,
           defaultTransition: Transition.cupertino,
           home: const AuthenticationWrapper(),

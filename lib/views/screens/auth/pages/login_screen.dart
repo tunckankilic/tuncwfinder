@@ -20,9 +20,13 @@ class LoginScreen extends GetView<AuthController> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
-        child: ResponsiveLayout(
-          mobile: _buildMobileLayout(context),
-          tablet: _buildTabletLayout(context),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth >= 768) {
+              return _buildTabletLayout(context);
+            }
+            return _buildMobileLayout(context);
+          },
         ),
       ),
     );

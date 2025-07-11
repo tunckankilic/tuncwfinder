@@ -7,8 +7,3 @@ export 'likesent/lslr.dart';
 export 'swipe/swipe_screen.dart';
 export 'viewsent/vsvr.dart';
 export "profile/user_details/user_details.dart";
-export 'community/community_screen.dart';
-export 'community/create_event_screen.dart';
-export 'community/event_list_screen.dart';
-export 'community/event_details_screen.dart';
-export 'community/map_screen.dart';

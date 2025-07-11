@@ -1,10 +1,8 @@
 export 'career_goal.dart';
 export 'career_path.dart';
 export 'career_stage.dart';
-export 'github_info.dart';
 export 'job_posting.dart';
 export 'learning_resources.dart';
-export 'linkedin_info.dart';
 export 'person.dart';
 export 'project.dart';
 export 'skill.dart';

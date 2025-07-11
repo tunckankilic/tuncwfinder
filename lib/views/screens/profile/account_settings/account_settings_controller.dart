@@ -52,8 +52,6 @@ class AccountSettingsController extends GetxController {
 
   // Connections Controllers
   final instagramController = TextEditingController();
-  final linkedInController = TextEditingController();
-  final gitHubController = TextEditingController();
 
   // Dropdown Selected Values
   final RxString selectedGender = ''.obs;
@@ -190,9 +188,7 @@ class AccountSettingsController extends GetxController {
           data['ethnicity']?.toString() ?? ethnicities.first;
 
       // Social Links
-      linkedInController.text = data['linkedInUrl']?.toString() ?? '';
       instagramController.text = data['instagramUrl']?.toString() ?? '';
-      gitHubController.text = data['githubUrl']?.toString() ?? '';
 
       // Images
       await _loadImages(data);
@@ -441,9 +437,7 @@ class AccountSettingsController extends GetxController {
   }
 
   void loadConnectionsInfo(Map<String, dynamic> data) {
-    linkedInController.text = data['linkedInUrl'] ?? '';
     instagramController.text = data['instagramUrl'] ?? '';
-    gitHubController.text = data['githubUrl'] ?? '';
   }
 
   void loadImages(Map<String, dynamic> data) {
@@ -615,8 +609,6 @@ class AccountSettingsController extends GetxController {
 
         // Connections
         'instagramUrl': instagramController.text,
-        'linkedInUrl': linkedInController.text,
-        'githubUrl': gitHubController.text,
 
         // Images
         if (profileImageUrl != null) 'profileImageUrl': profileImageUrl,
@@ -675,8 +667,6 @@ class AccountSettingsController extends GetxController {
     religionController.dispose();
     ethnicityController.dispose();
     instagramController.dispose();
-    linkedInController.dispose();
-    gitHubController.dispose();
     scrollController.dispose();
     super.onClose();
   }

@@ -5,15 +5,9 @@ import 'package:tuncforwork/views/screens/screens.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
-import 'package:tuncforwork/views/screens/community/create_event_screen.dart';
-import 'package:tuncforwork/views/screens/community/event_details_screen.dart';
-import 'package:tuncforwork/views/screens/community/map_screen.dart';
-import 'package:tuncforwork/models/tech_event.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_bindings.dart';
 import 'package:tuncforwork/views/screens/favoritesent/fsfr_bindings.dart';
 import 'package:tuncforwork/views/screens/likesent/lslr_bindings.dart';
-import 'package:tuncforwork/views/screens/community/community_screen.dart';
-import 'package:tuncforwork/views/screens/community/event_list_screen.dart';
 
 class AppRoutes {
   static const String splash = AppStrings.routeSplash;
@@ -68,27 +62,8 @@ class AppRoutes {
         );
       }),
     ),
-    GetPage(
-      name: AppStrings.routeCreateEvent,
-      page: () => const CreateEventScreen(),
-    ),
-    GetPage(
-      name: AppStrings.routeEventDetails,
-      page: () {
-        final event = Get.arguments as TechEvent?;
-        if (event == null) {
-          return Scaffold(
-            appBar: AppBar(title: Text(AppStrings.errorTitle)),
-            body: Center(child: Text(AppStrings.errorPageNotFound)),
-          );
-        }
-        return EventDetailsScreen(event: event);
-      },
-    ),
-    GetPage(
-      name: AppStrings.routeMap,
-      page: () => MapScreen(),
-    ),
+
+    
     GetPage(
       name: AppStrings.routeSwipe,
       page: () => const SwipeScreen(),
@@ -104,14 +79,7 @@ class AppRoutes {
       page: () => const LikeSentLikeReceived(),
       binding: LslrBindings(),
     ),
-    GetPage(
-      name: AppStrings.routeEventList,
-      page: () => const EventListScreen(),
-    ),
-    GetPage(
-      name: AppStrings.routeCommunity,
-      page: () => const CommunityScreen(),
-    ),
+
   ];
 
   static String getInitialRoute() {

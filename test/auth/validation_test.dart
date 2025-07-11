@@ -140,9 +140,7 @@ void main() {
 
       for (var url in validUrls) {
         final result = RegistrationValidator.validateSocialLinks(
-          linkedIn: url,
           instagram: '',
-          github: '',
           termsAccepted: true,
         );
         expect(result.isValid, true,
@@ -160,9 +158,7 @@ void main() {
 
       for (var handle in validHandles) {
         final result = RegistrationValidator.validateSocialLinks(
-          linkedIn: '',
           instagram: handle,
-          github: '',
           termsAccepted: true,
         );
         expect(result.isValid, true,
@@ -179,9 +175,7 @@ void main() {
 
       for (var url in validUrls) {
         final result = RegistrationValidator.validateSocialLinks(
-          linkedIn: '',
           instagram: '',
-          github: url,
           termsAccepted: true,
         );
         expect(result.isValid, true, reason: 'GitHub URL geçerli olmalı: $url');

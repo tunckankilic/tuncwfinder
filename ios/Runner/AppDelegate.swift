@@ -3,7 +3,7 @@ import Flutter
 import Firebase
 import UserNotifications
 import FirebaseMessaging
-import GoogleMaps
+
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -31,7 +31,7 @@ import GoogleMaps
     
     Messaging.messaging().delegate = self
     
-    GMSServices.provideAPIKey("${GOOGLE_MAPS_API_KEY}")
+
     
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

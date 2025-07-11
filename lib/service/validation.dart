@@ -379,24 +379,9 @@ class RegistrationValidator {
 
   // Social Links validasyonu
   static ValidationResult validateSocialLinks({
-    required String linkedIn,
     required String instagram,
-    required String github,
     required bool termsAccepted,
   }) {
-    // LinkedIn Validation (Optional)
-    if (linkedIn.isNotEmpty) {
-      final linkedInPattern = RegExp(
-        r'^https?:\/\/(www\.)?linkedin\.com\/(in|pub)\/[A-Za-z0-9_-]+\/?$',
-      );
-      if (!linkedInPattern.hasMatch(linkedIn.trim())) {
-        return ValidationResult(
-          isValid: false,
-          errorMessage: 'Please enter a valid LinkedIn profile URL',
-        );
-      }
-    }
-
     // Instagram Validation (Optional)
     if (instagram.isNotEmpty) {
       final instagramPattern = RegExp(r'^@?[A-Za-z0-9_.]{3,30}$');
@@ -405,19 +390,6 @@ class RegistrationValidator {
           isValid: false,
           errorMessage:
               'Please enter a valid Instagram handle (3-30 characters)',
-        );
-      }
-    }
-
-    // GitHub Validation (Optional)
-    if (github.isNotEmpty) {
-      final githubPattern = RegExp(
-        r'^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$',
-      );
-      if (!githubPattern.hasMatch(github.trim())) {
-        return ValidationResult(
-          isValid: false,
-          errorMessage: 'Please enter a valid GitHub profile URL',
         );
       }
     }
@@ -625,9 +597,7 @@ extension ValidationHandling on AuthController {
 
       case 5: // Social Links
         validationResult = RegistrationValidator.validateSocialLinks(
-          linkedIn: linkedInController.text,
           instagram: instagramController.text,
-          github: githubController.text,
           termsAccepted: termsAccepted.value,
         );
         break;
@@ -653,16 +623,8 @@ extension ValidationHandling on AuthController {
 
 // Validasyon için kullanılacak bazı helper extension'lar
 extension StringValidationExtension on String {
-  bool get isValidLinkedInUrl => RegExp(
-        r'^https?:\/\/(www\.)?linkedin\.com\/(in|pub)\/[A-Za-z0-9_-]+\/?$',
-      ).hasMatch(this);
-
   bool get isValidInstagramHandle =>
       RegExp(r'^@?[A-Za-z0-9_.]+$').hasMatch(this);
-
-  bool get isValidGithubUrl => RegExp(
-        r'^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$',
-      ).hasMatch(this);
 
   bool get isValidNumber {
     try {

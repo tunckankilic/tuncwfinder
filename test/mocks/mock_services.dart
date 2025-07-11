@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/tech_event.dart';
 import 'package:tuncforwork/service/tech_event_service.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MockTechEventService extends GetxController implements TechEventService {
@@ -32,18 +32,6 @@ class MockTechEventService extends GetxController implements TechEventService {
 
   @override
   Future<void> leaveEvent(String eventId, String userId) async {}
-
-  @override
-  Future<List<Map<String, dynamic>>> suggestVenues(
-      int participantCount, LatLng location) async {
-    return [];
-  }
-
-  @override
-  Future<Map<String, dynamic>> getTransportationInfo(
-      LatLng origin, LatLng destination) async {
-    return {};
-  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

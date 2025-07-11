@@ -67,9 +67,7 @@ class AuthController extends GetxController {
       TextEditingController();
   final TextEditingController willingToRelocateController =
       TextEditingController();
-  final TextEditingController linkedInController = TextEditingController();
   final TextEditingController instagramController = TextEditingController();
-  final TextEditingController githubController = TextEditingController();
   final TextEditingController nationalityController = TextEditingController();
   final TextEditingController educationController = TextEditingController();
   final TextEditingController languageSpokenController =
@@ -266,9 +264,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       }
 
       // Debug için sosyal medya değerlerini kontrol edelim
-      log('LinkedIn URL: ${linkedInController.text}');
       log('Instagram URL: ${instagramController.text}');
-      log('Github URL: ${githubController.text}');
 
       final UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
@@ -287,9 +283,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       }
 
       // Sosyal medya URL'lerini temizleyelim
-      final linkedInUrl = linkedInController.text.trim();
       final instagramUrl = instagramController.text.trim();
-      final githubUrl = githubController.text.trim();
 
       final pM.Person userData = pM.Person(
         uid: user.uid,
@@ -323,9 +317,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         religion: religionController.text.trim(),
         ethnicity: ethnicityController.text.trim(),
         // Sosyal medya URL'lerini boş string yerine null olarak ayarlayalım
-        linkedInUrl: linkedInUrl.isNotEmpty ? linkedInUrl : null,
         instagramUrl: instagramUrl.isNotEmpty ? instagramUrl : null,
-        githubUrl: githubUrl.isNotEmpty ? githubUrl : null,
       );
 
       await _firestore.collection('users').doc(user.uid).set(userData.toJson());
@@ -710,9 +702,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     incomeController.clear();
     livingSituationController.clear();
     willingToRelocateController.clear();
-    linkedInController.clear();
     instagramController.clear();
-    githubController.clear();
     nationalityController.clear();
     educationController.clear();
     languageSpokenController.clear();
@@ -843,9 +833,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
       case 5: // Social Links and Terms
         validationResult = RegistrationValidator.validateSocialLinks(
-          linkedIn: linkedInController.text,
           instagram: instagramController.text,
-          github: githubController.text,
           termsAccepted: termsAccepted.value,
         );
         break;
@@ -1289,9 +1277,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     incomeController.dispose();
     livingSituationController.dispose();
     willingToRelocateController.dispose();
-    linkedInController.dispose();
     instagramController.dispose();
-    githubController.dispose();
     nationalityController.dispose();
     educationController.dispose();
     languageSpokenController.dispose();

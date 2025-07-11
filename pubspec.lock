@@ -217,14 +217,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.6"
-  csslib:
-    dependency: transitive
-    description:
-      name: csslib
-      sha256: "09bad715f418841f976c77db72d5398dc1253c21fb9c0c7f0b0b985860b2d58e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.2"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -249,14 +241,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.11"
-  equatable:
-    dependency: transitive
-    description:
-      name: equatable
-      sha256: "567c64b3cb4cf82397aac55f4f0cbd3ca20d77c6c03bedbc4ceaddc08904aef7"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.7"
   fake_async:
     dependency: transitive
     description:
@@ -602,14 +586,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.7.2"
-  github:
-    dependency: "direct main"
-    description:
-      name: github
-      sha256: c88cd9f11e131a05b1910e1c742c80e6dc7708701884d1fcf28147fc95933aa8
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.25.0"
   glob:
     dependency: transitive
     description:
@@ -634,54 +610,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.3+1"
-  google_maps:
-    dependency: transitive
-    description:
-      name: google_maps
-      sha256: "4d6e199c561ca06792c964fa24b2bac7197bf4b401c2e1d23e345e5f9939f531"
-      url: "https://pub.dev"
-    source: hosted
-    version: "8.1.1"
-  google_maps_flutter:
-    dependency: "direct main"
-    description:
-      name: google_maps_flutter
-      sha256: e1805e5a5885bd14a1c407c59229f478af169bf4d04388586b19f53145a5db3a
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.12.3"
-  google_maps_flutter_android:
-    dependency: transitive
-    description:
-      name: google_maps_flutter_android
-      sha256: ab83128296fbeaa52e8f2b3bf53bcd895e64778edddcdc07bc8f33f4ea78076c
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.16.1"
-  google_maps_flutter_ios:
-    dependency: transitive
-    description:
-      name: google_maps_flutter_ios
-      sha256: d03678415da9de8ce7208c674b264fc75946f326e696b4b7f84c80920fc58df6
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.15.4"
-  google_maps_flutter_platform_interface:
-    dependency: transitive
-    description:
-      name: google_maps_flutter_platform_interface
-      sha256: f8293f072ed8b068b092920a72da6693aa8b3d62dc6b5c5f0bc44c969a8a776c
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.12.1"
-  google_maps_flutter_web:
-    dependency: transitive
-    description:
-      name: google_maps_flutter_web
-      sha256: ce2cac714e5462bf761ff2fdfc3564c7e5d7ed0578268dccb0a54dbdb1e6214e
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.5.12+2"
   google_sign_in:
     dependency: "direct main"
     description:
@@ -730,14 +658,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.2"
-  html:
-    dependency: transitive
-    description:
-      name: html
-      sha256: "6d1264f2dffa1b1101c25a91dff0dc2daee4c18e87cd8538729773c073dbf602"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.15.6"
   http:
     dependency: "direct main"
     description:
@@ -895,38 +815,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
-  linkedin_login:
-    dependency: "direct main"
-    description:
-      name: linkedin_login
-      sha256: aec7676775fa0a7f0c81bd0fab42bb292f8bc1f9f0bad3243e00c9d9c8b986e1
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.3"
-  linkedin_login_android:
-    dependency: transitive
-    description:
-      name: linkedin_login_android
-      sha256: "459d6ea57e257b673f9cb2f6528b369f2922cde4ba10ea0f417d3bad91571641"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.1"
-  linkedin_login_ios:
-    dependency: transitive
-    description:
-      name: linkedin_login_ios
-      sha256: "3d1beb325a7e2e77e6b3c20245158ffa3b83ea3afc5dc81a3bffed08dccef680"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.2"
-  linkedin_login_platform_interface:
-    dependency: transitive
-    description:
-      name: linkedin_login_platform_interface
-      sha256: c34678d6bd5656371eed2df6b4f51685d832e8ff48d7c99e991f0a373d473200
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.1"
   lints:
     dependency: transitive
     description:
@@ -1167,22 +1055,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
-  rxdart:
-    dependency: transitive
-    description:
-      name: rxdart
-      sha256: "5c3004a4a8dbb94bd4bf5412a4def4acdaa12e12f269737a5751369e12d1a962"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.28.0"
-  sanitize_html:
-    dependency: transitive
-    description:
-      name: sanitize_html
-      sha256: "12669c4a913688a26555323fb9cec373d8f9fbe091f2d01c40c723b33caa8989"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1540,38 +1412,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.0"
-  webview_flutter:
-    dependency: transitive
-    description:
-      name: webview_flutter
-      sha256: ec81f57aa1611f8ebecf1d2259da4ef052281cb5ad624131c93546c79ccc7736
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.9.0"
-  webview_flutter_android:
-    dependency: transitive
-    description:
-      name: webview_flutter_android
-      sha256: "47a8da40d02befda5b151a26dba71f47df471cddd91dfdb7802d0a87c5442558"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.16.9"
-  webview_flutter_platform_interface:
-    dependency: transitive
-    description:
-      name: webview_flutter_platform_interface
-      sha256: f0dc2dc3a2b1e3a6abdd6801b9355ebfeb3b8f6cde6b9dc7c9235909c4a1f147
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.13.1"
-  webview_flutter_wkwebview:
-    dependency: transitive
-    description:
-      name: webview_flutter_wkwebview
-      sha256: a3d461fe3467014e05f3ac4962e5fdde2a4bf44c561cb53e9ae5c586600fdbc3
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.22.0"
   xdg_directories:
     dependency: transitive
     description:

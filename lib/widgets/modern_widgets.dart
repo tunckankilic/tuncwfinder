@@ -1,87 +1,408 @@
 import 'package:flutter/material.dart';
-import 'package:tuncforwork/theme/app_theme.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+// Modern Text Field Widget
+class ModernTextField extends StatelessWidget {
+  final TextEditingController? controller;
+  final String? hintText;
+  final String? labelText;
+  final IconData? prefixIcon;
+  final IconData? suffixIcon;
+  final bool obscureText;
+  final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
+  final VoidCallback? onSuffixIconPressed;
+  final bool enabled;
+
+  const ModernTextField({
+    Key? key,
+    this.controller,
+    this.hintText,
+    this.labelText,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.obscureText = false,
+    this.keyboardType,
+    this.validator,
+    this.onSuffixIconPressed,
+    this.enabled = true,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      validator: validator,
+      enabled: enabled,
+      decoration: InputDecoration(
+        hintText: hintText,
+        labelText: labelText,
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+        suffixIcon: suffixIcon != null
+            ? IconButton(
+                icon: Icon(suffixIcon),
+                onPressed: onSuffixIconPressed,
+              )
+            : null,
+        filled: true,
+        fillColor: theme.colorScheme.surfaceVariant,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.colorScheme.error, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.colorScheme.error, width: 2),
+        ),
+        contentPadding: EdgeInsets.all(16.w),
+        hintStyle: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+        labelStyle: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+}
 
 // Modern Card Widget
 class ModernCard extends StatelessWidget {
   final Widget child;
-  final EdgeInsets padding;
+  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
   final VoidCallback? onTap;
+  final Color? color;
+  final double? elevation;
 
   const ModernCard({
-    super.key,
+    Key? key,
     required this.child,
-    this.padding = const EdgeInsets.all(16),
+    this.padding,
+    this.margin,
     this.onTap,
-  });
+    this.color,
+    this.elevation,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: padding,
-        decoration: BoxDecoration(
-          color: AppTheme.cardColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: AppTheme.cardShadow,
-        ),
+    final theme = Theme.of(context);
+
+    Widget card = Card(
+      color: color ?? theme.colorScheme.surface,
+      elevation: elevation ?? 1,
+      margin: margin ?? EdgeInsets.all(8.w),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: padding ?? EdgeInsets.all(16.w),
         child: child,
       ),
     );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: card,
+      );
+    }
+
+    return card;
   }
 }
 
 // Modern Button Widget
 class ModernButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+  final IconData? icon;
   final bool isLoading;
   final bool isOutlined;
+  final Color? backgroundColor;
+  final Color? textColor;
+  final double? width;
+  final double? height;
 
   const ModernButton({
-    super.key,
+    Key? key,
     required this.text,
-    required this.onPressed,
+    this.onPressed,
+    this.icon,
     this.isLoading = false,
     this.isOutlined = false,
-  });
+    this.backgroundColor,
+    this.textColor,
+    this.width,
+    this.height,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 56,
-      child: ElevatedButton(
+    final theme = Theme.of(context);
+
+    Widget button;
+
+    if (isOutlined) {
+      button = OutlinedButton(
         onPressed: isLoading ? null : onPressed,
-        style: isOutlined
-            ? AppTheme.primaryButtonStyle.copyWith(
-                backgroundColor: MaterialStateProperty.all(Colors.transparent),
-                foregroundColor:
-                    MaterialStateProperty.all(AppTheme.primarySwatch),
-                side: MaterialStateProperty.all(
-                  BorderSide(color: AppTheme.primarySwatch),
-                ),
-              )
-            : AppTheme.primaryButtonStyle,
-        child: isLoading
-            ? const CircularProgressIndicator()
-            : Text(text, style: AppTheme.textTheme.labelLarge),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: textColor ?? theme.colorScheme.primary,
+          side: BorderSide(color: textColor ?? theme.colorScheme.primary),
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        child: _buildButtonContent(),
+      );
+    } else {
+      button = ElevatedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor ?? theme.colorScheme.primary,
+          foregroundColor: textColor ?? theme.colorScheme.onPrimary,
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 1,
+        ),
+        child: _buildButtonContent(),
+      );
+    }
+
+    if (width != null || height != null) {
+      return SizedBox(
+        width: width,
+        height: height,
+        child: button,
+      );
+    }
+
+    return button;
+  }
+
+  Widget _buildButtonContent() {
+    if (isLoading) {
+      return SizedBox(
+        width: 20.w,
+        height: 20.h,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor: AlwaysStoppedAnimation<Color>(
+            isOutlined ? Colors.grey : Colors.white,
+          ),
+        ),
+      );
+    }
+
+    if (icon != null) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18.w),
+          SizedBox(width: 8.w),
+          Text(text),
+        ],
+      );
+    }
+
+    return Text(text);
+  }
+}
+
+// Modern Loading Widget
+class ModernLoading extends StatelessWidget {
+  final String? message;
+  final Color? color;
+
+  const ModernLoading({
+    Key? key,
+    this.message,
+    this.color,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              color ?? theme.colorScheme.primary,
+            ),
+          ),
+          if (message != null) ...[
+            SizedBox(height: 16.h),
+            Text(
+              message!,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
 }
 
-// Fade Animation Widget
+// Modern Empty State Widget
+class ModernEmptyState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final String? actionText;
+  final VoidCallback? onActionPressed;
+
+  const ModernEmptyState({
+    Key? key,
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.actionText,
+    this.onActionPressed,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 80.w,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              title,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                color: theme.colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (subtitle != null) ...[
+              SizedBox(height: 8.h),
+              Text(
+                subtitle!,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+            if (actionText != null && onActionPressed != null) ...[
+              SizedBox(height: 24.h),
+              ModernButton(
+                text: actionText!,
+                onPressed: onActionPressed,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Modern Bottom Sheet
+class ModernBottomSheet extends StatelessWidget {
+  final Widget child;
+  final String? title;
+  final bool isDismissible;
+  final bool enableDrag;
+
+  const ModernBottomSheet({
+    Key? key,
+    required this.child,
+    this.title,
+    this.isDismissible = true,
+    this.enableDrag = true,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Container(
+            margin: EdgeInsets.only(top: 12.h),
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.onSurfaceVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          if (title != null) ...[
+            SizedBox(height: 16.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: Text(
+                title!,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ],
+          Flexible(child: child),
+        ],
+      ),
+    );
+  }
+}
+
+// Modern Fade Animation Widget
 class FadeAnimation extends StatelessWidget {
   final Widget child;
   final Duration duration;
   final double offset;
 
   const FadeAnimation({
-    super.key,
+    Key? key,
     required this.child,
     this.duration = const Duration(milliseconds: 500),
     this.offset = 50,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -100,188 +421,4 @@ class FadeAnimation extends StatelessWidget {
       child: child,
     );
   }
-}
-
-// Modern Profile Card Widget
-class ModernProfileCard extends StatelessWidget {
-  final String name;
-  final String title;
-  final String imageUrl;
-  final List<String> skills;
-
-  const ModernProfileCard({
-    super.key,
-    required this.name,
-    required this.title,
-    required this.imageUrl,
-    required this.skills,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ModernCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundImage: NetworkImage(imageUrl),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(name, style: AppTheme.textTheme.titleLarge),
-                    Text(title, style: AppTheme.textTheme.bodyMedium),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: skills
-                .map((skill) => Chip(
-                      label: Text(skill),
-                      backgroundColor: AppTheme.primarySwatch.shade50,
-                      labelStyle: TextStyle(color: AppTheme.primarySwatch),
-                    ))
-                .toList(),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Modern Bottom Navigation
-class ModernBottomNav extends StatelessWidget {
-  final int currentIndex;
-  final Function(int) onTap;
-
-  const ModernBottomNav({
-    super.key,
-    required this.currentIndex,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(0, Icons.home, 'Ana Sayfa'),
-              _buildNavItem(1, Icons.search, 'Keşfet'),
-              _buildNavItem(2, Icons.person, 'Profil'),
-              _buildNavItem(3, Icons.settings, 'Ayarlar'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(int index, IconData icon, String label) {
-    final isSelected = currentIndex == index;
-    return InkWell(
-      onTap: () => onTap(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected ? AppTheme.primarySwatch : Colors.grey,
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? AppTheme.primarySwatch : Colors.grey,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Responsive Layout Widget
-class ResponsiveLayout extends StatelessWidget {
-  final Widget mobile;
-  final Widget? tablet;
-  final Widget? desktop;
-
-  const ResponsiveLayout({
-    super.key,
-    required this.mobile,
-    this.tablet,
-    this.desktop,
-  });
-
-  static bool isMobile(BuildContext context) =>
-      MediaQuery.of(context).size.width < 650;
-
-  static bool isTablet(BuildContext context) =>
-      MediaQuery.of(context).size.width >= 650 &&
-      MediaQuery.of(context).size.width < 1100;
-
-  static bool isDesktop(BuildContext context) =>
-      MediaQuery.of(context).size.width >= 1100;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth >= 1100) {
-          return desktop ?? tablet ?? mobile;
-        } else if (constraints.maxWidth >= 650) {
-          return tablet ?? mobile;
-        } else {
-          return mobile;
-        }
-      },
-    );
-  }
-}
-
-// Modern Page Route
-class ModernPageRoute extends PageRouteBuilder {
-  final Widget page;
-
-  ModernPageRoute({required this.page})
-      : super(
-          pageBuilder: (context, animation, secondaryAnimation) => page,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.easeInOutCubic;
-            var tween = Tween(begin: begin, end: end).chain(
-              CurveTween(curve: curve),
-            );
-            var offsetAnimation = animation.drive(tween);
-            return SlideTransition(
-              position: offsetAnimation,
-              child: child,
-            );
-          },
-        );
 }

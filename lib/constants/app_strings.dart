@@ -175,10 +175,6 @@ class AppStrings {
   static const String cancel = "Cancel";
   static const String save = "Save";
 
-  // Map Strings
-  static const String nearbyPlaces = "Nearby Places";
-  static const String gettingLocation = "Getting location...";
-
   // Error Log Messages
   static const String errorCareerPaths = "Error loading career paths: ";
   static const String errorCareerSuggestions =
@@ -233,7 +229,7 @@ class AppStrings {
   static const String routeForgotPassword = "/forgot-password";
   static const String routeCreateEvent = "/create-event";
   static const String routeEventDetails = "/event/:id";
-  static const String routeMap = "/map";
+
   static const String routeNotFound = "/not-found";
   static const String routeSwipe = "/swipe";
   static const String routeFavorites = "/favorites";

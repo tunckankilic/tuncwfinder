@@ -39,6 +39,17 @@ class SwipeController extends GetxController {
   final Rx<DateTime> _lastQueryTime = DateTime.now().obs;
   final RxInt _queryCount = 0.obs;
   String currentUserId = '';
+
+  // Yeni: Kart tekrarını önlemek için
+  final Set<String> _processedUserIds = <String>{};
+  final Set<String> _swipedUserIds = <String>{};
+  final RxBool _isBatchProcessing = false.obs;
+  final RxInt _batchSize = 10.obs;
+
+  // Public getters for UI access
+  RxBool get isBatchProcessing => _isBatchProcessing;
+  RxInt get batchSize => _batchSize;
+
   @override
   void onInit() {
     currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -47,10 +58,351 @@ class SwipeController extends GetxController {
       readCurrentUserData();
       ageRange();
       getResults();
+      _loadProcessedUsers();
     } else {
       log("No user is currently signed in");
-      // Kullanıcı girişi olmadığında yapılacak işlemler
     }
+  }
+
+  // Yeni: İşlenmiş kullanıcıları yükle
+  Future<void> _loadProcessedUsers() async {
+    try {
+      final processedDocs = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(currentUserId)
+          .collection("processedUsers")
+          .get();
+
+      for (var doc in processedDocs.docs) {
+        _processedUserIds.add(doc.id);
+      }
+
+      log("Loaded ${_processedUserIds.length} processed users");
+    } catch (e) {
+      log("Error loading processed users: $e");
+    }
+  }
+
+  // Yeni: Kullanıcıyı işlenmiş olarak işaretle
+  Future<void> _markUserAsProcessed(String userId, String action) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(currentUserId)
+          .collection("processedUsers")
+          .doc(userId)
+          .set({
+        'action': action, // 'like', 'dislike', 'favorite', 'block'
+        'timestamp': FieldValue.serverTimestamp(),
+        'processedAt': DateTime.now().millisecondsSinceEpoch,
+      });
+
+      _processedUserIds.add(userId);
+      _swipedUserIds.add(userId);
+    } catch (e) {
+      log("Error marking user as processed: $e");
+    }
+  }
+
+  // Yeni: Batch swipe işlemleri
+  Future<void> _processBatchSwipe(
+      List<Map<String, dynamic>> swipeActions) async {
+    if (_isBatchProcessing.value) return;
+
+    _isBatchProcessing.value = true;
+
+    try {
+      final batch = FirebaseFirestore.instance.batch();
+      final userRef = FirebaseFirestore.instance.collection("users");
+
+      for (var action in swipeActions) {
+        final String targetUserId = action['userId'];
+        final String actionType =
+            action['action']; // 'like', 'dislike', 'favorite'
+        final String senderName = action['senderName'];
+
+        // İşlenmiş kullanıcıları işaretle
+        batch.set(
+            userRef
+                .doc(currentUserId)
+                .collection("processedUsers")
+                .doc(targetUserId),
+            {
+              'action': actionType,
+              'timestamp': FieldValue.serverTimestamp(),
+              'processedAt': DateTime.now().millisecondsSinceEpoch,
+            });
+
+        // Action'a göre batch işlemleri
+        switch (actionType) {
+          case 'like':
+            // Like sent
+            batch.set(
+                userRef
+                    .doc(currentUserId)
+                    .collection("likeSent")
+                    .doc(targetUserId),
+                {'timestamp': FieldValue.serverTimestamp()});
+            // Like received
+            batch.set(
+                userRef
+                    .doc(targetUserId)
+                    .collection("likeReceived")
+                    .doc(currentUserId),
+                {
+                  'name': senderName,
+                  'timestamp': FieldValue.serverTimestamp(),
+                });
+            break;
+
+          case 'favorite':
+            // Favorite sent
+            batch.set(
+                userRef
+                    .doc(currentUserId)
+                    .collection("favoriteSent")
+                    .doc(targetUserId),
+                {'timestamp': FieldValue.serverTimestamp()});
+            // Favorite received
+            batch.set(
+                userRef
+                    .doc(targetUserId)
+                    .collection("favoriteReceived")
+                    .doc(currentUserId),
+                {
+                  'name': senderName,
+                  'timestamp': FieldValue.serverTimestamp(),
+                });
+            break;
+
+          case 'dislike':
+            // Dislike işlemi için sadece işlenmiş olarak işaretle
+            break;
+        }
+      }
+
+      // Batch commit
+      await batch.commit();
+
+      // UI güncelleme
+      for (var action in swipeActions) {
+        final String targetUserId = action['userId'];
+        allUsersProfileList
+            .removeWhere((profile) => profile.uid == targetUserId);
+        _processedUserIds.add(targetUserId);
+        _swipedUserIds.add(targetUserId);
+      }
+
+      log("Batch swipe processed: ${swipeActions.length} actions");
+    } catch (e) {
+      log("Error in batch swipe processing: $e");
+      Get.snackbar(
+        'Error',
+        'Failed to process swipe actions. Please try again.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      _isBatchProcessing.value = false;
+    }
+  }
+
+  // Yeni: Gelişmiş kart yönetimi
+  void removeTopProfile() {
+    if (allUsersProfileList.isNotEmpty) {
+      final removedProfile = allUsersProfileList[0];
+      allUsersProfileList.removeAt(0);
+
+      // Kullanıcıyı işlenmiş olarak işaretle
+      if (removedProfile.uid != null) {
+        _markUserAsProcessed(removedProfile.uid!, 'dislike');
+      }
+    }
+  }
+
+  // Yeni: Gelişmiş like işlemi
+  void likeSentAndLikeReceived(
+      {required String toUserId, required String senderName}) async {
+    // Eğer kullanıcı zaten işlenmişse çık
+    if (_processedUserIds.contains(toUserId)) {
+      log("User $toUserId already processed");
+      return;
+    }
+
+    // Batch işlem için hazırla
+    final swipeAction = {
+      'userId': toUserId,
+      'action': 'like',
+      'senderName': senderName,
+    };
+
+    await _processBatchSwipe([swipeAction]);
+  }
+
+  // Yeni: Gelişmiş favorite işlemi
+  void favoriteSentAndFavoriteReceived(
+      {required String toUserID, required String senderName}) async {
+    // Eğer kullanıcı zaten işlenmişse çık
+    if (_processedUserIds.contains(toUserID)) {
+      log("User $toUserID already processed");
+      return;
+    }
+
+    // Batch işlem için hazırla
+    final swipeAction = {
+      'userId': toUserID,
+      'action': 'favorite',
+      'senderName': senderName,
+    };
+
+    await _processBatchSwipe([swipeAction]);
+  }
+
+  // Yeni: Gelişmiş getResults - işlenmiş kullanıcıları filtrele
+  Future<void> getResults() async {
+    if (_isRateLimited()) return;
+
+    try {
+      Query query = FirebaseFirestore.instance.collection("users");
+
+      // Apply equality filters with input validation
+      if (_isValidInput(chosenGender.value)) {
+        query = query.where("gender", isEqualTo: chosenGender.value);
+      }
+      if (_isValidInput(chosenCountry.value)) {
+        query = query.where("country", isEqualTo: chosenCountry.value);
+      }
+      if (_isValidInput(chosenBodyType.value)) {
+        query = query.where("bodyType", isEqualTo: chosenBodyType.value);
+      }
+      if (_isValidInput(chosenLanguage.value)) {
+        query =
+            query.where("languageSpoken", arrayContains: chosenLanguage.value);
+      }
+      if (_isValidInput(chosenEducation.value)) {
+        query = query.where("education", isEqualTo: chosenEducation.value);
+      }
+      if (_isValidInput(chosenEmploymentStatus.value)) {
+        query = query.where("employmentStatus",
+            isEqualTo: chosenEmploymentStatus.value);
+      }
+      if (_isValidInput(chosenLivingSituation.value)) {
+        query = query.where("livingSituation",
+            isEqualTo: chosenLivingSituation.value);
+      }
+      if (_isValidInput(chosenMaritalStatus.value)) {
+        query =
+            query.where("maritalStatus", isEqualTo: chosenMaritalStatus.value);
+      }
+      if (_isValidInput(chosenDrinkingHabit.value)) {
+        query = query.where("drink", isEqualTo: chosenDrinkingHabit.value);
+      }
+      if (_isValidInput(chosenSmokingHabit.value)) {
+        query = query.where("smoke", isEqualTo: chosenSmokingHabit.value);
+      }
+      if (_isValidInput(chosenNationality.value)) {
+        query = query.where("nationality", isEqualTo: chosenNationality.value);
+      }
+      if (_isValidInput(chosenEthnicity.value)) {
+        query = query.where("ethnicity", isEqualTo: chosenEthnicity.value);
+      }
+      if (_isValidInput(chosenReligion.value)) {
+        query = query.where("religion", isEqualTo: chosenReligion.value);
+      }
+      if (_isValidInput(chosenProfession.value)) {
+        query = query.where("profession", isEqualTo: chosenProfession.value);
+      }
+
+      // Apply range filter last
+      if (_isValidInput(chosenAge.value)) {
+        int minAge = int.tryParse(chosenAge.value) ?? 0;
+        query = query.where("age", isGreaterThanOrEqualTo: minAge);
+      }
+
+      // Limit query results and add pagination
+      const int pageSize = 50; // Daha fazla sonuç al
+      query = query.limit(pageSize);
+
+      QuerySnapshot querySnapshot = await query.get();
+
+      if (querySnapshot.docs.isEmpty) {
+        Get.snackbar(
+          'No Results',
+          'No matches found for your search criteria.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      // Engellenmiş, engelleyen ve işlenmiş kullanıcıları filtrele
+      List<Person> filteredUsers = [];
+      for (var doc in querySnapshot.docs) {
+        String userId = doc.id;
+        if (userId != currentUserId) {
+          bool isBlocked = await isUserBlocked(userId);
+          bool hasBlockedMe = await hasUserBlockedMe(userId);
+          bool isProcessed = _processedUserIds.contains(userId);
+
+          if (!isBlocked && !hasBlockedMe && !isProcessed) {
+            filteredUsers.add(Person.fromDataSnapshot(doc));
+          }
+        }
+      }
+
+      allUsersProfileList.value = filteredUsers;
+
+      if (allUsersProfileList.isEmpty) {
+        Get.snackbar(
+          'No Results',
+          'No unblocked and unprocessed users found matching your criteria.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        log("Loaded ${filteredUsers.length} new profiles");
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to fetch results. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      log("Error in getResults: $e");
+    }
+  }
+
+  // Yeni: İşlenmiş kullanıcıları temizle (opsiyonel)
+  Future<void> clearProcessedUsers() async {
+    try {
+      final batch = FirebaseFirestore.instance.batch();
+      final processedRef = FirebaseFirestore.instance
+          .collection("users")
+          .doc(currentUserId)
+          .collection("processedUsers");
+
+      final processedDocs = await processedRef.get();
+
+      for (var doc in processedDocs.docs) {
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
+      _processedUserIds.clear();
+      _swipedUserIds.clear();
+
+      log("Cleared all processed users");
+    } catch (e) {
+      log("Error clearing processed users: $e");
+    }
+  }
+
+  // Yeni: İstatistikler
+  Map<String, dynamic> getSwipeStatistics() {
+    return {
+      'totalProcessed': _processedUserIds.length,
+      'totalSwiped': _swipedUserIds.length,
+      'remainingProfiles': allUsersProfileList.length,
+      'isBatchProcessing': _isBatchProcessing.value,
+    };
   }
 
   void readCurrentUserData() async {
@@ -401,12 +753,6 @@ class SwipeController extends GetxController {
     return doc.exists;
   }
 
-  void removeTopProfile() {
-    if (allUsersProfileList.isNotEmpty) {
-      allUsersProfileList.removeAt(0);
-    }
-  }
-
   Future<void> blockUser(String blockedUserId) async {
     // Null check
     if (blockedUserId.isEmpty || currentUserId.isEmpty) {
@@ -661,213 +1007,5 @@ class SwipeController extends GetxController {
             );
           });
     }
-  }
-
-  void openGitHubProfile(
-      {required String gitHubUsername, required BuildContext context}) async {
-    var url = "https://github.com/$gitHubUsername";
-
-    try {
-      if (await canLaunchUrl(Uri.parse(url))) {
-        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch $url';
-      }
-    } catch (e) {
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text("GıtHub Error"),
-              content: const Text("Could not open GitHub profile."),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Get.back();
-                  },
-                  child: const Text("Ok"),
-                ),
-              ],
-            );
-          });
-    }
-  }
-
-  Future<void> getResults() async {
-    if (_isRateLimited()) return;
-
-    try {
-      Query query = FirebaseFirestore.instance.collection("users");
-
-      // Apply equality filters with input validation
-      if (_isValidInput(chosenGender.value)) {
-        query = query.where("gender", isEqualTo: chosenGender.value);
-      }
-      if (_isValidInput(chosenCountry.value)) {
-        query = query.where("country", isEqualTo: chosenCountry.value);
-      }
-      if (_isValidInput(chosenBodyType.value)) {
-        query = query.where("bodyType", isEqualTo: chosenBodyType.value);
-      }
-      if (_isValidInput(chosenLanguage.value)) {
-        query =
-            query.where("languageSpoken", arrayContains: chosenLanguage.value);
-      }
-      if (_isValidInput(chosenEducation.value)) {
-        query = query.where("education", isEqualTo: chosenEducation.value);
-      }
-      if (_isValidInput(chosenEmploymentStatus.value)) {
-        query = query.where("employmentStatus",
-            isEqualTo: chosenEmploymentStatus.value);
-      }
-      if (_isValidInput(chosenLivingSituation.value)) {
-        query = query.where("livingSituation",
-            isEqualTo: chosenLivingSituation.value);
-      }
-      if (_isValidInput(chosenMaritalStatus.value)) {
-        query =
-            query.where("maritalStatus", isEqualTo: chosenMaritalStatus.value);
-      }
-      if (_isValidInput(chosenDrinkingHabit.value)) {
-        query = query.where("drink", isEqualTo: chosenDrinkingHabit.value);
-      }
-      if (_isValidInput(chosenSmokingHabit.value)) {
-        query = query.where("smoke", isEqualTo: chosenSmokingHabit.value);
-      }
-      if (_isValidInput(chosenNationality.value)) {
-        query = query.where("nationality", isEqualTo: chosenNationality.value);
-      }
-      if (_isValidInput(chosenEthnicity.value)) {
-        query = query.where("ethnicity", isEqualTo: chosenEthnicity.value);
-      }
-      if (_isValidInput(chosenReligion.value)) {
-        query = query.where("religion", isEqualTo: chosenReligion.value);
-      }
-      if (_isValidInput(chosenProfession.value)) {
-        query = query.where("profession", isEqualTo: chosenProfession.value);
-      }
-
-      // Apply range filter last
-      if (_isValidInput(chosenAge.value)) {
-        int minAge = int.tryParse(chosenAge.value) ?? 0;
-        query = query.where("age", isGreaterThanOrEqualTo: minAge);
-      }
-
-      // Limit query results and add pagination
-      const int pageSize = 20;
-      query = query.limit(pageSize);
-
-      QuerySnapshot querySnapshot = await query.get();
-
-      if (querySnapshot.docs.isEmpty) {
-        Get.snackbar(
-          'No Results',
-          'No matches found for your search criteria.',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
-      }
-
-      // Engellenmiş ve engelleyen kullanıcıları filtrele
-      List<Person> filteredUsers = [];
-      for (var doc in querySnapshot.docs) {
-        String userId = doc.id;
-        if (userId != currentUserId) {
-          bool isBlocked = await isUserBlocked(userId);
-          bool hasBlockedMe = await hasUserBlockedMe(userId);
-
-          if (!isBlocked && !hasBlockedMe) {
-            filteredUsers.add(Person.fromDataSnapshot(doc));
-          }
-        }
-      }
-
-      allUsersProfileList.value = filteredUsers;
-
-      if (allUsersProfileList.isEmpty) {
-        Get.snackbar(
-          'No Results',
-          'No unblocked users found matching your criteria.',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      }
-
-      // Implement pagination
-      if (querySnapshot.docs.isNotEmpty) {
-        // ignore: unused_local_variable
-        DocumentSnapshot lastVisible = querySnapshot.docs.last;
-        // Store lastVisible for next page query
-      }
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to fetch results. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      log("Error in getResults: $e"); // For debugging
-    }
-  }
-
-  void viewSentAndViewReceived(
-      {required String toUserId, required String senderName}) async {
-    // View sent
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(currentUserId)
-        .collection("viewSent")
-        .doc(toUserId)
-        .set({});
-
-    // View received
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(toUserId)
-        .collection("viewReceived")
-        .doc(currentUserId)
-        .set({
-      "name": senderName,
-    });
-  }
-
-  void favoriteSentAndFavoriteReceived(
-      {required String toUserID, required String senderName}) async {
-    // Favorite sent
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(currentUserId)
-        .collection("favoriteSent")
-        .doc(toUserID)
-        .set({});
-
-    // Favorite received
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(toUserID)
-        .collection("favoriteReceived")
-        .doc(currentUserId)
-        .set({
-      "name": senderName,
-    });
-  }
-
-  void likeSentAndLikeReceived(
-      {required String toUserId, required String senderName}) async {
-    // Like sent
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(currentUserId)
-        .collection("likeSent")
-        .doc(toUserId)
-        .set({});
-
-    // Like received
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(toUserId)
-        .collection("likeReceived")
-        .doc(currentUserId)
-        .set({
-      "name": senderName,
-    });
   }
 }

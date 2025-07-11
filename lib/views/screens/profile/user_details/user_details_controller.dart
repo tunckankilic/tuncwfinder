@@ -31,8 +31,6 @@ class UserDetailsController extends GetxController {
   final RxString education = ''.obs;
 
   // Social Links
-  final RxString linkedInUrl = ''.obs;
-  final RxString githubUrl = ''.obs;
   final RxString instagramUrl = ''.obs;
 
   // Career Info
@@ -79,8 +77,6 @@ class UserDetailsController extends GetxController {
       education.value = data['education'] ?? '';
 
       // Social Links
-      linkedInUrl.value = data['linkedInUrl'] ?? '';
-      githubUrl.value = data['githubUrl'] ?? '';
       instagramUrl.value = data['instagramUrl'] ?? '';
 
       // Career Info

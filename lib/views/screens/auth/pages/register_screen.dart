@@ -20,9 +20,13 @@ class RegistrationScreen extends GetView<AuthController> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
-        child: ResponsiveLayout(
-          mobile: _buildMobileLayout(context),
-          tablet: _buildTabletLayout(context),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth >= 768) {
+              return _buildTabletLayout(context);
+            }
+            return _buildMobileLayout(context);
+          },
         ),
       ),
     );
@@ -129,18 +133,14 @@ class RegistrationScreen extends GetView<AuthController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FadeAnimation(
-          child: Text(
-            titles[controller.currentPage.value],
-            style: AppTheme.textTheme.headlineMedium,
-          ),
+        Text(
+          titles[controller.currentPage.value],
+          style: AppTheme.textTheme.headlineMedium,
         ),
         const SizedBox(height: 16),
-        FadeAnimation(
-          child: Text(
-            descriptions[controller.currentPage.value],
-            style: AppTheme.textTheme.titleMedium,
-          ),
+        Text(
+          descriptions[controller.currentPage.value],
+          style: AppTheme.textTheme.titleMedium,
         ),
       ],
     );
@@ -1050,29 +1050,11 @@ class SocialLinksSection extends StatelessWidget {
           ),
           SizedBox(height: 16),
           _buildSocialInput(
-            controller: controller.linkedInController,
-            prefix: 'linkedin.com/in/',
-            icon: Icons.business,
-            label: 'LinkedIn',
-            color: Color(0xFF0A66C2),
-            placeholder: 'username',
-          ),
-          SizedBox(height: isTablet ? 20.0 : 16.0),
-          _buildSocialInput(
             controller: controller.instagramController,
             prefix: '@',
             icon: Icons.camera_alt,
             label: 'Instagram',
             color: Color(0xFFE4405F),
-            placeholder: 'username',
-          ),
-          SizedBox(height: isTablet ? 20.0 : 16.0),
-          _buildSocialInput(
-            controller: controller.githubController,
-            prefix: 'github.com/',
-            icon: Icons.code,
-            label: 'GitHub',
-            color: Color(0xFF24292E),
             placeholder: 'username',
           ),
         ],
@@ -1167,12 +1149,6 @@ class SocialLinksSection extends StatelessWidget {
 
   String? _extractUsername(String text, String platform) {
     switch (platform) {
-      case 'LinkedIn':
-        final match = RegExp(r'linkedin\.com/in/([^/]+)').firstMatch(text);
-        return match?.group(1);
-      case 'GitHub':
-        final match = RegExp(r'github\.com/([^/]+)').firstMatch(text);
-        return match?.group(1);
       case 'Instagram':
         if (text.contains('instagram.com')) {
           final match = RegExp(r'instagram\.com/([^/]+)').firstMatch(text);
