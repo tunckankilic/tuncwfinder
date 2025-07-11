@@ -167,7 +167,7 @@ class ModernButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: textColor ?? theme.colorScheme.primary,
           side: BorderSide(color: textColor ?? theme.colorScheme.primary),
-          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+          padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),

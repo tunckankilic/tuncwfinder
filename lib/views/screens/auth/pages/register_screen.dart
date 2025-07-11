@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
 import 'package:tuncforwork/service/global.dart';
@@ -42,7 +43,6 @@ class RegistrationScreen extends GetView<AuthController> {
             _buildAppearancePage(false),
             _buildLifestylePage(false),
             _buildCareerPage(false),
-            _buildSkillsPage(false),
           ],
         ));
   }
@@ -84,7 +84,6 @@ class RegistrationScreen extends GetView<AuthController> {
                   _buildAppearancePage(true),
                   _buildLifestylePage(true),
                   _buildCareerPage(true),
-                  _buildSkillsPage(true),
                 ],
               )),
         ),
@@ -97,12 +96,12 @@ class RegistrationScreen extends GetView<AuthController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Step ${controller.currentPage.value + 1} of 6',
+          'Step ${controller.currentPage.value + 1} of 5',
           style: AppTheme.textTheme.titleMedium,
         ),
         const SizedBox(height: 16),
         LinearProgressIndicator(
-          value: (controller.currentPage.value + 1) / 6,
+          value: (controller.currentPage.value + 1) / 5,
           backgroundColor: Colors.grey.shade200,
           valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primarySwatch),
           minHeight: 8,
@@ -118,16 +117,14 @@ class RegistrationScreen extends GetView<AuthController> {
       'Personal Information',
       'Appearance',
       'Lifestyle',
-      'Career',
-      'Skills'
+      'Career'
     ];
     final descriptions = [
       'Create your account to get started',
       'Tell us about yourself',
       'Add your physical characteristics',
       'Share your lifestyle preferences',
-      'Tell us about your career',
-      'Add your skills and expertise'
+      'Tell us about your career'
     ];
 
     return Column(
@@ -167,7 +164,7 @@ class RegistrationScreen extends GetView<AuthController> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildProfileImagePicker(isTablet),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 TextField(
                   controller: controller.nameController,
                   decoration: AppTheme.inputDecoration.copyWith(
@@ -175,7 +172,7 @@ class RegistrationScreen extends GetView<AuthController> {
                     prefixIcon: const Icon(Icons.person),
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 TextField(
                   controller: controller.emailController,
                   decoration: AppTheme.inputDecoration.copyWith(
@@ -184,42 +181,28 @@ class RegistrationScreen extends GetView<AuthController> {
                   ),
                   keyboardType: TextInputType.emailAddress,
                 ),
+                SizedBox(height: 16.h),
+                PasswordInputField(
+                  controller: controller.passwordController,
+                  label: 'Password',
+                  isConfirmField: false,
+                  isTablet: isTablet,
+                  authController: controller,
+                  onChanged: (value) {
+                    controller.validatePassword(value);
+                  },
+                ),
                 const SizedBox(height: 16),
-                Obx(() => TextField(
-                      controller: controller.passwordController,
-                      decoration: AppTheme.inputDecoration.copyWith(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            controller.obsPass.value
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                          ),
-                          onPressed: () => controller.obsPass.value =
-                              !controller.obsPass.value,
-                        ),
-                      ),
-                      obscureText: controller.obsPass.value,
-                    )),
-                const SizedBox(height: 16),
-                Obx(() => TextField(
-                      controller: controller.confirmPasswordController,
-                      decoration: AppTheme.inputDecoration.copyWith(
-                        labelText: 'Confirm Password',
-                        prefixIcon: const Icon(Icons.lock),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            controller.obsPass.value
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                          ),
-                          onPressed: () => controller.obsPass.value =
-                              !controller.obsPass.value,
-                        ),
-                      ),
-                      obscureText: controller.obsPass.value,
-                    )),
+                PasswordInputField(
+                  controller: controller.confirmPasswordController,
+                  label: 'Confirm Password',
+                  isConfirmField: true,
+                  isTablet: isTablet,
+                  authController: controller,
+                  onChanged: (value) {
+                    controller.validateConfirmPassword(value);
+                  },
+                ),
               ],
             ),
           ),
@@ -234,7 +217,7 @@ class RegistrationScreen extends GetView<AuthController> {
     return Column(
       children: [
         Obx(() => CircleAvatar(
-              radius: isTablet ? 80 : 60,
+              radius: isTablet ? 80.r : 60.r,
               backgroundColor: AppTheme.primarySwatch.shade100,
               backgroundImage: controller.pickedImage.value != null
                   ? FileImage(controller.pickedImage.value!)
@@ -242,12 +225,12 @@ class RegistrationScreen extends GetView<AuthController> {
               child: controller.pickedImage.value == null
                   ? Icon(
                       Icons.add_a_photo,
-                      size: isTablet ? 40 : 30,
+                      size: isTablet ? 40.r : 30.r,
                       color: AppTheme.primarySwatch,
                     )
                   : null,
             )),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -256,7 +239,7 @@ class RegistrationScreen extends GetView<AuthController> {
               onPressed: controller.captureImage,
               isOutlined: true,
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.w),
             ModernButton(
               text: AppStrings.buttonChoosePhoto,
               onPressed: controller.pickImage,
@@ -281,11 +264,11 @@ class RegistrationScreen extends GetView<AuthController> {
         else
           const SizedBox(),
         ModernButton(
-          text: controller.currentPage.value == 5
+          text: controller.currentPage.value == 4
               ? AppStrings.buttonFinish
               : AppStrings.buttonNext,
           onPressed: () {
-            if (controller.currentPage.value == 5) {
+            if (controller.currentPage.value == 4) {
               controller.register();
             } else {
               controller.nextPage();
@@ -312,13 +295,7 @@ class RegistrationScreen extends GetView<AuthController> {
                 Icons.cake_outlined,
                 isTablet,
               ),
-              _buildDropdown(
-                "Gender",
-                Icons.person_outlined,
-                gender,
-                (value) => controller.genderController.text = value,
-                isTablet,
-              ),
+              _buildGenderDropdown(isTablet),
               _buildTextField(
                 controller.phoneNoController,
                 "Phone",
@@ -329,13 +306,66 @@ class RegistrationScreen extends GetView<AuthController> {
                 "Country",
                 Icons.flag_outlined,
                 countries,
-                (value) => controller.countryController.text = value,
+                (value) {
+                  controller.countryController.text = value;
+                  controller.selectedCountry.value = value;
+                },
                 isTablet,
               ),
               _buildTextField(
                 controller.cityController,
                 "City",
                 Icons.location_city_outlined,
+                isTablet,
+              ),
+              _buildDropdown(
+                "Nationality",
+                Icons.public_outlined,
+                nationalities,
+                (value) {
+                  controller.nationalityController.text = value;
+                  controller.selectedNationality.value = value;
+                },
+                isTablet,
+              ),
+              _buildDropdown(
+                "Education Level",
+                Icons.school_outlined,
+                educationLevels,
+                (value) {
+                  controller.educationController.text = value;
+                  controller.selectedEducation.value = value;
+                },
+                isTablet,
+              ),
+              _buildDropdown(
+                "Language",
+                Icons.language_outlined,
+                languages,
+                (value) {
+                  controller.languageSpokenController.text = value;
+                  controller.selectedLanguage.value = value;
+                },
+                isTablet,
+              ),
+              _buildDropdown(
+                "Religion",
+                Icons.church_outlined,
+                religion,
+                (value) {
+                  controller.religionController.text = value;
+                  controller.selectedReligion.value = value;
+                },
+                isTablet,
+              ),
+              _buildDropdown(
+                "Ethnicity",
+                Icons.people_outline,
+                ethnicities,
+                (value) {
+                  controller.ethnicityController.text = value;
+                  controller.selectedEthnicity.value = value;
+                },
                 isTablet,
               ),
               _buildTextField(
@@ -375,13 +405,7 @@ class RegistrationScreen extends GetView<AuthController> {
                 Icons.fitness_center_outlined,
                 isTablet,
               ),
-              _buildDropdown(
-                "Body Type",
-                Icons.accessibility_new_outlined,
-                bodyTypes,
-                (value) => controller.bodyTypeController.text = value,
-                isTablet,
-              ),
+              _buildBodyTypeDropdown(isTablet),
               const SizedBox(height: 32),
               _buildNavigationButtons(isTablet),
             ],
@@ -405,21 +429,30 @@ class RegistrationScreen extends GetView<AuthController> {
                 "Drinking Habits",
                 Icons.local_bar_outlined,
                 drinkingHabits,
-                (value) => controller.drinkController.text = value,
+                (value) {
+                  controller.drinkController.text = value;
+                  controller.selectedDrink.value = value;
+                },
                 isTablet,
               ),
               _buildDropdown(
                 "Smoking Habits",
                 Icons.smoking_rooms_outlined,
                 smokingHabits,
-                (value) => controller.smokeController.text = value,
+                (value) {
+                  controller.smokeController.text = value;
+                  controller.selectedSmoke.value = value;
+                },
                 isTablet,
               ),
               _buildDropdown(
                 "Marital Status",
                 Icons.people_outline,
                 maritalStatuses,
-                (value) => controller.martialStatusController.text = value,
+                (value) {
+                  controller.martialStatusController.text = value;
+                  controller.selectedMaritalStatus.value = value;
+                },
                 isTablet,
               ),
               _buildCheckboxGroup(
@@ -441,14 +474,20 @@ class RegistrationScreen extends GetView<AuthController> {
                 "Profession",
                 Icons.work_outline,
                 itJobs,
-                (value) => controller.professionController.text = value,
+                (value) {
+                  controller.professionController.text = value;
+                  controller.selectedProfession.value = value;
+                },
                 isTablet,
               ),
               _buildDropdown(
                 "Employment Status",
                 Icons.business_center_outlined,
                 employmentStatuses,
-                (value) => controller.employmentStatusController.text = value,
+                (value) {
+                  controller.employmentStatusController.text = value;
+                  controller.selectedEmploymentStatus.value = value;
+                },
                 isTablet,
               ),
               _buildTextField(
@@ -461,7 +500,10 @@ class RegistrationScreen extends GetView<AuthController> {
                 "Living Situation",
                 Icons.home_outlined,
                 livingSituations,
-                (value) => controller.livingSituationController.text = value,
+                (value) {
+                  controller.livingSituationController.text = value;
+                  controller.selectedLivingSituation.value = value;
+                },
                 isTablet,
               ),
               _buildCheckboxGroup(
@@ -729,35 +771,6 @@ class RegistrationScreen extends GetView<AuthController> {
     );
   }
 
-  Widget _buildSkillsPage(bool isTablet) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
-      child: Center(
-        child: Container(
-          constraints:
-              BoxConstraints(maxWidth: isTablet ? 800.0 : double.infinity),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Skills',
-                style: TextStyle(
-                  fontSize: isTablet ? 24.0 : 20.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primarySwatch,
-                ),
-              ),
-              SizedBox(height: isTablet ? 30.0 : 20.0),
-              _buildSkillsSection(isTablet),
-              const SizedBox(height: 32),
-              _buildNavigationButtons(isTablet),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildTextField(
     TextEditingController controller,
     String label,
@@ -783,6 +796,82 @@ class RegistrationScreen extends GetView<AuthController> {
     );
   }
 
+  Widget _buildGenderDropdown(bool isTablet) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 13.0),
+      child: Obx(() => DropdownButtonFormField<String>(
+            value: controller.selectedGender.value.isNotEmpty
+                ? controller.selectedGender.value
+                : gender.first,
+            onChanged: (value) {
+              final selectedValue = value ?? gender.first;
+              controller.genderController.text = selectedValue;
+              controller.selectedGender.value = selectedValue;
+            },
+            items: gender.map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(
+                  value,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              );
+            }).toList(),
+            decoration: AppTheme.inputDecoration.copyWith(
+              labelText: "Gender",
+              prefixIcon: const Icon(Icons.person_outlined),
+            ),
+            isExpanded: true,
+            menuMaxHeight: 200,
+            dropdownColor: Colors.white,
+            icon: const Icon(Icons.arrow_drop_down),
+            style: TextStyle(
+              fontSize: isTablet ? 16.0 : 14.0,
+              color: Colors.black87,
+            ),
+          )),
+    );
+  }
+
+  Widget _buildBodyTypeDropdown(bool isTablet) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 13.0),
+      child: Obx(() => DropdownButtonFormField<String>(
+            value: controller.selectedBodyType.value.isNotEmpty
+                ? controller.selectedBodyType.value
+                : bodyTypes.first,
+            onChanged: (value) {
+              final selectedValue = value ?? bodyTypes.first;
+              controller.bodyTypeController.text = selectedValue;
+              controller.selectedBodyType.value = selectedValue;
+            },
+            items: bodyTypes.map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(
+                  value,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              );
+            }).toList(),
+            decoration: AppTheme.inputDecoration.copyWith(
+              labelText: "Body Type",
+              prefixIcon: const Icon(Icons.accessibility_new_outlined),
+            ),
+            isExpanded: true,
+            menuMaxHeight: 200,
+            dropdownColor: Colors.white,
+            icon: const Icon(Icons.arrow_drop_down),
+            style: TextStyle(
+              fontSize: isTablet ? 16.0 : 14.0,
+              color: Colors.black87,
+            ),
+          )),
+    );
+  }
+
   Widget _buildDropdown(
     String label,
     IconData icon,
@@ -792,32 +881,147 @@ class RegistrationScreen extends GetView<AuthController> {
   ) {
     return Padding(
       padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 13.0),
-      child: DropdownButtonFormField<String>(
-        value: items.first,
-        onChanged: (value) => onChanged(value ?? items.first),
-        items: items.map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(
-              value,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
-          );
-        }).toList(),
-        decoration: AppTheme.inputDecoration.copyWith(
-          labelText: label,
-          prefixIcon: Icon(icon),
-        ),
-        isExpanded: true,
-        menuMaxHeight: 200,
-        dropdownColor: Colors.white,
-        icon: const Icon(Icons.arrow_drop_down),
-        style: TextStyle(
-          fontSize: isTablet ? 16.0 : 14.0,
-          color: Colors.black87,
-        ),
-      ),
+      child: Obx(() {
+        // Dropdown değerini belirle
+        String? currentValue;
+
+        // Her dropdown için uygun observable değişkeni kontrol et
+        switch (label) {
+          case "Country":
+            currentValue = controller.selectedCountry.value.isNotEmpty
+                ? controller.selectedCountry.value
+                : items.first;
+            break;
+          case "Nationality":
+            currentValue = controller.selectedNationality.value.isNotEmpty
+                ? controller.selectedNationality.value
+                : items.first;
+            break;
+          case "Education Level":
+            currentValue = controller.selectedEducation.value.isNotEmpty
+                ? controller.selectedEducation.value
+                : items.first;
+            break;
+          case "Language":
+            currentValue = controller.selectedLanguage.value.isNotEmpty
+                ? controller.selectedLanguage.value
+                : items.first;
+            break;
+          case "Religion":
+            currentValue = controller.selectedReligion.value.isNotEmpty
+                ? controller.selectedReligion.value
+                : items.first;
+            break;
+          case "Ethnicity":
+            currentValue = controller.selectedEthnicity.value.isNotEmpty
+                ? controller.selectedEthnicity.value
+                : items.first;
+            break;
+          case "Drinking Habits":
+            currentValue = controller.selectedDrink.value.isNotEmpty
+                ? controller.selectedDrink.value
+                : items.first;
+            break;
+          case "Smoking Habits":
+            currentValue = controller.selectedSmoke.value.isNotEmpty
+                ? controller.selectedSmoke.value
+                : items.first;
+            break;
+          case "Marital Status":
+            currentValue = controller.selectedMaritalStatus.value.isNotEmpty
+                ? controller.selectedMaritalStatus.value
+                : items.first;
+            break;
+          case "Profession":
+            currentValue = controller.selectedProfession.value.isNotEmpty
+                ? controller.selectedProfession.value
+                : items.first;
+            break;
+          case "Employment Status":
+            currentValue = controller.selectedEmploymentStatus.value.isNotEmpty
+                ? controller.selectedEmploymentStatus.value
+                : items.first;
+            break;
+          case "Living Situation":
+            currentValue = controller.selectedLivingSituation.value.isNotEmpty
+                ? controller.selectedLivingSituation.value
+                : items.first;
+            break;
+          default:
+            currentValue = items.first;
+        }
+
+        return DropdownButtonFormField<String>(
+          value: currentValue,
+          onChanged: (value) {
+            if (value != null) {
+              onChanged(value);
+
+              // Dropdown değerini uygun observable değişkene ata
+              switch (label) {
+                case "Country":
+                  controller.selectedCountry.value = value;
+                  break;
+                case "Nationality":
+                  controller.selectedNationality.value = value;
+                  break;
+                case "Education Level":
+                  controller.selectedEducation.value = value;
+                  break;
+                case "Language":
+                  controller.selectedLanguage.value = value;
+                  break;
+                case "Religion":
+                  controller.selectedReligion.value = value;
+                  break;
+                case "Ethnicity":
+                  controller.selectedEthnicity.value = value;
+                  break;
+                case "Drinking Habits":
+                  controller.selectedDrink.value = value;
+                  break;
+                case "Smoking Habits":
+                  controller.selectedSmoke.value = value;
+                  break;
+                case "Marital Status":
+                  controller.selectedMaritalStatus.value = value;
+                  break;
+                case "Profession":
+                  controller.selectedProfession.value = value;
+                  break;
+                case "Employment Status":
+                  controller.selectedEmploymentStatus.value = value;
+                  break;
+                case "Living Situation":
+                  controller.selectedLivingSituation.value = value;
+                  break;
+              }
+            }
+          },
+          items: items.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(
+                value,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            );
+          }).toList(),
+          decoration: AppTheme.inputDecoration.copyWith(
+            labelText: label,
+            prefixIcon: Icon(icon),
+          ),
+          isExpanded: true,
+          menuMaxHeight: 200,
+          dropdownColor: Colors.white,
+          icon: const Icon(Icons.arrow_drop_down),
+          style: TextStyle(
+            fontSize: isTablet ? 16.0 : 14.0,
+            color: Colors.black87,
+          ),
+        );
+      }),
     );
   }
 
@@ -866,6 +1070,8 @@ class PasswordInputField extends StatelessWidget {
   final String label;
   final bool isConfirmField;
   final Function(String) onChanged;
+  final bool isTablet;
+  final AuthController authController;
 
   const PasswordInputField({
     super.key,
@@ -873,6 +1079,8 @@ class PasswordInputField extends StatelessWidget {
     required this.label,
     this.isConfirmField = false,
     required this.onChanged,
+    this.isTablet = false,
+    required this.authController,
   });
 
   @override
@@ -881,8 +1089,14 @@ class PasswordInputField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Obx(() {
+          // Şifre metnini observable değişkene ata
+          if (!isConfirmField) {
+            authController.passwordText.value = controller.text;
+          }
+
           final strength = !isConfirmField
-              ? PasswordValidator.validatePassword(controller.text)
+              ? PasswordValidator.validatePassword(
+                  authController.passwordText.value)
               : null;
 
           return Column(
@@ -890,55 +1104,139 @@ class PasswordInputField extends StatelessWidget {
             children: [
               TextField(
                 controller: controller,
-                obscureText: true,
-                onChanged: onChanged,
-                decoration: InputDecoration(
+                obscureText: authController.obsPass.value,
+                onChanged: (value) {
+                  onChanged(value);
+                  // Şifre değiştiğinde observable değişkeni güncelle
+                  if (!isConfirmField) {
+                    authController.passwordText.value = value;
+                  }
+                },
+                decoration: AppTheme.inputDecoration.copyWith(
                   labelText: label,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
-                    icon: const Icon(Icons.visibility_outlined),
-                    onPressed: () {
-                      // Toggle password visibility
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    icon: Icon(
+                      authController.obsPass.value
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () => authController.obsPass.value =
+                        !authController.obsPass.value,
                   ),
                 ),
+                style: TextStyle(
+                  fontSize: isTablet ? 16.0 : 14.0,
+                ),
               ),
-              const SizedBox(height: 8),
-              LinearProgressIndicator(
-                value: strength!.score / 100,
-                backgroundColor: Colors.grey[200],
-                valueColor: AlwaysStoppedAnimation<Color>(strength.color),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: strength.requirements.map((req) {
-                  return Chip(
-                    avatar: Icon(
-                      req.isMet ? Icons.check : Icons.close,
-                      color: req.isMet ? Colors.green : Colors.red,
-                      size: 16,
-                    ),
-                    label: Text(
-                      req.description,
-                      style: TextStyle(
-                        color: req.isMet ? Colors.green : Colors.red,
-                        fontSize: 12,
-                      ),
-                    ),
-                    backgroundColor: req.isMet
-                        ? Colors.green.withOpacity(0.1)
-                        : Colors.red.withOpacity(0.1),
-                  );
-                }).toList(),
-              ),
+              if (!isConfirmField && strength != null) ...[
+                SizedBox(height: isTablet ? 16.h : 12.h),
+                _buildPasswordStrengthIndicator(strength, isTablet),
+                SizedBox(height: isTablet ? 16.h : 12.h),
+                _buildPasswordRequirementsList(strength, isTablet),
+              ],
             ],
           );
         }),
       ],
+    );
+  }
+
+  Widget _buildPasswordStrengthIndicator(
+      PasswordStrength strength, bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Şifre Gücü: ',
+              style: TextStyle(
+                fontSize: isTablet ? 14.0 : 12.0,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
+              ),
+            ),
+            Text(
+              strength.strengthText,
+              style: TextStyle(
+                fontSize: isTablet ? 14.0 : 12.0,
+                fontWeight: FontWeight.bold,
+                color: strength.color,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: isTablet ? 8.h : 6.h),
+        LinearProgressIndicator(
+          value: strength.score / 100,
+          backgroundColor: Colors.grey[200],
+          valueColor: AlwaysStoppedAnimation<Color>(strength.color),
+          minHeight: isTablet ? 8.0 : 6.0,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPasswordRequirementsList(
+      PasswordStrength strength, bool isTablet) {
+    return Container(
+      padding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Şifre Gereksinimleri:',
+            style: TextStyle(
+              fontSize: isTablet ? 14.0 : 12.0,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+          ),
+          SizedBox(height: isTablet ? 12.h : 8.h),
+          ...strength.requirements
+              .map((req) => _buildRequirementItem(req, isTablet)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRequirementItem(PasswordRequirement req, bool isTablet) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isTablet ? 8.h : 6.h),
+      child: Row(
+        children: [
+          Container(
+            width: isTablet ? 20.0 : 16.0,
+            height: isTablet ? 20.0 : 16.0,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: req.isMet ? Colors.green : Colors.grey[300],
+            ),
+            child: Icon(
+              req.isMet ? Icons.check : Icons.close,
+              color: req.isMet ? Colors.white : Colors.grey[600],
+              size: isTablet ? 12.0 : 10.0,
+            ),
+          ),
+          SizedBox(width: isTablet ? 12.w : 8.w),
+          Expanded(
+            child: Text(
+              req.description,
+              style: TextStyle(
+                fontSize: isTablet ? 13.0 : 11.0,
+                color: req.isMet ? Colors.green[700] : Colors.grey[600],
+                fontWeight: req.isMet ? FontWeight.w500 : FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

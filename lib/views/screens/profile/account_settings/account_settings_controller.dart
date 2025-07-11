@@ -5,6 +5,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
+import 'package:tuncforwork/models/work_experience.dart';
+import 'package:tuncforwork/service/global.dart';
 
 class AccountSettingsController extends GetxController {
   // Loading States
@@ -95,6 +97,73 @@ class AccountSettingsController extends GetxController {
     'connections': GlobalKey(),
   };
 
+  // Work Experience
+  final RxList<WorkExperience> workExperiences = <WorkExperience>[].obs;
+  final RxList<String> skills = <String>[].obs;
+
+  // Work Experience Form Controllers
+  final titleController = TextEditingController();
+  final companyController = TextEditingController();
+  final startDateController = TextEditingController();
+  final endDateController = TextEditingController();
+  final descriptionController = TextEditingController();
+  final skillController = TextEditingController();
+
+  // Dropdown Values
+  final RxMap<String, List<String>> dropdownValues =
+      <String, List<String>>{}.obs;
+
+  Future<void> loadDropdownValues() async {
+    try {
+      log('Dropdown değerleri yükleniyor...');
+      final values = await getAllDropdownValues();
+
+      if (values.isEmpty) {
+        log('Dikkat: Dropdown değerleri boş geldi!');
+        // Varsayılan değerleri kullan
+        dropdownValues.value = {
+          'genders': gender,
+          'countries': countries,
+          'bodyTypes': bodyTypes,
+          'drinkingHabits': drinkingHabits,
+          'smokingHabits': smokingHabits,
+          'maritalStatuses': maritalStatuses,
+          'employmentStatuses': employmentStatuses,
+          'livingSituations': livingSituations,
+          'nationalities': nationalities,
+          'educationLevels': educationLevels,
+          'languages': languages,
+          'religions': religion,
+          'ethnicities': ethnicities,
+          'professions': itJobs,
+        };
+      } else {
+        log('Dropdown değerleri başarıyla yüklendi: ${values.keys.join(", ")}');
+        dropdownValues.value = values;
+      }
+    } catch (e, stackTrace) {
+      log('Dropdown değerleri yüklenirken hata: $e');
+      log('Stack trace: $stackTrace');
+      // Hata durumunda varsayılan değerleri kullan
+      dropdownValues.value = {
+        'genders': gender,
+        'countries': countries,
+        'bodyTypes': bodyTypes,
+        'drinkingHabits': drinkingHabits,
+        'smokingHabits': smokingHabits,
+        'maritalStatuses': maritalStatuses,
+        'employmentStatuses': employmentStatuses,
+        'livingSituations': livingSituations,
+        'nationalities': nationalities,
+        'educationLevels': educationLevels,
+        'languages': languages,
+        'religions': religion,
+        'ethnicities': ethnicities,
+        'professions': itJobs,
+      };
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -105,9 +174,15 @@ class AccountSettingsController extends GetxController {
   Future<void> _initialize() async {
     try {
       isLoading.value = true;
-      await retrieveUserData(); // Önce verileri getir
-      initializeDropdownValues(); // Sonra dropdown değerlerini ayarla
+      await loadDropdownValues(); // Önce dropdown değerlerini yükle
+      await Future.wait([
+        retrieveUserData(),
+        loadWorkExperiences(),
+        loadSkills(),
+      ]);
+      initializeDropdownValues();
     } catch (e) {
+      log('Error initializing controller: $e');
       handleError('Error initializing controller: $e');
     } finally {
       isLoading.value = false;
@@ -284,51 +359,46 @@ class AccountSettingsController extends GetxController {
   // }
 
   void initializeDropdownValues() {
-    // Set default values for all dropdown controllers
-    genderController.text = gender.first;
-    selectedGender.value = gender.first;
+    try {
+      // Firestore'dan gelen değerler veya varsayılan değerler
+      genderController.text =
+          dropdownValues['genders']?.firstOrNull ?? gender.first;
+      countryController.text =
+          dropdownValues['countries']?.firstOrNull ?? countries.first;
+      bodyTypeController.text =
+          dropdownValues['bodyTypes']?.firstOrNull ?? bodyTypes.first;
+      drinkController.text =
+          dropdownValues['drinkingHabits']?.firstOrNull ?? drinkingHabits.first;
+      smokeController.text =
+          dropdownValues['smokingHabits']?.firstOrNull ?? smokingHabits.first;
+      martialStatusController.text =
+          dropdownValues['maritalStatuses']?.firstOrNull ??
+              maritalStatuses.first;
+      employmentStatusController.text =
+          dropdownValues['employmentStatuses']?.firstOrNull ??
+              employmentStatuses.first;
+      livingSituationController.text =
+          dropdownValues['livingSituations']?.firstOrNull ??
+              livingSituations.first;
+      nationalityController.text =
+          dropdownValues['nationalities']?.firstOrNull ?? nationalities.first;
+      educationController.text =
+          dropdownValues['educationLevels']?.firstOrNull ??
+              educationLevels.first;
+      languageSpokenController.text =
+          dropdownValues['languages']?.firstOrNull ?? languages.first;
+      religionController.text =
+          dropdownValues['religions']?.firstOrNull ?? religion.first;
+      ethnicityController.text =
+          dropdownValues['ethnicities']?.firstOrNull ?? ethnicities.first;
+      professionController.text =
+          dropdownValues['professions']?.firstOrNull ?? itJobs.first;
 
-    countryController.text = countries.first;
-    selectedCountry.value = countries.first;
-
-    bodyTypeController.text = bodyTypes.first;
-    selectedBodyType.value = bodyTypes.first;
-
-    drinkController.text = drinkingHabits.first;
-    selectedDrink.value = drinkingHabits.first;
-
-    smokeController.text = smokingHabits.first;
-    selectedSmoke.value = smokingHabits.first;
-
-    martialStatusController.text = maritalStatuses.first;
-    selectedMaritalStatus.value = maritalStatuses.first;
-
-    professionController.text = itJobs.first;
-    selectedProfession.value = itJobs.first;
-
-    employmentStatusController.text = employmentStatuses.first;
-    selectedEmploymentStatus.value = employmentStatuses.first;
-
-    livingSituationController.text = livingSituations.first;
-    selectedLivingSituation.value = livingSituations.first;
-
-    nationalityController.text = nationalities.first;
-    selectedNationality.value = nationalities.first;
-
-    educationController.text = educationLevels.first;
-    selectedEducation.value = educationLevels.first;
-
-    languageSpokenController.text = languages.first;
-    selectedLanguage.value = languages.first;
-
-    religionController.text = religion.first;
-    selectedReligion.value = religion.first;
-
-    ethnicityController.text = ethnicities.first;
-    selectedEthnicity.value = ethnicities.first;
-
-    childrenSelection.value = childrenOptions.first;
-    relationshipSelection.value = relationshipOptions.first;
+      childrenSelection.value = childrenOptions.first;
+      relationshipSelection.value = relationshipOptions.first;
+    } catch (e) {
+      log('Error initializing dropdown values: $e');
+    }
   }
 
   // Load section methods
@@ -637,6 +707,99 @@ class AccountSettingsController extends GetxController {
       uploading.value = false;
       images.clear();
       urlsList.clear();
+    }
+  }
+
+  Future<void> addWorkExperience() async {
+    try {
+      final experience = WorkExperience(
+        title: titleController.text,
+        company: companyController.text,
+        startDate: startDateController.text,
+        endDate: endDateController.text,
+        description: descriptionController.text,
+        technologies: [],
+      );
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .collection('workExperience')
+          .add(experience.toMap());
+
+      workExperiences.add(experience);
+      clearWorkExperienceForm();
+    } catch (e) {
+      log('Error adding work experience: $e');
+    }
+  }
+
+  Future<void> addSkill(String skill) async {
+    try {
+      if (!skills.contains(skill)) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUserId)
+            .update({
+          'skills': FieldValue.arrayUnion([skill])
+        });
+        skills.add(skill);
+      }
+    } catch (e) {
+      log('Error adding skill: $e');
+    }
+  }
+
+  Future<void> removeSkill(String skill) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .update({
+        'skills': FieldValue.arrayRemove([skill])
+      });
+      skills.remove(skill);
+    } catch (e) {
+      log('Error removing skill: $e');
+    }
+  }
+
+  void clearWorkExperienceForm() {
+    titleController.clear();
+    companyController.clear();
+    startDateController.clear();
+    endDateController.clear();
+    descriptionController.clear();
+  }
+
+  Future<void> loadWorkExperiences() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .collection('workExperience')
+          .orderBy('startDate', descending: true)
+          .get();
+
+      workExperiences.value = snapshot.docs
+          .map((doc) => WorkExperience.fromMap(doc.data()))
+          .toList();
+    } catch (e) {
+      log('Error loading work experiences: $e');
+    }
+  }
+
+  Future<void> loadSkills() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .get();
+      if (doc.exists && doc.data()!.containsKey('skills')) {
+        skills.value = List<String>.from(doc.data()!['skills']);
+      }
+    } catch (e) {
+      log('Error loading skills: $e');
     }
   }
 

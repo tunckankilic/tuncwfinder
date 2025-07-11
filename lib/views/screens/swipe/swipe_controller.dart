@@ -9,7 +9,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/service/global.dart';
+import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
+import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
 
 enum ReportReason { inappropriate, harassment, fakeProfile, spamming, others }
 
@@ -211,12 +214,14 @@ class SwipeController extends GetxController {
   void removeTopProfile() {
     if (allUsersProfileList.isNotEmpty) {
       final removedProfile = allUsersProfileList[0];
-      allUsersProfileList.removeAt(0);
 
       // Kullanıcıyı işlenmiş olarak işaretle
       if (removedProfile.uid != null) {
         _markUserAsProcessed(removedProfile.uid!, 'dislike');
       }
+
+      // UI'dan kaldır
+      allUsersProfileList.removeAt(0);
     }
   }
 
@@ -263,76 +268,31 @@ class SwipeController extends GetxController {
     if (_isRateLimited()) return;
 
     try {
-      Query query = FirebaseFirestore.instance.collection("users");
+      // Debug için seçili filtreleri logla
+      log("Selected filters:");
+      log("Gender: ${chosenGender.value}");
+      log("Country: ${chosenCountry.value}");
+      log("Age: ${chosenAge.value}");
+      log("BodyType: ${chosenBodyType.value}");
+      log("Language: ${chosenLanguage.value}");
+      log("Education: ${chosenEducation.value}");
+      log("Employment: ${chosenEmploymentStatus.value}");
+      log("Living: ${chosenLivingSituation.value}");
+      log("Marital: ${chosenMaritalStatus.value}");
+      log("Drink: ${chosenDrinkingHabit.value}");
+      log("Smoke: ${chosenSmokingHabit.value}");
+      log("Nationality: ${chosenNationality.value}");
+      log("Ethnicity: ${chosenEthnicity.value}");
+      log("Religion: ${chosenReligion.value}");
+      log("Profession: ${chosenProfession.value}");
 
-      // Apply equality filters with input validation
-      if (_isValidInput(chosenGender.value)) {
-        query = query.where("gender", isEqualTo: chosenGender.value);
-      }
-      if (_isValidInput(chosenCountry.value)) {
-        query = query.where("country", isEqualTo: chosenCountry.value);
-      }
-      if (_isValidInput(chosenBodyType.value)) {
-        query = query.where("bodyType", isEqualTo: chosenBodyType.value);
-      }
-      if (_isValidInput(chosenLanguage.value)) {
-        query =
-            query.where("languageSpoken", arrayContains: chosenLanguage.value);
-      }
-      if (_isValidInput(chosenEducation.value)) {
-        query = query.where("education", isEqualTo: chosenEducation.value);
-      }
-      if (_isValidInput(chosenEmploymentStatus.value)) {
-        query = query.where("employmentStatus",
-            isEqualTo: chosenEmploymentStatus.value);
-      }
-      if (_isValidInput(chosenLivingSituation.value)) {
-        query = query.where("livingSituation",
-            isEqualTo: chosenLivingSituation.value);
-      }
-      if (_isValidInput(chosenMaritalStatus.value)) {
-        query =
-            query.where("maritalStatus", isEqualTo: chosenMaritalStatus.value);
-      }
-      if (_isValidInput(chosenDrinkingHabit.value)) {
-        query = query.where("drink", isEqualTo: chosenDrinkingHabit.value);
-      }
-      if (_isValidInput(chosenSmokingHabit.value)) {
-        query = query.where("smoke", isEqualTo: chosenSmokingHabit.value);
-      }
-      if (_isValidInput(chosenNationality.value)) {
-        query = query.where("nationality", isEqualTo: chosenNationality.value);
-      }
-      if (_isValidInput(chosenEthnicity.value)) {
-        query = query.where("ethnicity", isEqualTo: chosenEthnicity.value);
-      }
-      if (_isValidInput(chosenReligion.value)) {
-        query = query.where("religion", isEqualTo: chosenReligion.value);
-      }
-      if (_isValidInput(chosenProfession.value)) {
-        query = query.where("profession", isEqualTo: chosenProfession.value);
-      }
+      // Önce tüm kullanıcıları al, sonra filtrele
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection("users")
+          .limit(100) // Daha fazla sonuç al
+          .get();
 
-      // Apply range filter last
-      if (_isValidInput(chosenAge.value)) {
-        int minAge = int.tryParse(chosenAge.value) ?? 0;
-        query = query.where("age", isGreaterThanOrEqualTo: minAge);
-      }
-
-      // Limit query results and add pagination
-      const int pageSize = 50; // Daha fazla sonuç al
-      query = query.limit(pageSize);
-
-      QuerySnapshot querySnapshot = await query.get();
-
-      if (querySnapshot.docs.isEmpty) {
-        Get.snackbar(
-          'No Results',
-          'No matches found for your search criteria.',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
-      }
+      log("Total documents fetched: ${querySnapshot.docs.length}");
 
       // Engellenmiş, engelleyen ve işlenmiş kullanıcıları filtrele
       List<Person> filteredUsers = [];
@@ -344,7 +304,103 @@ class SwipeController extends GetxController {
           bool isProcessed = _processedUserIds.contains(userId);
 
           if (!isBlocked && !hasBlockedMe && !isProcessed) {
-            filteredUsers.add(Person.fromDataSnapshot(doc));
+            Person person = Person.fromDataSnapshot(doc);
+
+            // Filtreleri uygula
+            bool matchesFilters = true;
+
+            if (_isValidInput(chosenGender.value)) {
+              matchesFilters = matchesFilters &&
+                  person.gender?.toLowerCase() ==
+                      chosenGender.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenCountry.value)) {
+              matchesFilters = matchesFilters &&
+                  person.country?.toLowerCase() ==
+                      chosenCountry.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenBodyType.value)) {
+              matchesFilters = matchesFilters &&
+                  person.bodyType?.toLowerCase() ==
+                      chosenBodyType.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenLanguage.value)) {
+              matchesFilters = matchesFilters &&
+                  person.languageSpoken?.contains(chosenLanguage.value) == true;
+            }
+
+            if (_isValidInput(chosenEducation.value)) {
+              matchesFilters = matchesFilters &&
+                  person.education?.toLowerCase() ==
+                      chosenEducation.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenEmploymentStatus.value)) {
+              matchesFilters = matchesFilters &&
+                  person.employmentStatus?.toLowerCase() ==
+                      chosenEmploymentStatus.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenLivingSituation.value)) {
+              matchesFilters = matchesFilters &&
+                  person.livingSituation?.toLowerCase() ==
+                      chosenLivingSituation.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenMaritalStatus.value)) {
+              matchesFilters = matchesFilters &&
+                  person.martialStatus?.toLowerCase() ==
+                      chosenMaritalStatus.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenDrinkingHabit.value)) {
+              matchesFilters = matchesFilters &&
+                  person.drink?.toLowerCase() ==
+                      chosenDrinkingHabit.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenSmokingHabit.value)) {
+              matchesFilters = matchesFilters &&
+                  person.smoke?.toLowerCase() ==
+                      chosenSmokingHabit.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenNationality.value)) {
+              matchesFilters = matchesFilters &&
+                  person.nationality?.toLowerCase() ==
+                      chosenNationality.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenEthnicity.value)) {
+              matchesFilters = matchesFilters &&
+                  person.ethnicity?.toLowerCase() ==
+                      chosenEthnicity.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenReligion.value)) {
+              matchesFilters = matchesFilters &&
+                  person.religion?.toLowerCase() ==
+                      chosenReligion.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenProfession.value)) {
+              matchesFilters = matchesFilters &&
+                  person.profession?.toLowerCase() ==
+                      chosenProfession.value.toLowerCase();
+            }
+
+            if (_isValidInput(chosenAge.value)) {
+              int minAge = int.tryParse(chosenAge.value) ?? 0;
+              int userAge = int.tryParse(person.age?.toString() ?? "0") ?? 0;
+              matchesFilters = matchesFilters && userAge >= minAge;
+            }
+
+            if (matchesFilters) {
+              filteredUsers.add(person);
+            }
           }
         }
       }
@@ -353,20 +409,28 @@ class SwipeController extends GetxController {
 
       if (allUsersProfileList.isEmpty) {
         Get.snackbar(
-          'No Results',
-          'No unblocked and unprocessed users found matching your criteria.',
+          'Sonuç Bulunamadı',
+          'Filtrelerinize uygun kullanıcı bulunamadı.',
           snackPosition: SnackPosition.BOTTOM,
         );
       } else {
-        log("Loaded ${filteredUsers.length} new profiles");
+        log("Loaded ${filteredUsers.length} filtered profiles");
+        Get.snackbar(
+          'Başarılı',
+          '${filteredUsers.length} profil bulundu.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
       }
     } catch (e) {
       Get.snackbar(
-        'Error',
-        'Failed to fetch results. Please try again.',
+        'Hata',
+        'Sonuçlar alınırken hata oluştu. Lütfen tekrar deneyin.',
         snackPosition: SnackPosition.BOTTOM,
       );
       log("Error in getResults: $e");
+      log("Error stack trace: ${StackTrace.current}");
     }
   }
 
@@ -620,116 +684,253 @@ class SwipeController extends GetxController {
   void applyFilter(bool isTablet) {
     Get.bottomSheet(
       Container(
-        color: Colors.white,
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              _buildDropdownListTile(
-                  icon: Icons.person,
-                  title: 'Gender',
-                  value: chosenGender,
-                  items: gender,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.location_city,
-                  title: 'Country',
-                  value: chosenCountry,
-                  items: countries,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.cake,
-                  title: 'Minimum Age',
-                  value: chosenAge,
-                  items: ageRangeList,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.person_outline,
-                  title: "Body Type",
-                  value: chosenBodyType,
-                  items: bodyTypes,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.language,
-                  title: "Language",
-                  value: chosenLanguage,
-                  items: languages,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.school,
-                  title: "Education",
-                  value: chosenEducation,
-                  items: educationLevels,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.work,
-                  title: "Employment",
-                  value: chosenEmploymentStatus,
-                  items: employmentStatuses,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.home,
-                  title: "Living Situation",
-                  value: chosenLivingSituation,
-                  items: livingSituations,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.favorite,
-                  title: "Marital Status",
-                  value: chosenMaritalStatus,
-                  items: maritalStatuses,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.local_drink,
-                  title: "Drinking Habit",
-                  value: chosenDrinkingHabit,
-                  items: drinkingHabits,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.smoking_rooms,
-                  title: "Smoking Habit",
-                  value: chosenSmokingHabit,
-                  items: smokingHabits,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.place,
-                  title: "Nationality",
-                  value: chosenNationality,
-                  items: nationalities,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.people,
-                  title: "Ethnicity",
-                  value: chosenEthnicity,
-                  items: ethnicities,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                  icon: Icons.church,
-                  title: "Religion",
-                  value: chosenReligion,
-                  items: religion,
-                  isTablet: isTablet),
-              _buildDropdownListTile(
-                icon: Icons.work,
-                title: "Profession",
-                value: chosenProfession,
-                items: itJobs,
-                isTablet: isTablet,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(25),
+            topRight: Radius.circular(25),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              margin: EdgeInsets.only(top: 12, bottom: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
               ),
-              const SizedBox(height: 20),
-              Center(
+            ),
+            // Header
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Filtreler',
+                    style: TextStyle(
+                      fontSize: isTablet ? 28 : 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Reset all filters
+                      chosenGender.value = '';
+                      chosenCountry.value = '';
+                      chosenAge.value = '';
+                      chosenBodyType.value = '';
+                      chosenLanguage.value = '';
+                      chosenEducation.value = '';
+                      chosenEmploymentStatus.value = '';
+                      chosenLivingSituation.value = '';
+                      chosenMaritalStatus.value = '';
+                      chosenDrinkingHabit.value = '';
+                      chosenSmokingHabit.value = '';
+                      chosenNationality.value = '';
+                      chosenEthnicity.value = '';
+                      chosenReligion.value = '';
+                      chosenProfession.value = '';
+                    },
+                    child: Text(
+                      'Sıfırla',
+                      style: TextStyle(
+                        color: Colors.red[600],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Filter content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    _buildModernFilterSection(
+                      title: 'Temel Bilgiler',
+                      filters: [
+                        _buildModernFilterTile(
+                          icon: Icons.person,
+                          title: 'Cinsiyet',
+                          value: chosenGender,
+                          items: gender,
+                          isTablet: isTablet,
+                        ),
+                        _buildModernFilterTile(
+                          icon: Icons.cake,
+                          title: 'Minimum Yaş',
+                          value: chosenAge,
+                          items: ageRangeList,
+                          isTablet: isTablet,
+                        ),
+                        _buildModernFilterTile(
+                          icon: Icons.person_outline,
+                          title: 'Vücut Tipi',
+                          value: chosenBodyType,
+                          items: bodyTypes,
+                          isTablet: isTablet,
+                        ),
+                      ],
+                    ),
+                    _buildModernFilterSection(
+                      title: 'Konum & Demografi',
+                      filters: [
+                        _buildModernFilterTile(
+                          icon: Icons.location_city,
+                          title: 'Ülke',
+                          value: chosenCountry,
+                          items: countries,
+                          isTablet: isTablet,
+                        ),
+                        _buildModernFilterTile(
+                          icon: Icons.place,
+                          title: 'Milliyet',
+                          value: chosenNationality,
+                          items: nationalities,
+                          isTablet: isTablet,
+                        ),
+                        _buildModernFilterTile(
+                          icon: Icons.people,
+                          title: 'Etnik Köken',
+                          value: chosenEthnicity,
+                          items: ethnicities,
+                          isTablet: isTablet,
+                        ),
+                      ],
+                    ),
+                    _buildModernFilterSection(
+                      title: 'Eğitim & Kariyer',
+                      filters: [
+                        _buildModernFilterTile(
+                          icon: Icons.school,
+                          title: 'Eğitim',
+                          value: chosenEducation,
+                          items: educationLevels,
+                          isTablet: isTablet,
+                        ),
+                        _buildModernFilterTile(
+                          icon: Icons.work,
+                          title: 'İstihdam',
+                          value: chosenEmploymentStatus,
+                          items: employmentStatuses,
+                          isTablet: isTablet,
+                        ),
+                        _buildModernFilterTile(
+                          icon: Icons.work,
+                          title: 'Meslek',
+                          value: chosenProfession,
+                          items: itJobs,
+                          isTablet: isTablet,
+                        ),
+                      ],
+                    ),
+                    _buildModernFilterSection(
+                      title: 'Yaşam Tarzı',
+                      filters: [
+                        _buildModernFilterTile(
+                          icon: Icons.home,
+                          title: 'Yaşam Durumu',
+                          value: chosenLivingSituation,
+                          items: livingSituations,
+                          isTablet: isTablet,
+                        ),
+                        _buildModernFilterTile(
+                          icon: Icons.favorite,
+                          title: 'Medeni Durum',
+                          value: chosenMaritalStatus,
+                          items: maritalStatuses,
+                          isTablet: isTablet,
+                        ),
+                        _buildModernFilterTile(
+                          icon: Icons.local_drink,
+                          title: 'İçki Alışkanlığı',
+                          value: chosenDrinkingHabit,
+                          items: drinkingHabits,
+                          isTablet: isTablet,
+                        ),
+                        _buildModernFilterTile(
+                          icon: Icons.smoking_rooms,
+                          title: 'Sigara Alışkanlığı',
+                          value: chosenSmokingHabit,
+                          items: smokingHabits,
+                          isTablet: isTablet,
+                        ),
+                      ],
+                    ),
+                    _buildModernFilterSection(
+                      title: 'Diğer',
+                      filters: [
+                        _buildModernFilterTile(
+                          icon: Icons.language,
+                          title: 'Dil',
+                          value: chosenLanguage,
+                          items: languages,
+                          isTablet: isTablet,
+                        ),
+                        _buildModernFilterTile(
+                          icon: Icons.church,
+                          title: 'Din',
+                          value: chosenReligion,
+                          items: religion,
+                          isTablet: isTablet,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ),
+            // Apply button
+            Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
                 child: ElevatedButton(
-                  child: const Text('Apply Filter'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[600],
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
                   onPressed: () {
                     Get.back();
                     getResults();
                   },
+                  child: Text(
+                    'Filtreleri Uygula',
+                    style: TextStyle(
+                      fontSize: isTablet ? 18 : 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
+      isScrollControlled: true,
     );
   }
 
@@ -893,20 +1094,29 @@ class SwipeController extends GetxController {
             ),
             ListTile(
               leading: Icon(icon),
-              trailing: DropdownButton<String>(
-                value: value.value.isEmpty ? null : value.value,
-                hint: Text('Select $title'),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    value.value = newValue;
-                  }
-                },
-                items: items.map<DropdownMenuItem<String>>((String item) {
-                  return DropdownMenuItem<String>(
-                    value: item,
-                    child: Text(item),
-                  );
-                }).toList(),
+              trailing: SizedBox(
+                width: 150, // Dropdown genişliğini sınırla
+                child: DropdownButton<String>(
+                  value: value.value.isEmpty ? null : value.value,
+                  hint: Text('Select $title'),
+                  isExpanded:
+                      true, // Dropdown'ın mevcut alanı kaplamasını sağla
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      value.value = newValue;
+                    }
+                  },
+                  items: items.map<DropdownMenuItem<String>>((String item) {
+                    return DropdownMenuItem<String>(
+                      value: item,
+                      child: Text(
+                        item,
+                        overflow:
+                            TextOverflow.ellipsis, // Uzun metinleri kısalt
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
           ],
@@ -1007,5 +1217,127 @@ class SwipeController extends GetxController {
             );
           });
     }
+  }
+
+  Widget _buildModernFilterSection({
+    required String title,
+    required List<Widget> filters,
+  }) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Column(
+              children: filters,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernFilterTile({
+    required IconData icon,
+    required String title,
+    required RxString value,
+    required List<String> items,
+    required bool isTablet,
+  }) {
+    return Obx(() => Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Colors.grey[200]!, width: 0.5),
+            ),
+          ),
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            leading: Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: Colors.blue[600],
+                size: 20,
+              ),
+            ),
+            title: Text(
+              title,
+              style: TextStyle(
+                fontSize: isTablet ? 16 : 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+            subtitle: value.value.isNotEmpty
+                ? Text(
+                    value.value,
+                    style: TextStyle(
+                      color: Colors.blue[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  )
+                : null,
+            trailing: Container(
+              width: 120,
+              child: DropdownButton<String>(
+                value: value.value.isEmpty ? null : value.value,
+                hint: Text(
+                  'Seç',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+                isExpanded: true,
+                underline: SizedBox(),
+                icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey[600]),
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    value.value = newValue;
+                  }
+                },
+                items: items.map<DropdownMenuItem<String>>((String item) {
+                  return DropdownMenuItem<String>(
+                    value: item,
+                    child: Text(
+                      item,
+                      style: TextStyle(fontSize: 12),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ));
+  }
+
+  void navigateToProfile(String userId) {
+    // Initialize UserDetailsController with the specific userId
+    Get.lazyPut<UserDetailsController>(
+        () => UserDetailsController(userId: userId),
+        tag: userId,
+        fenix: true);
+
+    // Navigate to UserDetails page
+    Get.to(() => UserDetails(userId: userId));
   }
 }

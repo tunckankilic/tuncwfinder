@@ -1,5 +1,88 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:developer';
+
+// Firestore instance
+final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+// Dropdown değerlerini almak için metodlar
+Future<List<String>> getDropdownValues(String collectionName) async {
+  try {
+    log('$collectionName için getDropdownValues başlatıldı');
+    final snapshot = await _firestore.collection(collectionName).get();
+
+    if (snapshot.docs.isEmpty) {
+      log('$collectionName koleksiyonu boş');
+      return [];
+    }
+
+    final values = snapshot.docs
+        .map((doc) => doc.data()['value'] as String?)
+        .where((value) => value != null)
+        .cast<String>()
+        .toList();
+
+    log('$collectionName için ${values.length} değer bulundu');
+    return values;
+  } catch (e, stackTrace) {
+    log('$collectionName için getDropdownValues hatası: $e');
+    log('Stack trace: $stackTrace');
+    return [];
+  }
+}
+
+Future<Map<String, List<String>>> getAllDropdownValues() async {
+  try {
+    log('getAllDropdownValues başlatıldı');
+    final collections = [
+      'genders',
+      'countries',
+      'bodyTypes',
+      'drinkingHabits',
+      'smokingHabits',
+      'maritalStatuses',
+      'employmentStatuses',
+      'livingSituations',
+      'nationalities',
+      'educationLevels',
+      'languages',
+      'religions',
+      'ethnicities',
+      'professions',
+      'industries',
+    ];
+
+    Map<String, List<String>> values = {};
+
+    for (var collection in collections) {
+      try {
+        log('$collection koleksiyonu yükleniyor...');
+        final collectionValues = await getDropdownValues(collection);
+        if (collectionValues.isNotEmpty) {
+          values[collection] = collectionValues;
+          log('$collection koleksiyonu yüklendi: ${collectionValues.length} değer');
+        } else {
+          log('$collection koleksiyonu boş');
+        }
+      } catch (e) {
+        log('$collection koleksiyonu yüklenirken hata: $e');
+      }
+    }
+
+    if (values.isEmpty) {
+      log('Hiçbir dropdown değeri yüklenemedi!');
+    } else {
+      log('Toplam ${values.length} koleksiyon yüklendi');
+    }
+
+    return values;
+  } catch (e, stackTrace) {
+    log('getAllDropdownValues genel hata: $e');
+    log('Stack trace: $stackTrace');
+    return {};
+  }
+}
 
 // Global Variables
 String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
@@ -78,7 +161,6 @@ const List<String> languageLevels = [
 
 // Personal Information Options
 final List<String> gender = [
-  "Gender",
   'Woman',
   'Man',
   'Transgender',
@@ -90,7 +172,6 @@ final List<String> gender = [
   'Two-Spirit',
   'Androgynous',
   'Demigender',
-  'Genderqueer',
   'Gender non-conforming',
   'Questioning',
   'Prefer not to say',
@@ -98,7 +179,6 @@ final List<String> gender = [
 ];
 
 final List<String> bodyTypes = [
-  "Body Types",
   'Slim',
   'Athletic',
   'Average',
@@ -113,7 +193,6 @@ final List<String> bodyTypes = [
 ];
 
 final List<String> smokingHabits = [
-  "Smoking Habits",
   'Non-smoker',
   'Light smoker',
   'Regular smoker',
@@ -127,7 +206,6 @@ final List<String> smokingHabits = [
 ];
 
 final List<String> drinkingHabits = [
-  "Drinking Habits",
   'Non-drinker',
   'Social drinker',
   'Light drinker',
@@ -142,7 +220,6 @@ final List<String> drinkingHabits = [
 ];
 
 final List<String> maritalStatuses = [
-  "Marital Statuses",
   'Single (never married)',
   'Married',
   'Divorced',
@@ -167,7 +244,6 @@ final List<String> maritalStatuses = [
 
 // Location and Demographics
 final List<String> countries = [
-  "Countries",
   'Belize',
   'Canada',
   'Costa Rica',
@@ -243,7 +319,6 @@ final List<String> countries = [
 ];
 
 final List<String> nationalities = [
-  "Nationalities",
   'American',
   'British',
   'Canadian',
@@ -267,7 +342,6 @@ final List<String> nationalities = [
 ];
 
 final List<String> ethnicities = [
-  "Ethnicities",
   'Han Chinese',
   'Arabs',
   'Bengalis',
@@ -297,7 +371,6 @@ final List<String> ethnicities = [
 
 // Education and Work
 final List<String> educationLevels = [
-  "Education Level",
   'High School',
   'Bachelor\'s',
   'Master\'s',
@@ -306,7 +379,6 @@ final List<String> educationLevels = [
 ];
 
 final List<String> languages = [
-  "Language",
   'English',
   'Spanish',
   'French',
@@ -460,7 +532,6 @@ final List<String> livingSituations = [
 ];
 
 final List<String> religion = [
-  "Religion",
   "Christianity",
   "Islam",
   "Hinduism",

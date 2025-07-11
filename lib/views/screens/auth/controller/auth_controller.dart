@@ -37,6 +37,7 @@ class AuthController extends GetxController {
   late PageController pageController;
   RxInt currentPage = 0.obs;
   RxBool obsPass = true.obs;
+  RxString passwordText = ''.obs;
 
   // Form Controllers
   final TextEditingController emailController = TextEditingController();
@@ -84,6 +85,26 @@ class AuthController extends GetxController {
   var radioRelationshipStatusController = ''.obs;
   final passwordError = ''.obs;
   final confirmPasswordError = ''.obs;
+
+  // Dropdown observable variables
+  final RxString selectedGender = ''.obs;
+  final RxString selectedHeight = ''.obs;
+  final RxString selectedWeight = ''.obs;
+  final RxString selectedBodyType = ''.obs;
+  final RxString selectedDrink = ''.obs;
+  final RxString selectedSmoke = ''.obs;
+  final RxString selectedMaritalStatus = ''.obs;
+  final RxString selectedProfession = ''.obs;
+  final RxString selectedEmploymentStatus = ''.obs;
+  final RxString selectedIncome = ''.obs;
+  final RxString selectedLivingSituation = ''.obs;
+  final RxString selectedWillingToRelocate = ''.obs;
+  final RxString selectedNationality = ''.obs;
+  final RxString selectedEducation = ''.obs;
+  final RxString selectedLanguage = ''.obs;
+  final RxString selectedReligion = ''.obs;
+  final RxString selectedEthnicity = ''.obs;
+  final RxString selectedCountry = ''.obs;
 
   // Options lists
   final childrenOptions = ['Yes', 'No'];
@@ -213,8 +234,12 @@ By accepting this privacy policy, you declare that you understand and agree to t
   void onInit() {
     super.onInit();
     pageController = PageController();
+    _initializeDropdownValues();
 
     passwordController.addListener(() {
+      // Observable değişkeni güncelle
+      passwordText.value = passwordController.text;
+
       if (confirmPasswordController.text.isNotEmpty) {
         if (passwordController.text != confirmPasswordController.text) {
           confirmPasswordError.value = 'Passwords do not match';
@@ -223,6 +248,46 @@ By accepting this privacy policy, you declare that you understand and agree to t
         }
       }
     });
+  }
+
+  void _initializeDropdownValues() {
+    // Dropdown değerlerini başlat
+    if (selectedCountry.value.isEmpty) {
+      selectedCountry.value = '';
+    }
+    if (selectedNationality.value.isEmpty) {
+      selectedNationality.value = '';
+    }
+    if (selectedEducation.value.isEmpty) {
+      selectedEducation.value = '';
+    }
+    if (selectedLanguage.value.isEmpty) {
+      selectedLanguage.value = '';
+    }
+    if (selectedReligion.value.isEmpty) {
+      selectedReligion.value = '';
+    }
+    if (selectedEthnicity.value.isEmpty) {
+      selectedEthnicity.value = '';
+    }
+    if (selectedDrink.value.isEmpty) {
+      selectedDrink.value = '';
+    }
+    if (selectedSmoke.value.isEmpty) {
+      selectedSmoke.value = '';
+    }
+    if (selectedMaritalStatus.value.isEmpty) {
+      selectedMaritalStatus.value = '';
+    }
+    if (selectedProfession.value.isEmpty) {
+      selectedProfession.value = '';
+    }
+    if (selectedEmploymentStatus.value.isEmpty) {
+      selectedEmploymentStatus.value = '';
+    }
+    if (selectedLivingSituation.value.isEmpty) {
+      selectedLivingSituation.value = '';
+    }
   }
 
   @override
@@ -297,19 +362,35 @@ By accepting this privacy policy, you declare that you understand and agree to t
         country: countryController.text.trim(),
         profileHeading: profileHeadingController.text.trim(),
         publishedDateTime: DateTime.now().millisecondsSinceEpoch,
-        gender: genderController.text.trim(),
+        gender: selectedGender.value.isNotEmpty
+            ? selectedGender.value
+            : genderController.text.trim(),
         height: heightController.text.trim(),
         weight: weightController.text.trim(),
-        bodyType: bodyTypeController.text.trim(),
-        drink: drinkController.text.trim(),
-        smoke: smokeController.text.trim(),
-        martialStatus: martialStatusController.text.trim(),
+        bodyType: selectedBodyType.value.isNotEmpty
+            ? selectedBodyType.value
+            : bodyTypeController.text.trim(),
+        drink: selectedDrink.value.isNotEmpty
+            ? selectedDrink.value
+            : drinkController.text.trim(),
+        smoke: selectedSmoke.value.isNotEmpty
+            ? selectedSmoke.value
+            : smokeController.text.trim(),
+        martialStatus: selectedMaritalStatus.value.isNotEmpty
+            ? selectedMaritalStatus.value
+            : martialStatusController.text.trim(),
         haveChildren: childrenSelection.value,
         noOfChildren: noOfChildrenController.text.trim(),
-        profession: professionController.text.trim(),
-        employmentStatus: employmentStatusController.text.trim(),
+        profession: selectedProfession.value.isNotEmpty
+            ? selectedProfession.value
+            : professionController.text.trim(),
+        employmentStatus: selectedEmploymentStatus.value.isNotEmpty
+            ? selectedEmploymentStatus.value
+            : employmentStatusController.text.trim(),
         income: incomeController.text.trim(),
-        livingSituation: livingSituationController.text.trim(),
+        livingSituation: selectedLivingSituation.value.isNotEmpty
+            ? selectedLivingSituation.value
+            : livingSituationController.text.trim(),
         willingToRelocate: willingToRelocateController.text.trim(),
         nationality: nationalityController.text.trim(),
         education: educationController.text.trim(),
@@ -365,6 +446,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
       clearAllFields();
 
+      // Basit geçiş - HomeController'ı binding ile yükle
       Get.offAll(
         () => const HomeScreen(),
         binding: HomeBindings(),
@@ -715,6 +797,26 @@ By accepting this privacy policy, you declare that you understand and agree to t
     radioRelationshipStatusController.value = '';
     termsAccepted.value = false;
     pickedImage.value = null;
+    passwordText.value = '';
+
+    // Dropdown değerlerini temizle
+    selectedGender.value = '';
+    selectedHeight.value = '';
+    selectedWeight.value = '';
+    selectedBodyType.value = '';
+    selectedDrink.value = '';
+    selectedSmoke.value = '';
+    selectedMaritalStatus.value = '';
+    selectedProfession.value = '';
+    selectedEmploymentStatus.value = '';
+    selectedIncome.value = '';
+    selectedLivingSituation.value = '';
+    selectedWillingToRelocate.value = '';
+    selectedNationality.value = '';
+    selectedEducation.value = '';
+    selectedLanguage.value = '';
+    selectedReligion.value = '';
+    selectedEthnicity.value = '';
 
     currentPage.value = 0;
     pageController.jumpToPage(0);
@@ -821,21 +923,16 @@ By accepting this privacy policy, you declare that you understand and agree to t
         );
         break;
 
-      case 4: // Background
-        validationResult = RegistrationValidator.validateBackground(
-          nationality: nationalityController.text,
-          education: educationController.text,
-          language: languageSpokenController.text,
-          religion: religionController.text,
-          ethnicity: ethnicityController.text,
-        );
-        break;
-
-      case 5: // Social Links and Terms
-        validationResult = RegistrationValidator.validateSocialLinks(
-          instagram: instagramController.text,
-          termsAccepted: termsAccepted.value,
-        );
+      case 4: // Career Information
+        // Career validation - şimdilik basit kontrol
+        if (careerGoalController.text.trim().isEmpty) {
+          validationResult = ValidationResult(
+            isValid: false,
+            errorMessage: 'Please enter your career goals',
+          );
+        } else {
+          validationResult = ValidationResult(isValid: true);
+        }
         break;
 
       default:
@@ -843,7 +940,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
 
     if (validationResult.isValid) {
-      if (currentPage.value < 5) {
+      if (currentPage.value < 4) {
         pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
@@ -874,6 +971,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         PasswordInputField(
           controller: passwordController,
           label: 'Şifre',
+          authController: this,
           onChanged: (value) {
             validatePassword(value);
           },
@@ -883,6 +981,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
           controller: confirmPasswordController,
           label: 'Şifre Tekrar',
           isConfirmField: true,
+          authController: this,
           onChanged: (value) {
             validateConfirmPassword(value);
           },
@@ -988,9 +1087,12 @@ By accepting this privacy policy, you declare that you understand and agree to t
     final titleController = TextEditingController();
     final companyController = TextEditingController();
     final descriptionController = TextEditingController();
-    final startDateController = TextEditingController();
-    final endDateController = TextEditingController();
     final technologiesController = TextEditingController();
+
+    DateTime? selectedStartDate;
+    DateTime? selectedEndDate;
+    RxString startDateText = ''.obs;
+    RxString endDateText = ''.obs;
 
     Get.dialog(
       Dialog(
@@ -1041,24 +1143,94 @@ By accepting this privacy policy, you declare that you understand and agree to t
                 ),
               ),
               SizedBox(height: isTablet ? 16.0 : 12.0),
-              TextField(
-                controller: startDateController,
-                decoration: InputDecoration(
-                  labelText: 'Başlangıç Tarihi (YYYY-MM-DD)',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+              Column(
+                children: [
+                  InkWell(
+                    onTap: () async {
+                      final DateTime? picked = await showDatePicker(
+                        context: Get.context!,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        selectedStartDate = picked;
+                        startDateText.value =
+                            '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.calendar_today, color: Colors.grey),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Obx(() => Text(
+                                  startDateText.value.isEmpty
+                                      ? 'Başlangıç Tarihi'
+                                      : startDateText.value,
+                                  style: TextStyle(
+                                    color: startDateText.value.isEmpty
+                                        ? Colors.grey
+                                        : Colors.black,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                )),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(height: isTablet ? 16.0 : 12.0),
-              TextField(
-                controller: endDateController,
-                decoration: InputDecoration(
-                  labelText: 'Bitiş Tarihi (YYYY-MM-DD)',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                  SizedBox(height: 12),
+                  InkWell(
+                    onTap: () async {
+                      final DateTime? picked = await showDatePicker(
+                        context: Get.context!,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        selectedEndDate = picked;
+                        endDateText.value =
+                            '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.calendar_today, color: Colors.grey),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Obx(() => Text(
+                                  endDateText.value.isEmpty
+                                      ? 'Bitiş Tarihi'
+                                      : endDateText.value,
+                                  style: TextStyle(
+                                    color: endDateText.value.isEmpty
+                                        ? Colors.grey
+                                        : Colors.black,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                )),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
               SizedBox(height: isTablet ? 16.0 : 12.0),
               TextField(
@@ -1084,36 +1256,31 @@ By accepting this privacy policy, you declare that you understand and agree to t
                       if (titleController.text.isNotEmpty &&
                           companyController.text.isNotEmpty &&
                           descriptionController.text.isNotEmpty &&
-                          startDateController.text.isNotEmpty &&
+                          selectedStartDate != null &&
                           technologiesController.text.isNotEmpty) {
-                        try {
-                          final startDate =
-                              DateTime.parse(startDateController.text);
-                          final endDate = endDateController.text.isNotEmpty
-                              ? DateTime.parse(endDateController.text)
-                              : null;
-                          final technologies = technologiesController.text
-                              .split(',')
-                              .map((e) => e.trim())
-                              .toList();
+                        final technologies = technologiesController.text
+                            .split(',')
+                            .map((e) => e.trim())
+                            .toList();
 
-                          addWorkExperience(WorkExperience(
-                            title: titleController.text,
-                            company: companyController.text,
-                            description: descriptionController.text,
-                            startDate:
-                                startDate.toIso8601String().split('T')[0],
-                            endDate: endDate?.toIso8601String().split('T')[0],
-                            technologies: technologies,
-                          ));
-                          Get.back();
-                        } catch (e) {
-                          Get.snackbar(
-                            'Hata',
-                            'Tarih formatı hatalı. Lütfen YYYY-MM-DD formatında girin.',
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        }
+                        addWorkExperience(WorkExperience(
+                          title: titleController.text,
+                          company: companyController.text,
+                          description: descriptionController.text,
+                          startDate: selectedStartDate!
+                              .toIso8601String()
+                              .split('T')[0],
+                          endDate:
+                              selectedEndDate?.toIso8601String().split('T')[0],
+                          technologies: technologies,
+                        ));
+                        Get.back();
+                      } else {
+                        Get.snackbar(
+                          'Hata',
+                          'Lütfen tüm zorunlu alanları doldurun.',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
                       }
                     },
                     child: Text('Ekle'),
@@ -1142,7 +1309,9 @@ By accepting this privacy policy, you declare that you understand and agree to t
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
     final technologiesController = TextEditingController();
-    final dateController = TextEditingController();
+
+    DateTime? selectedDate;
+    RxString dateText = ''.obs;
 
     Get.dialog(
       Dialog(
@@ -1193,12 +1362,42 @@ By accepting this privacy policy, you declare that you understand and agree to t
                 ),
               ),
               SizedBox(height: isTablet ? 16.0 : 12.0),
-              TextField(
-                controller: dateController,
-                decoration: InputDecoration(
-                  labelText: 'Tarih (YYYY-MM-DD)',
-                  border: OutlineInputBorder(
+              InkWell(
+                onTap: () async {
+                  final DateTime? picked = await showDatePicker(
+                    context: Get.context!,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now(),
+                  );
+                  if (picked != null) {
+                    selectedDate = picked;
+                    dateText.value =
+                        '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today, color: Colors.grey),
+                      SizedBox(width: 8),
+                      Obx(() => Text(
+                            dateText.value.isEmpty
+                                ? 'Proje Tarihi'
+                                : dateText.value,
+                            style: TextStyle(
+                              color: dateText.value.isEmpty
+                                  ? Colors.grey
+                                  : Colors.black,
+                            ),
+                          )),
+                    ],
                   ),
                 ),
               ),
@@ -1216,28 +1415,25 @@ By accepting this privacy policy, you declare that you understand and agree to t
                       if (titleController.text.isNotEmpty &&
                           descriptionController.text.isNotEmpty &&
                           technologiesController.text.isNotEmpty &&
-                          dateController.text.isNotEmpty) {
-                        try {
-                          final date = DateTime.parse(dateController.text);
-                          final technologies = technologiesController.text
-                              .split(',')
-                              .map((e) => e.trim())
-                              .toList();
+                          selectedDate != null) {
+                        final technologies = technologiesController.text
+                            .split(',')
+                            .map((e) => e.trim())
+                            .toList();
 
-                          addProject(Project(
-                            title: titleController.text,
-                            description: descriptionController.text,
-                            technologies: technologies,
-                            date: date,
-                          ));
-                          Get.back();
-                        } catch (e) {
-                          Get.snackbar(
-                            'Hata',
-                            'Tarih formatı hatalı. Lütfen YYYY-MM-DD formatında girin.',
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        }
+                        addProject(Project(
+                          title: titleController.text,
+                          description: descriptionController.text,
+                          technologies: technologies,
+                          date: selectedDate!,
+                        ));
+                        Get.back();
+                      } else {
+                        Get.snackbar(
+                          'Hata',
+                          'Lütfen tüm zorunlu alanları doldurun.',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
                       }
                     },
                     child: Text('Ekle'),

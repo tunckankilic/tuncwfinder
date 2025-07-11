@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/home/home_controller.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
+import 'package:tuncforwork/views/screens/profile/controller/profile_controllers.dart';
+import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends GetView<HomeController> {
   static const routeName = AppStrings.routeHome;
@@ -11,7 +14,12 @@ class HomeScreen extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     PushNotificationSystem().whenNotificationReceived(context);
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
     Get.put(HomeController());
+    Get.lazyPut<ProfileController>(() => ProfileController());
+    Get.lazyPut<UserDetailsController>(
+        () => UserDetailsController(userId: currentUserId),
+        tag: currentUserId);
 
     return LayoutBuilder(
       builder: (context, constraints) {

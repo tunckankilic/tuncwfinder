@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tuncforwork/service/global.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/profile/account_settings/account_settings_controller.dart';
 import 'dart:io';
@@ -461,6 +462,12 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                   ),
                   _buildSection(
                     context: context,
+                    title: "Career",
+                    isTablet: true,
+                    child: _buildCareerFields(context, true),
+                  ),
+                  _buildSection(
+                    context: context,
                     title: "Social Links",
                     isTablet: true,
                     child: _buildSocialLinksFields(context, true),
@@ -503,6 +510,12 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
           title: "Background",
           isTablet: false,
           child: _buildBackgroundFields(context, false),
+        ),
+        _buildSection(
+          context: context,
+          title: "Career",
+          isTablet: false,
+          child: _buildCareerFields(context, false),
         ),
         _buildSection(
           context: context,
@@ -777,100 +790,113 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
     required BuildContext context,
     required String label,
     required IconData icon,
-    required List<String> items,
     required String value,
     required Function(String?) onChanged,
     required bool isTablet,
-    String? helperText,
+    required String collectionName,
+    bool isDropdownExpanded = true,
   }) {
-    final fieldHeight = isTablet ? 60.0 : 48.0;
-    final fontSize = isTablet ? 16.0 : 14.0;
-    final iconSize = isTablet ? 24.0 : 20.0;
+    // Firestore'dan gelen değerler veya varsayılan değerler
+    final List<String> items = controller.dropdownValues[collectionName] ?? [];
 
-    // Value'nun geçerli olup olmadığını kontrol et
-    final effectiveValue = items.contains(value) ? value : items.first;
+    // Eğer mevcut değer listede yoksa, listeye ekle
+    if (!items.contains(value) && value.isNotEmpty) {
+      items.add(value);
+    }
+
+    // Eğer liste boşsa, varsayılan değerleri kullan
+    final List<String> defaultItems = _getDefaultItems(collectionName);
+    final List<String> allItems = items.isEmpty ? defaultItems : items;
 
     return Container(
       margin: EdgeInsets.only(bottom: isTablet ? 24.0 : 16.0),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: constraints.maxWidth,
-                child: DropdownButtonFormField<String>(
-                  isExpanded:
-                      true, // Make dropdown expand to fill available width
-                  value: effectiveValue,
-                  items: items.map((String item) {
-                    return DropdownMenuItem<String>(
-                      value: item,
-                      child: Text(
-                        item,
-                        style: TextStyle(
-                          fontSize: fontSize,
-                          color: Colors.grey[800],
-                        ),
-                        overflow: TextOverflow.ellipsis, // Handle text overflow
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: onChanged,
-                  decoration: InputDecoration(
-                    labelText: label,
-                    isDense: true, // Reduce the overall height of the field
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 12.0,
-                      vertical: isTablet ? 16.0 : 12.0,
-                    ),
-                    labelStyle: TextStyle(
-                      fontSize: fontSize,
-                      color: Colors.grey[600],
-                    ),
-                    prefixIcon: Icon(
-                      icon,
-                      size: iconSize,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    helperText: helperText,
-                    helperStyle: TextStyle(
-                      fontSize: fontSize - 2,
-                      color: Colors.grey[600],
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(isTablet ? 12.0 : 8.0),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(isTablet ? 12.0 : 8.0),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(isTablet ? 12.0 : 8.0),
-                      borderSide: BorderSide(
-                        color: Theme.of(context).primaryColor,
-                        width: isTablet ? 2.0 : 1.5,
-                      ),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[50],
-                  ),
-                  icon: Icon(
-                    Icons.arrow_drop_down_rounded,
-                    size: iconSize,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
+      child: DropdownButtonFormField<String>(
+        value: allItems.contains(value) ? value : allItems.first,
+        isExpanded: isDropdownExpanded,
+        items: allItems.map((item) {
+          return DropdownMenuItem(
+            value: item,
+            child: Text(
+              item,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: isTablet ? 16.0 : 14.0,
+                color: Colors.grey[800],
               ),
-            ],
+            ),
           );
-        },
+        }).toList(),
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(
+            fontSize: isTablet ? 16.0 : 14.0,
+            color: Colors.grey[600],
+          ),
+          prefixIcon: Icon(
+            icon,
+            size: isTablet ? 24.0 : 20.0,
+            color: Theme.of(context).primaryColor,
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: isTablet ? 16.0 : 12.0,
+            vertical: isTablet ? 20.0 : 16.0,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(isTablet ? 12.0 : 8.0),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(isTablet ? 12.0 : 8.0),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(isTablet ? 12.0 : 8.0),
+            borderSide: BorderSide(
+              color: Theme.of(context).primaryColor,
+              width: isTablet ? 2.0 : 1.5,
+            ),
+          ),
+          filled: true,
+          fillColor: Colors.grey[50],
+        ),
       ),
     );
+  }
+
+  List<String> _getDefaultItems(String collectionName) {
+    switch (collectionName) {
+      case 'genders':
+        return gender;
+      case 'countries':
+        return countries;
+      case 'bodyTypes':
+        return bodyTypes;
+      case 'drinkingHabits':
+        return drinkingHabits;
+      case 'smokingHabits':
+        return smokingHabits;
+      case 'maritalStatuses':
+        return maritalStatuses;
+      case 'employmentStatuses':
+        return employmentStatuses;
+      case 'livingSituations':
+        return livingSituations;
+      case 'nationalities':
+        return nationalities;
+      case 'educationLevels':
+        return educationLevels;
+      case 'languages':
+        return languages;
+      case 'religions':
+        return religion;
+      case 'ethnicities':
+        return ethnicities;
+      case 'professions':
+        return itJobs;
+      default:
+        return [];
+    }
   }
 
   Widget _buildCheckboxGroup({
@@ -1306,7 +1332,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         Row(
           children: [
             Expanded(
-              flex: 2,
+              flex: 1,
               child: _buildTextField(
                 context: context,
                 controller: controller.ageController,
@@ -1318,16 +1344,16 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
             ),
             SizedBox(width: isTablet ? 24.0 : 16.0),
             Expanded(
-              flex: 3,
+              flex: 2,
               child: _buildDropdownField(
                 context: context,
                 label: "Gender",
                 icon: Icons.person_outline_rounded,
-                items: gender,
                 value: controller.genderController.text,
                 onChanged: (value) =>
                     controller.genderController.text = value ?? '',
                 isTablet: isTablet,
+                collectionName: 'genders',
               ),
             ),
           ],
@@ -1344,19 +1370,21 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         Row(
           children: [
             Expanded(
+              flex: 2,
               child: _buildDropdownField(
                 context: context,
                 label: "Country",
                 icon: Icons.public_outlined,
-                items: countries,
                 value: controller.countryController.text,
                 onChanged: (value) =>
                     controller.countryController.text = value ?? '',
                 isTablet: isTablet,
+                collectionName: 'countries',
               ),
             ),
             SizedBox(width: isTablet ? 24.0 : 16.0),
             Expanded(
+              flex: 1,
               child: _buildTextField(
                 context: context,
                 controller: controller.cityController,
@@ -1416,19 +1444,11 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
           context: context,
           label: "Body Type",
           icon: Icons.accessibility_new_outlined,
-          items: const [
-            "Average",
-            "Athletic",
-            "Slim",
-            "Muscular",
-            "Curvy",
-            "Plus Size",
-            "Prefer not to say"
-          ],
           value: controller.bodyTypeController.text,
           onChanged: (value) =>
               controller.bodyTypeController.text = value ?? '',
           isTablet: isTablet,
+          collectionName: 'bodyTypes',
         ),
       ],
     );
@@ -1457,43 +1477,199 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
             keyboardType: TextInputType.number,
             isTablet: isTablet,
           ),
-        _buildDropdownField(
-          context: context,
-          label: "Employment Status",
-          icon: Icons.work_outline_outlined,
-          items: const [
-            "Full-time",
-            "Part-time",
-            "Self-employed",
-            "Student",
-            "Retired",
-            "Not employed",
-            "Prefer not to say"
+        Row(
+          children: [
+            Expanded(
+              flex: 1,
+              child: _buildDropdownField(
+                context: context,
+                label: "Employment Status",
+                icon: Icons.work_outline_outlined,
+                value: controller.employmentStatusController.text,
+                onChanged: (value) =>
+                    controller.employmentStatusController.text = value ?? '',
+                isTablet: isTablet,
+                collectionName: 'employmentStatuses',
+              ),
+            ),
           ],
-          value: controller.employmentStatusController.text,
-          onChanged: (value) =>
-              controller.employmentStatusController.text = value ?? '',
-          isTablet: isTablet,
         ),
-        _buildDropdownField(
-            context: context,
-            label: "Profession",
-            icon: Icons.business_center_outlined,
-            items: itJobs,
-            value: controller.professionController.text,
-            onChanged: (value) =>
-                controller.professionController.text = value ?? "",
-            isTablet: isTablet),
-        _buildDropdownField(
+        Row(
+          children: [
+            Expanded(
+              flex: 1,
+              child: _buildDropdownField(
+                context: context,
+                label: "Profession",
+                icon: Icons.business_center_outlined,
+                value: controller.professionController.text,
+                onChanged: (value) =>
+                    controller.professionController.text = value ?? "",
+                isTablet: isTablet,
+                collectionName: 'professions',
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Expanded(
+              flex: 1,
+              child: _buildDropdownField(
+                context: context,
+                label: "Living Situation",
+                icon: Icons.home_outlined,
+                value: controller.livingSituationController.text,
+                onChanged: (value) =>
+                    controller.livingSituationController.text = value ?? '',
+                isTablet: isTablet,
+                collectionName: 'livingSituations',
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCareerFields(BuildContext context, bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // İş Deneyimi Ekleme Formu
+        _buildTextField(
           context: context,
-          label: "Living Situation",
-          icon: Icons.home_outlined,
-          items: livingSituations,
-          value: controller.livingSituationController.text,
-          onChanged: (value) =>
-              controller.livingSituationController.text = value ?? '',
+          controller: controller.titleController,
+          label: "İş Ünvanı",
+          icon: Icons.work_outline,
           isTablet: isTablet,
         ),
+        _buildTextField(
+          context: context,
+          controller: controller.companyController,
+          label: "Şirket",
+          icon: Icons.business_outlined,
+          isTablet: isTablet,
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: _buildTextField(
+                context: context,
+                controller: controller.startDateController,
+                label: "Başlangıç Tarihi",
+                icon: Icons.calendar_today_outlined,
+                isTablet: isTablet,
+              ),
+            ),
+            SizedBox(width: isTablet ? 24.0 : 16.0),
+            Expanded(
+              child: _buildTextField(
+                context: context,
+                controller: controller.endDateController,
+                label: "Bitiş Tarihi",
+                icon: Icons.calendar_today_outlined,
+                isTablet: isTablet,
+                helperText: "Devam ediyorsa boş bırakın",
+              ),
+            ),
+          ],
+        ),
+        _buildTextField(
+          context: context,
+          controller: controller.descriptionController,
+          label: "Açıklama",
+          icon: Icons.description_outlined,
+          isTablet: isTablet,
+          maxLines: 3,
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: controller.addWorkExperience,
+          child: const Text("İş Deneyimi Ekle"),
+        ),
+
+        const SizedBox(height: 24),
+        const Divider(),
+        const SizedBox(height: 24),
+
+        // İş Deneyimi Listesi
+        Text(
+          "İş Deneyimleri",
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 16),
+        Obx(() => ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.workExperiences.length,
+              itemBuilder: (context, index) {
+                final exp = controller.workExperiences[index];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: ListTile(
+                    title: Text(exp.title),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(exp.company),
+                        Text(
+                            "${exp.startDate} - ${exp.endDate ?? 'Devam ediyor'}"),
+                        if (exp.description != null)
+                          Text(
+                            exp.description!,
+                            style: const TextStyle(fontStyle: FontStyle.italic),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            )),
+
+        const SizedBox(height: 32),
+
+        // Yetenekler
+        Text(
+          "Yetenekler",
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildTextField(
+                context: context,
+                controller: controller.skillController,
+                label: "Yetenek",
+                icon: Icons.psychology_outlined,
+                isTablet: isTablet,
+              ),
+            ),
+            const SizedBox(width: 16),
+            ElevatedButton(
+              onPressed: () {
+                if (controller.skillController.text.isNotEmpty) {
+                  controller.addSkill(controller.skillController.text);
+                  controller.skillController.clear();
+                }
+              },
+              child: const Text("Ekle"),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Obx(() => Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: controller.skills.map((skill) {
+                return Chip(
+                  label: Text(skill),
+                  deleteIcon: const Icon(Icons.close),
+                  onDeleted: () => controller.removeSkill(skill),
+                );
+              }).toList(),
+            )),
       ],
     );
   }
@@ -1502,35 +1678,56 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildDropdownField(
-          context: context,
-          label: "Nationality",
-          icon: Icons.flag_outlined,
-          items: nationalities,
-          value: controller.nationalityController.text,
-          onChanged: (value) =>
-              controller.nationalityController.text = value ?? '',
-          isTablet: isTablet,
+        Row(
+          children: [
+            Expanded(
+              flex: 1,
+              child: _buildDropdownField(
+                context: context,
+                label: "Nationality",
+                icon: Icons.flag_outlined,
+                value: controller.nationalityController.text,
+                onChanged: (value) =>
+                    controller.nationalityController.text = value ?? '',
+                isTablet: isTablet,
+                collectionName: 'nationalities',
+              ),
+            ),
+          ],
         ),
-        _buildDropdownField(
-          context: context,
-          label: "Education Level",
-          icon: Icons.school_outlined,
-          items: educationLevels,
-          value: controller.educationController.text,
-          onChanged: (value) =>
-              controller.educationController.text = value ?? '',
-          isTablet: isTablet,
+        Row(
+          children: [
+            Expanded(
+              flex: 1,
+              child: _buildDropdownField(
+                context: context,
+                label: "Education Level",
+                icon: Icons.school_outlined,
+                value: controller.educationController.text,
+                onChanged: (value) =>
+                    controller.educationController.text = value ?? '',
+                isTablet: isTablet,
+                collectionName: 'educationLevels',
+              ),
+            ),
+          ],
         ),
-        _buildDropdownField(
-          context: context,
-          label: "Primary Language",
-          icon: Icons.language_outlined,
-          items: languages,
-          value: controller.languageSpokenController.text,
-          onChanged: (value) =>
-              controller.languageSpokenController.text = value ?? '',
-          isTablet: isTablet,
+        Row(
+          children: [
+            Expanded(
+              flex: 1,
+              child: _buildDropdownField(
+                context: context,
+                label: "Primary Language",
+                icon: Icons.language_outlined,
+                value: controller.languageSpokenController.text,
+                onChanged: (value) =>
+                    controller.languageSpokenController.text = value ?? '',
+                isTablet: isTablet,
+                collectionName: 'languages',
+              ),
+            ),
+          ],
         ),
       ],
     );

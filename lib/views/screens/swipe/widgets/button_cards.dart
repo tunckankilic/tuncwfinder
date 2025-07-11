@@ -1,116 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/physics.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 
-class SwipeCards extends StatefulWidget {
+class ButtonCards extends StatefulWidget {
   final List<Person> profiles;
-  final Function(Person) onSwipeLeft;
-  final Function(Person) onSwipeRight;
-  final Function(Person) onSwipeUp;
+  final Function(Person) onDislike;
+  final Function(Person) onLike;
+  final Function(Person) onFavorite;
 
-  const SwipeCards({
+  const ButtonCards({
     super.key,
     required this.profiles,
-    required this.onSwipeLeft,
-    required this.onSwipeRight,
-    required this.onSwipeUp,
+    required this.onDislike,
+    required this.onLike,
+    required this.onFavorite,
   });
 
   @override
-  _SwipeCardsState createState() => _SwipeCardsState();
+  _ButtonCardsState createState() => _ButtonCardsState();
 }
 
-class _SwipeCardsState extends State<SwipeCards>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  Alignment _dragAlignment = Alignment.center;
-  late Animation<Alignment> _animation;
+class _ButtonCardsState extends State<ButtonCards> {
   Person? _currentProfile;
   final SwipeController _swipeController = Get.find<SwipeController>();
-
-  void _runAnimation(Offset pixelsPerSecond, Size size) {
-    // Swipe yönünü belirle
-    String swipeDirection = '';
-    if (_dragAlignment.x > 0.2) {
-      swipeDirection = 'right';
-    } else if (_dragAlignment.x < -0.2) {
-      swipeDirection = 'left';
-    } else if (_dragAlignment.y < -0.2) {
-      swipeDirection = 'up';
-    } else {
-      // Swipe yeterli değilse kartı geri getir
-      _animation = _controller.drive(
-        AlignmentTween(
-          begin: _dragAlignment,
-          end: Alignment.center,
-        ),
-      );
-      _controller.animateWith(
-        SpringSimulation(
-          const SpringDescription(mass: 30, stiffness: 1, damping: 1),
-          0,
-          1,
-          0,
-        ),
-      );
-      return;
-    }
-
-    // Swipe animasyonu - daha hızlı ve etkili
-    _animation = _controller.drive(
-      AlignmentTween(
-        begin: _dragAlignment,
-        end: swipeDirection == 'up'
-            ? const Alignment(0, -2.0)
-            : swipeDirection == 'right'
-                ? const Alignment(2.0, 0)
-                : const Alignment(-2.0, 0),
-      ),
-    );
-
-    // Daha hızlı animasyon
-    _controller
-        .animateWith(
-      SpringSimulation(
-        const SpringDescription(mass: 30, stiffness: 1, damping: 1),
-        0,
-        1,
-        0,
-      ),
-    )
-        .then((_) {
-      // Animasyon tamamlandığında callback'leri çağır
-      if (_currentProfile != null) {
-        if (swipeDirection == 'right') {
-          widget.onSwipeRight(_currentProfile!);
-        } else if (swipeDirection == 'left') {
-          widget.onSwipeLeft(_currentProfile!);
-        } else if (swipeDirection == 'up') {
-          widget.onSwipeUp(_currentProfile!);
-        }
-      }
-      // Animasyon sonrası kartı sıfırla
-      setState(() {
-        _dragAlignment = Alignment.center;
-      });
-    });
-  }
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    );
-    _controller.addListener(() {
-      setState(() {
-        _dragAlignment = _animation.value;
-      });
-    });
     _updateCurrentProfile();
   }
 
@@ -119,31 +37,35 @@ class _SwipeCardsState extends State<SwipeCards>
       setState(() {
         _currentProfile = widget.profiles[0];
       });
+    } else {
+      setState(() {
+        _currentProfile = null;
+      });
     }
   }
 
   @override
-  void didUpdateWidget(SwipeCards oldWidget) {
+  void didUpdateWidget(ButtonCards oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Profil listesi güncellendiğinde mevcut profili güncelle
-    if (widget.profiles != oldWidget.profiles) {
+    // Profil listesi değiştiğinde mevcut profili güncelle
+    _updateCurrentProfile();
+  }
+
+  void _handleAction(Function(Person) action) {
+    if (_currentProfile != null) {
+      action(_currentProfile!);
+      // Controller kartı kaldıracak, burada sadece UI'ı güncelle
       _updateCurrentProfile();
     }
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.shortestSide >= 600;
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final size = MediaQuery.of(context).size;
-        final isTablet = size.shortestSide >= 600;
-
         return Center(
           child: Obx(() {
             // Batch işlem durumunu kontrol et
@@ -183,53 +105,120 @@ class _SwipeCardsState extends State<SwipeCards>
               );
             }
 
-            return GestureDetector(
-              onLongPress: () {
-                if (_currentProfile != null) {
-                  _swipeController.showReportDialog(_currentProfile!);
-                }
-              },
-              onPanDown: (details) {
-                _controller.stop();
-              },
-              onPanUpdate: (details) {
-                if (_currentProfile != null) {
-                  setState(() {
-                    _dragAlignment += Alignment(
-                      details.delta.dx / (constraints.maxWidth / 2),
-                      details.delta.dy / (constraints.maxHeight / 2),
-                    );
-                  });
-                }
-              },
-              onPanEnd: (details) {
-                if (_currentProfile != null) {
-                  _runAnimation(details.velocity.pixelsPerSecond, size);
-                }
-              },
-              child: SwipeCardContent(
-                dragAlignment: _dragAlignment,
-                currentProfile: _currentProfile,
-                isTablet: isTablet,
-                constraints: constraints,
-              ),
+            return Column(
+              children: [
+                // Kart alanı
+                Expanded(
+                  child: GestureDetector(
+                    onLongPress: () {
+                      if (_currentProfile != null) {
+                        _swipeController.showReportDialog(_currentProfile!);
+                      }
+                    },
+                    child: CardContent(
+                      currentProfile: _currentProfile,
+                      isTablet: isTablet,
+                      constraints: constraints,
+                    ),
+                  ),
+                ),
+                // Buton alanı
+                Container(
+                  padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Dislike butonu
+                      _buildActionButton(
+                        icon: Icons.close,
+                        color: Colors.red,
+                        onPressed: () => _handleAction(widget.onDislike),
+                        label: 'Beğenme',
+                        isTablet: isTablet,
+                      ),
+                      // Like butonu
+                      _buildActionButton(
+                        icon: Icons.favorite,
+                        color: Colors.green,
+                        onPressed: () => _handleAction(widget.onLike),
+                        label: 'Beğen',
+                        isTablet: isTablet,
+                      ),
+                      // Favorite butonu
+                      _buildActionButton(
+                        icon: Icons.star,
+                        color: Colors.orange,
+                        onPressed: () => _handleAction(widget.onFavorite),
+                        label: 'Favori',
+                        isTablet: isTablet,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             );
           }),
         );
       },
     );
   }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+    required String label,
+    required bool isTablet,
+  }) {
+    final buttonSize = isTablet ? 80.0 : 60.0;
+    final iconSize = isTablet ? 32.0 : 24.0;
+
+    return Column(
+      children: [
+        Container(
+          width: buttonSize,
+          height: buttonSize,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: IconButton(
+            onPressed: onPressed,
+            icon: Icon(
+              icon,
+              color: Colors.white,
+              size: iconSize,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: isTablet ? 14 : 12,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[700],
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-class SwipeCardContent extends StatelessWidget {
-  final Alignment dragAlignment;
+class CardContent extends StatelessWidget {
   final Person? currentProfile;
   final bool isTablet;
   final BoxConstraints constraints;
 
-  const SwipeCardContent({
+  const CardContent({
     super.key,
-    required this.dragAlignment,
     required this.currentProfile,
     required this.isTablet,
     required this.constraints,
@@ -244,8 +233,7 @@ class SwipeCardContent extends StatelessWidget {
     final cardHeight =
         isTablet ? constraints.maxHeight * 0.8 : constraints.maxHeight * 0.7;
 
-    return Align(
-      alignment: dragAlignment,
+    return Center(
       child: Card(
         elevation: 8.0,
         shape: RoundedRectangleBorder(
@@ -300,48 +288,7 @@ class SwipeCardContent extends StatelessWidget {
             isTablet: isTablet,
           ),
         ),
-        // Swipe yönü göstergesi
-        Positioned(
-          top: isTablet ? 20 : 10,
-          left: isTablet ? 20 : 10,
-          child: _buildSwipeIndicator(),
-        ),
       ],
-    );
-  }
-
-  Widget _buildSwipeIndicator() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.thumb_down, color: Colors.red, size: 16),
-          SizedBox(width: 4),
-          Text(
-            'Sola',
-            style: TextStyle(color: Colors.white, fontSize: 12),
-          ),
-          SizedBox(width: 8),
-          Icon(Icons.thumb_up, color: Colors.green, size: 16),
-          SizedBox(width: 4),
-          Text(
-            'Sağa',
-            style: TextStyle(color: Colors.white, fontSize: 12),
-          ),
-          SizedBox(width: 8),
-          Icon(Icons.favorite, color: Colors.pink, size: 16),
-          SizedBox(width: 4),
-          Text(
-            'Yukarı',
-            style: TextStyle(color: Colors.white, fontSize: 12),
-          ),
-        ],
-      ),
     );
   }
 

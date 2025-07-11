@@ -87,7 +87,7 @@ class NotificationDialog extends StatelessWidget {
                           () => UserDetails(
                             userId: senderId,
                           ),
-                          binding: ProfileBindings(userId: senderId),
+                          binding: ProfileBindings(),
                           arguments: {'userId': senderId},
                         );
                       },

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/widgets/modern_widgets.dart';
+import 'package:get/get.dart';
+import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 
 class ModernSwipeCards extends StatefulWidget {
   final List<Person> profiles;
@@ -146,7 +148,11 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
       width: 0.9.sw,
       height: 0.7.sh,
       child: ModernCard(
-        onTap: widget.onTap != null ? () => widget.onTap!(person) : null,
+        onTap: () {
+          if (person.uid != null) {
+            Get.find<SwipeController>().navigateToProfile(person.uid!);
+          }
+        },
         padding: EdgeInsets.zero,
         child: Column(
           children: [

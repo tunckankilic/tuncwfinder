@@ -30,6 +30,25 @@ class UserDetailsController extends GetxController {
   final RxString profileHeading = ''.obs;
   final RxString education = ''.obs;
 
+  // Additional Info
+  final RxString age = ''.obs;
+  final RxString gender = ''.obs;
+  final RxString height = ''.obs;
+  final RxString weight = ''.obs;
+  final RxString bodyType = ''.obs;
+  final RxString drink = ''.obs;
+  final RxString smoke = ''.obs;
+  final RxString martialStatus = ''.obs;
+  final RxString haveChildren = ''.obs;
+  final RxString noOfChildren = ''.obs;
+  final RxString employmentStatus = ''.obs;
+  final RxString income = ''.obs;
+  final RxString livingSituation = ''.obs;
+  final RxString nationality = ''.obs;
+  final RxString languageSpoken = ''.obs;
+  final RxString religion = ''.obs;
+  final RxString ethnicity = ''.obs;
+
   // Social Links
   final RxString instagramUrl = ''.obs;
 
@@ -41,6 +60,7 @@ class UserDetailsController extends GetxController {
   // State
   final RxBool isLoading = true.obs;
   final RxBool isCurrentUser = false.obs;
+  final RxList<String> missingFields = <String>[].obs;
 
   UserDetailsController({required this.userId}) {
     _init();
@@ -51,10 +71,62 @@ class UserDetailsController extends GetxController {
       isLoading.value = true;
       isCurrentUser.value = userId == _auth.currentUser?.uid;
       await retrieveUserInfo();
+      if (isCurrentUser.value) {
+        checkMissingInformation();
+      }
     } catch (e) {
       print('Error initializing user details: $e');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  void checkMissingInformation() {
+    missingFields.clear();
+
+    // Temel Bilgiler
+    if (name.value.isEmpty) missingFields.add('İsim');
+    if (age.value == '0') missingFields.add('Yaş');
+    if (gender.value.isEmpty) missingFields.add('Cinsiyet');
+    if (phoneNo.value.isEmpty) missingFields.add('Telefon');
+    if (city.value.isEmpty) missingFields.add('Şehir');
+    if (country.value.isEmpty) missingFields.add('Ülke');
+    if (education.value.isEmpty) missingFields.add('Eğitim');
+
+    // Ek Bilgiler
+    if (height.value.isEmpty) missingFields.add('Boy');
+    if (weight.value.isEmpty) missingFields.add('Kilo');
+    if (bodyType.value.isEmpty) missingFields.add('Vücut Tipi');
+    if (drink.value.isEmpty) missingFields.add('İçki Tercihi');
+    if (smoke.value.isEmpty) missingFields.add('Sigara Tercihi');
+    if (martialStatus.value.isEmpty) missingFields.add('Medeni Durum');
+    if (haveChildren.value.isEmpty) missingFields.add('Çocuk Durumu');
+    if (employmentStatus.value.isEmpty) missingFields.add('İş Durumu');
+    if (income.value.isEmpty) missingFields.add('Gelir');
+    if (livingSituation.value.isEmpty) missingFields.add('Yaşam Durumu');
+    if (nationality.value.isEmpty) missingFields.add('Uyruk');
+    if (languageSpoken.value.isEmpty) missingFields.add('Konuşulan Dil');
+    if (religion.value.isEmpty) missingFields.add('Din');
+    if (ethnicity.value.isEmpty) missingFields.add('Etnik Köken');
+
+    // Kariyer Bilgileri
+    if (profession.value.isEmpty) missingFields.add('Meslek');
+    if (workExperiences.isEmpty) missingFields.add('İş Deneyimi');
+    if (skills.isEmpty) missingFields.add('Yetenekler');
+
+    // Sosyal Medya
+    if (instagramUrl.value.isEmpty) missingFields.add('Instagram');
+    if (phoneNo.value.isEmpty) missingFields.add('WhatsApp');
+
+    if (missingFields.isNotEmpty) {
+      Get.snackbar(
+        'Eksik Bilgiler',
+        'Profilinizde ${missingFields.length} eksik bilgi bulunuyor. Profilinizi düzenleyerek tamamlayabilirsiniz.',
+        duration: const Duration(seconds: 5),
+        backgroundColor: Colors.orange.shade50,
+        colorText: Colors.orange.shade900,
+        snackPosition: SnackPosition.TOP,
+      );
     }
   }
 
@@ -75,6 +147,25 @@ class UserDetailsController extends GetxController {
       profession.value = data['profession'] ?? '';
       profileHeading.value = data['profileHeading'] ?? '';
       education.value = data['education'] ?? '';
+
+      // Additional Info
+      age.value = (data['age'] ?? 0).toString();
+      gender.value = data['gender'] ?? '';
+      height.value = data['height'] ?? '';
+      weight.value = data['weight'] ?? '';
+      bodyType.value = data['bodyType'] ?? '';
+      drink.value = data['drink'] ?? '';
+      smoke.value = data['smoke'] ?? '';
+      martialStatus.value = data['martialStatus'] ?? '';
+      haveChildren.value = data['haveChildren'] ?? '';
+      noOfChildren.value = data['noOfChildren'] ?? '';
+      employmentStatus.value = data['employmentStatus'] ?? '';
+      income.value = data['income'] ?? '';
+      livingSituation.value = data['livingSituation'] ?? '';
+      nationality.value = data['nationality'] ?? '';
+      languageSpoken.value = data['languageSpoken'] ?? '';
+      religion.value = data['religion'] ?? '';
+      ethnicity.value = data['ethnicity'] ?? '';
 
       // Social Links
       instagramUrl.value = data['instagramUrl'] ?? '';
@@ -151,7 +242,16 @@ class UserDetailsController extends GetxController {
   }
 
   void navigateToAccountSettings() {
-    // TODO: Implement account settings navigation
+    Get.to(
+      () => ProfileInfoScreen(),
+      binding: BindingsBuilder(() {
+        if (!Get.isRegistered<AccountSettingsController>()) {
+          Get.put(AccountSettingsController());
+        }
+      }),
+      transition: Transition.rightToLeft,
+      duration: const Duration(milliseconds: 300),
+    );
   }
 
   void checkIfMainProfile() {

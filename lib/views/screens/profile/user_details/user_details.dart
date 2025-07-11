@@ -1,10 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:tuncforwork/constants/app_strings.dart';
 import 'package:tuncforwork/models/models.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/theme/app_theme.dart';
@@ -21,9 +18,33 @@ class UserDetails extends GetView<UserDetailsController> {
   });
 
   @override
+  UserDetailsController get controller =>
+      Get.find<UserDetailsController>(tag: userId);
+
+  @override
   Widget build(BuildContext context) {
+    // Initialize controller if not already initialized
+    if (!Get.isRegistered<UserDetailsController>(tag: userId)) {
+      Get.lazyPut<UserDetailsController>(
+          () => UserDetailsController(userId: userId),
+          tag: userId,
+          fenix: true);
+    }
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          onPressed: () => Get.back(),
+        ),
+        title: Text(
+          controller.name.value,
+          style: const TextStyle(color: Colors.black),
+        ),
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -84,39 +105,105 @@ class UserDetails extends GetView<UserDetailsController> {
             children: [
               CircleAvatar(
                 radius: isTablet ? 80 : 60,
-                backgroundImage: NetworkImage(controller.imageUrl.value),
+                backgroundImage: controller.imageUrl.value.isNotEmpty
+                    ? NetworkImage(controller.imageUrl.value)
+                    : null,
+                child: controller.imageUrl.value.isEmpty
+                    ? const Icon(Icons.person, size: 50)
+                    : null,
+                backgroundColor: Colors.grey[200],
               ),
               const SizedBox(height: 16),
               Text(
-                controller.name.value,
+                controller.name.value.isNotEmpty
+                    ? controller.name.value
+                    : 'İsimsiz Kullanıcı',
                 style: AppTheme.textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
-                controller.profession.value,
+                controller.profession.value.isNotEmpty
+                    ? controller.profession.value
+                    : 'Meslek belirtilmemiş',
                 style: AppTheme.textTheme.titleMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.location_on, color: AppTheme.primarySwatch),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${controller.city.value}, ${controller.country.value}',
-                    style: AppTheme.textTheme.bodyLarge,
-                  ),
-                ],
-              ),
+              if (controller.city.value.isNotEmpty ||
+                  controller.country.value.isNotEmpty)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.location_on, color: AppTheme.primarySwatch),
+                    const SizedBox(width: 8),
+                    Text(
+                      [
+                        if (controller.city.value.isNotEmpty)
+                          controller.city.value,
+                        if (controller.country.value.isNotEmpty)
+                          controller.country.value,
+                      ].join(', '),
+                      style: AppTheme.textTheme.bodyLarge,
+                    ),
+                  ],
+                ),
               if (controller.isCurrentUser.value) ...[
                 const SizedBox(height: 24),
                 ModernButton(
-                  text: 'Edit Profile',
+                  text: 'Profili Düzenle',
                   onPressed: controller.navigateToAccountSettings,
                   isOutlined: true,
                 ),
+                if (controller.missingFields.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange.shade200),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.warning_amber_rounded,
+                                color: Colors.orange.shade700),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Eksik Bilgiler',
+                              style: AppTheme.textTheme.titleMedium?.copyWith(
+                                color: Colors.orange.shade900,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Profilinizi daha etkili hale getirmek için aşağıdaki bilgileri ekleyebilirsiniz:',
+                          style: AppTheme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.orange.shade900,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: controller.missingFields
+                              .map((field) => Chip(
+                                    label: Text(field),
+                                    backgroundColor: Colors.orange.shade100,
+                                    labelStyle: TextStyle(
+                                      color: Colors.orange.shade900,
+                                    ),
+                                  ))
+                              .toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ],
           ),
@@ -129,23 +216,95 @@ class UserDetails extends GetView<UserDetailsController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildInfoSection(
-                'About',
-                controller.profileHeading.value,
-                Icons.person,
+              Text(
+                'Temel Bilgiler',
+                style: AppTheme.textTheme.titleLarge,
               ),
-              const SizedBox(height: 24),
-              _buildInfoSection(
-                'Contact',
-                controller.email.value,
-                Icons.email,
+              const SizedBox(height: 16),
+              _buildInfoRow('Yaş', controller.age.value),
+              _buildInfoRow('Cinsiyet', controller.gender.value),
+              _buildInfoRow('E-posta', controller.email.value),
+              _buildInfoRow('Telefon', controller.phoneNo.value),
+              _buildInfoRow('Şehir', controller.city.value),
+              _buildInfoRow('Ülke', controller.country.value),
+              _buildInfoRow('Eğitim', controller.education.value),
+            ],
+          ),
+        ));
+  }
+
+  Widget _buildAdditionalInfo(bool isTablet) {
+    return Obx(() => ModernCard(
+          padding: EdgeInsets.all(isTablet ? 32 : 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Ek Bilgiler',
+                style: AppTheme.textTheme.titleLarge,
               ),
-              const SizedBox(height: 24),
-              _buildInfoSection(
-                'Education',
-                controller.education.value,
-                Icons.school,
+              const SizedBox(height: 16),
+              _buildInfoRow('Boy', controller.height.value),
+              _buildInfoRow('Kilo', controller.weight.value),
+              _buildInfoRow('Vücut Tipi', controller.bodyType.value),
+              _buildInfoRow('İçki', controller.drink.value),
+              _buildInfoRow('Sigara', controller.smoke.value),
+              _buildInfoRow('Medeni Durum', controller.martialStatus.value),
+              _buildInfoRow('Çocuk', controller.haveChildren.value),
+              if (controller.haveChildren.value == 'Yes')
+                _buildInfoRow('Çocuk Sayısı', controller.noOfChildren.value),
+              _buildInfoRow('İş Durumu', controller.employmentStatus.value),
+              _buildInfoRow('Gelir', controller.income.value),
+              _buildInfoRow('Yaşam Durumu', controller.livingSituation.value),
+              _buildInfoRow('Uyruk', controller.nationality.value),
+              _buildInfoRow('Konuşulan Dil', controller.languageSpoken.value),
+              _buildInfoRow('Din', controller.religion.value),
+              _buildInfoRow('Etnik Köken', controller.ethnicity.value),
+            ],
+          ),
+        ));
+  }
+
+  Widget _buildCareerInfo(bool isTablet) {
+    return Obx(() => ModernCard(
+          padding: EdgeInsets.all(isTablet ? 32 : 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Kariyer Bilgileri',
+                style: AppTheme.textTheme.titleLarge,
               ),
+              const SizedBox(height: 16),
+              _buildInfoRow('Meslek', controller.profession.value),
+              if (controller.workExperiences.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'İş Deneyimleri',
+                  style: AppTheme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                ...controller.workExperiences
+                    .map((exp) => _buildExperienceItem(exp, isTablet)),
+              ],
+              if (controller.skills.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'Yetenekler',
+                  style: AppTheme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: controller.skills
+                      .map((skill) => Chip(
+                            label: Text(skill),
+                            backgroundColor: AppTheme.primarySwatch.shade100,
+                          ))
+                      .toList(),
+                ),
+              ],
             ],
           ),
         ));
@@ -155,15 +314,13 @@ class UserDetails extends GetView<UserDetailsController> {
     return Padding(
       padding: EdgeInsets.all(isTablet ? 32 : 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!isTablet) _buildBasicInfo(false),
+          _buildBasicInfo(isTablet),
           const SizedBox(height: 24),
-          _buildExperienceSection(isTablet),
+          _buildAdditionalInfo(isTablet),
           const SizedBox(height: 24),
-          _buildSkillsSection(isTablet),
-          const SizedBox(height: 24),
-          _buildProjectsSection(isTablet),
+          _buildCareerInfo(isTablet),
           const SizedBox(height: 24),
           _buildSocialLinks(isTablet),
         ],
@@ -171,88 +328,50 @@ class UserDetails extends GetView<UserDetailsController> {
     );
   }
 
-  Widget _buildInfoSection(String title, String content, IconData icon) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, color: AppTheme.primarySwatch),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: AppTheme.textTheme.titleMedium,
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          content,
-          style: AppTheme.textTheme.bodyLarge,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildExperienceSection(bool isTablet) {
+  Widget _buildSocialLinks(bool isTablet) {
     return Obx(() => ModernCard(
+          padding: EdgeInsets.all(isTablet ? 32 : 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Work Experience',
+                'Sosyal Medya',
                 style: AppTheme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
-              ...controller.workExperiences.map(
-                (exp) => _buildExperienceItem(exp, isTablet),
-              ),
+              if (controller.instagramUrl.value.isNotEmpty)
+                ProfileActionButtons(
+                  instagramUsername: controller.instagramUrl.value,
+                  phoneNo: controller.phoneNo.value,
+                  isTablet: isTablet,
+                ),
             ],
           ),
         ));
   }
 
-  Widget _buildExperienceItem(WorkExperience exp, bool isTablet) {
+  Widget _buildInfoRow(String label, String value) {
+    if (value.isEmpty) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              color: AppTheme.primarySwatch,
-              shape: BoxShape.circle,
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: AppTheme.textTheme.titleSmall?.copyWith(
+                color: Colors.grey[600],
+              ),
             ),
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  exp.title,
-                  style: AppTheme.textTheme.titleMedium,
-                ),
-                Text(
-                  exp.company,
-                  style: AppTheme.textTheme.bodyLarge,
-                ),
-                Text(
-                  '${exp.startDate} - ${exp.endDate ?? 'Present'}',
-                  style: AppTheme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey,
-                  ),
-                ),
-                if (exp.description != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    exp.description!,
-                    style: AppTheme.textTheme.bodyMedium,
-                  ),
-                ],
-              ],
+            flex: 3,
+            child: Text(
+              value,
+              style: AppTheme.textTheme.bodyMedium,
             ),
           ),
         ],
@@ -260,123 +379,35 @@ class UserDetails extends GetView<UserDetailsController> {
     );
   }
 
-  Widget _buildSkillsSection(bool isTablet) {
-    return Obx(() => ModernCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Skills',
-                style: AppTheme.textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: controller.skills
-                    .map((skill) => Chip(
-                          label: Text(skill),
-                          backgroundColor: AppTheme.primarySwatch.shade50,
-                          labelStyle: TextStyle(color: AppTheme.primarySwatch),
-                        ))
-                    .toList(),
-              ),
-            ],
-          ),
-        ));
-  }
-
-  Widget _buildProjectsSection(bool isTablet) {
-    return Obx(() => ModernCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Projects',
-                style: AppTheme.textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              ...controller.projects.map(
-                (project) => _buildProjectItem(project, isTablet),
-              ),
-            ],
-          ),
-        ));
-  }
-
-  Widget _buildProjectItem(Project project, bool isTablet) {
+  Widget _buildExperienceItem(WorkExperience exp, bool isTablet) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            project.title,
-            style: AppTheme.textTheme.titleMedium,
+            exp.title,
+            style: AppTheme.textTheme.titleSmall,
           ),
-          const SizedBox(height: 8),
           Text(
-            project.description,
+            exp.company,
             style: AppTheme.textTheme.bodyMedium,
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: project.technologies
-                .map((tech) => Chip(
-                      label: Text(tech),
-                      backgroundColor: AppTheme.primarySwatch.shade50,
-                      labelStyle: TextStyle(color: AppTheme.primarySwatch),
-                    ))
-                .toList(),
+          Text(
+            '${exp.startDate} - ${exp.endDate ?? 'Present'}',
+            style: AppTheme.textTheme.bodySmall?.copyWith(
+              color: Colors.grey[600],
+            ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSocialLinks(bool isTablet) {
-    return Obx(() => ModernCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Social Links',
-                style: AppTheme.textTheme.titleLarge,
+          if (exp.description != null && exp.description!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                exp.description!,
+                style: AppTheme.textTheme.bodyMedium,
               ),
-              const SizedBox(height: 16),
-              if (controller.instagramUrl.value.isNotEmpty)
-                _buildSocialLink(
-                  'Instagram',
-                  controller.instagramUrl.value,
-                  'assets/instagram.svg',
-                ),
-            ],
-          ),
-        ));
-  }
-
-  Widget _buildSocialLink(String platform, String url, String iconPath) {
-    return InkWell(
-      onTap: () => controller.launchURL(url),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            SvgPicture.asset(
-              iconPath,
-              width: 24,
-              height: 24,
-              color: AppTheme.primarySwatch,
             ),
-            const SizedBox(width: 16),
-            Text(
-              platform,
-              style: AppTheme.textTheme.titleMedium,
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
