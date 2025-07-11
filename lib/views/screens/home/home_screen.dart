@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/home/home_controller.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
+import 'package:tuncforwork/views/screens/profile/controller/profile_controllers.dart';
+import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends GetView<HomeController> {
-  static const routeName = "/home";
+  static const routeName = AppStrings.routeHome;
 
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     PushNotificationSystem().whenNotificationReceived(context);
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
     Get.put(HomeController());
+    Get.lazyPut<ProfileController>(() => ProfileController());
+    Get.lazyPut<UserDetailsController>(
+        () => UserDetailsController(userId: currentUserId),
+        tag: currentUserId);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -47,10 +56,10 @@ class HomeScreen extends GetView<HomeController> {
             child: Column(
               children: [
                 const SizedBox(height: 48),
-                _buildTabletNavItem(Icons.home, "Home", 0),
-                _buildTabletNavItem(Icons.star, "Favorites", 1),
-                _buildTabletNavItem(Icons.favorite, "Likes", 2),
-                _buildTabletNavItem(Icons.person, "Profile", 3),
+                _buildTabletNavItem(Icons.home, AppStrings.navHome, 0),
+                _buildTabletNavItem(Icons.star, AppStrings.navFavorites, 1),
+                _buildTabletNavItem(Icons.favorite, AppStrings.navLikes, 2),
+                _buildTabletNavItem(Icons.person, AppStrings.navProfile, 3),
               ],
             ),
           ),
@@ -138,10 +147,10 @@ class HomeScreen extends GetView<HomeController> {
         unselectedItemColor: Colors.white.withOpacity(0.6),
         currentIndex: controller.screenIndex.value,
         items: [
-          _buildNavItem(Icons.home, "Home", context),
-          _buildNavItem(Icons.star, "Favorites", context),
-          _buildNavItem(Icons.favorite, "Likes", context),
-          _buildNavItem(Icons.person, "Profile", context),
+          _buildNavItem(Icons.home, AppStrings.navHome, context),
+          _buildNavItem(Icons.star, AppStrings.navFavorites, context),
+          _buildNavItem(Icons.favorite, AppStrings.navLikes, context),
+          _buildNavItem(Icons.person, AppStrings.navProfile, context),
         ],
         selectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.bold,

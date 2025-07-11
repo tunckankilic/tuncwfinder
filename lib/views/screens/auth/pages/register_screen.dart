@@ -1,9 +1,16 @@
+import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tuncforwork/service/service.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
+import 'package:tuncforwork/service/global.dart';
+import 'package:tuncforwork/theme/app_theme.dart';
+import 'package:tuncforwork/models/models.dart';
 import 'package:tuncforwork/service/validation.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
+import 'package:tuncforwork/widgets/modern_widgets.dart';
 
 class RegistrationScreen extends GetView<AuthController> {
   static const routeName = "/register";
@@ -11,681 +18,265 @@ class RegistrationScreen extends GetView<AuthController> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isTablet = size.shortestSide >= 600;
-
     return Scaffold(
-      backgroundColor: ElegantTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
-        child: Column(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth >= 768) {
+              return _buildTabletLayout(context);
+            }
+            return _buildMobileLayout(context);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context) {
+    return Obx(() => PageView(
+          controller: controller.pageController,
+          physics: const NeverScrollableScrollPhysics(),
           children: [
-            _buildHeader(isTablet),
-            Expanded(
-              child: Row(
-                children: [
-                  if (isTablet) _buildTabletNavigation(),
-                  Expanded(
-                    child: PageView.builder(
-                      controller: controller.pageController,
-                      itemCount: 7,
-                      physics: const NeverScrollableScrollPhysics(),
-                      onPageChanged: (index) {
-                        controller.currentPage.value = index;
-                      },
-                      itemBuilder: (context, index) {
-                        return _buildPage(index, isTablet, context);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (!isTablet) _buildNavigationButtons(isTablet),
-            _buildProgressIndicator(isTablet),
+            _buildStartPage(false),
+            _buildPersonalInfoPage(false),
+            _buildAppearancePage(false),
+            _buildLifestylePage(false),
+            _buildCareerPage(false),
           ],
-        ),
-      ),
-    );
+        ));
   }
 
-  Widget _buildTabletNavigation() {
-    return Container(
-      width: 250,
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            color: ElegantTheme.primaryColor.withOpacity(0.1),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Obx(() => Column(
-            children: [
-              _buildNavItem('Start', 0, Icons.person),
-              _buildNavItem('Personal Info', 1, Icons.person_outline),
-              _buildNavItem('Appearance', 2, Icons.face_3_outlined),
-              _buildNavItem('Lifestyle', 3, Icons.health_and_safety),
-              _buildNavItem('Background', 4, Icons.history_edu),
-              _buildNavItem('Career', 5, Icons.work_outline),
-              _buildNavItem('Connections', 6, Icons.connect_without_contact),
-            ],
-          )),
-    );
-  }
-
-  Widget _buildNavItem(String title, int index, IconData icon) {
-    final isSelected = controller.currentPage.value == index;
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isSelected ? ElegantTheme.primaryColor : Colors.black,
-        size: 28,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isSelected ? ElegantTheme.primaryColor : Colors.black,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          fontSize: 16,
-        ),
-      ),
-      onTap: () => controller.pageController.animateToPage(
-        index,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      ),
-      selected: isSelected,
-      selectedTileColor: ElegantTheme.primaryColor.withOpacity(0.1),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-    );
-  }
-
-  Widget _buildHeader(bool isTablet) {
-    return Container(
-      padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
-      decoration: BoxDecoration(
-        color: ElegantTheme.backgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  controller.clearAllFields();
-                  Get.back();
-                },
-                icon: const Icon(Icons.arrow_back_ios),
-                iconSize: isTablet ? 28.0 : 24.0,
-                padding: EdgeInsets.all(isTablet ? 12.0 : 8.0),
-              ),
-              Text(
-                "Create Account",
-                style: ElegantTheme.textTheme.headlineMedium?.copyWith(
-                  color: ElegantTheme.primaryColor,
-                  fontSize: isTablet ? 32.0 : 24.0,
-                  fontWeight: FontWeight.bold,
+  Widget _buildTabletLayout(BuildContext context) {
+    return Row(
+      children: [
+        // Sol taraf - Progress ve bilgi
+        Expanded(
+          flex: 2,
+          child: Container(
+            color: AppTheme.primarySwatch.shade50,
+            padding: const EdgeInsets.all(48.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Image.asset(
+                  'assets/logo.png',
+                  width: 120,
+                  height: 120,
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: isTablet ? 15.0 : 10.0),
-          Text(
-            "to get Started Now.",
-            style: ElegantTheme.textTheme.titleMedium?.copyWith(
-              fontSize: isTablet ? 20.0 : 16.0,
-              color: Colors.black,
+                const SizedBox(height: 48),
+                Obx(() => _buildProgressIndicator(true)),
+                const SizedBox(height: 48),
+                _buildPageInfo(true),
+              ],
             ),
           ),
-          SizedBox(height: isTablet ? 25.0 : 20.0),
-          Obx(() => LinearProgressIndicator(
-                value: (controller.currentPage.value + 1) / 7,
-                backgroundColor: ElegantTheme.primaryColor.withOpacity(0.2),
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  ElegantTheme.primaryColor,
-                ),
-                minHeight: isTablet ? 8.0 : 4.0,
-                borderRadius: BorderRadius.circular(isTablet ? 4.0 : 2.0),
+        ),
+        // Sağ taraf - Form
+        Expanded(
+          flex: 3,
+          child: Obx(() => PageView(
+                controller: controller.pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _buildStartPage(true),
+                  _buildPersonalInfoPage(true),
+                  _buildAppearancePage(true),
+                  _buildLifestylePage(true),
+                  _buildCareerPage(true),
+                ],
               )),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPage(int index, bool isTablet, BuildContext context) {
-    final content = switch (index) {
-      0 => _buildStartPage(isTablet, context),
-      1 => _buildPersonalInfoPage(isTablet),
-      2 => _buildAppearancePage(isTablet),
-      3 => _buildLifestylePage(isTablet),
-      4 => _buildBackgroundPage(isTablet),
-      5 => _buildCareerPage(isTablet),
-      6 => _buildConnectionsPage(isTablet),
-      _ => Container(),
-    };
-
-    return _buildPageContent(content, isTablet);
-  }
-
-  InputDecoration _getInputDecoration(
-      String label, IconData icon, bool isTablet, bool password) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: TextStyle(
-        fontSize: isTablet ? 18.0 : 16.0,
-        color: Colors.black,
-      ),
-      prefixIcon: Icon(
-        icon,
-        color: ElegantTheme.primaryColor,
-        size: isTablet ? 28.0 : 24.0,
-      ),
-      suffixIcon: password
-          ? IconButton(
-              onPressed: () {
-                controller.obsPass.value = !controller.obsPass.value;
-              },
-              icon: Icon(Icons.remove_red_eye))
-          : null,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
-        borderSide: const BorderSide(color: ElegantTheme.primaryColor),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
-        borderSide: BorderSide(
-          color: Colors.black,
         ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
-        borderSide: BorderSide(
-          color: ElegantTheme.primaryColor,
-          width: isTablet ? 2.5 : 2.0,
+      ],
+    );
+  }
+
+  Widget _buildProgressIndicator(bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Step ${controller.currentPage.value + 1} of 5',
+          style: AppTheme.textTheme.titleMedium,
         ),
-      ),
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: isTablet ? 20.0 : 15.0,
-        vertical: isTablet ? 20.0 : 15.0,
-      ),
-      filled: true,
-      fillColor: Colors.white,
+        const SizedBox(height: 16),
+        LinearProgressIndicator(
+          value: (controller.currentPage.value + 1) / 5,
+          backgroundColor: Colors.grey.shade200,
+          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primarySwatch),
+          minHeight: 8,
+          borderRadius: BorderRadius.circular(4),
+        ),
+      ],
     );
   }
 
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label,
-    IconData icon,
-    bool isTablet, {
-    bool isObscure = false,
-  }) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
-      child: TextField(
-        controller: controller,
-        obscureText: isObscure,
-        style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
-        decoration: _getInputDecoration(label, icon, isTablet, false),
-      ),
+  Widget _buildPageInfo(bool isTablet) {
+    final titles = [
+      'Get Started',
+      'Personal Information',
+      'Appearance',
+      'Lifestyle',
+      'Career'
+    ];
+    final descriptions = [
+      'Create your account to get started',
+      'Tell us about yourself',
+      'Add your physical characteristics',
+      'Share your lifestyle preferences',
+      'Tell us about your career'
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          titles[controller.currentPage.value],
+          style: AppTheme.textTheme.headlineMedium,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          descriptions[controller.currentPage.value],
+          style: AppTheme.textTheme.titleMedium,
+        ),
+      ],
     );
   }
 
-  Widget _buildDropdown(
-    String label,
-    IconData icon,
-    List<String> items,
-    Function(String) onChanged,
-    bool isTablet,
-  ) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
-      child: DropdownButtonFormField<String>(
-        value: items.first,
-        onChanged: (newValue) => onChanged(newValue ?? items[0]),
-        items: items.map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(
-              value,
-              style: TextStyle(fontSize: isTablet ? 15.0 : 13.0),
-            ),
-          );
-        }).toList(),
-        decoration: _getInputDecoration(label, icon, isTablet, false),
-        dropdownColor: ElegantTheme.backgroundColor,
-        style: TextStyle(fontSize: isTablet ? 18.0 : 16.0, color: Colors.black),
-      ),
-    );
-  }
-
-  Widget _buildCheckboxGroup(
-    String label,
-    IconData icon,
-    List<String> options,
-    RxString selection,
-    Function(String) onChanged,
-    bool isTablet,
-  ) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                color: ElegantTheme.primaryColor,
-                size: isTablet ? 28.0 : 24.0,
-              ),
-              SizedBox(width: isTablet ? 15.0 : 10.0),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: isTablet ? 18.0 : 16.0,
-                  color: Colors.black,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: isTablet ? 15.0 : 10.0),
-          ...options.map((option) => Obx(() => CheckboxListTile(
-                title: Text(
-                  option,
-                  style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
-                ),
-                value: selection.value == option,
-                onChanged: (bool? value) {
-                  if (value == true) {
-                    onChanged(option);
-                  } else if (selection.value == option) {
-                    onChanged('');
-                  }
-                },
-                activeColor: ElegantTheme.primaryColor,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: isTablet ? 20.0 : 15.0,
-                  vertical: isTablet ? 12.0 : 8.0,
-                ),
-              ))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConnectionsPage(bool isTablet) {
+  Widget _buildStartPage(bool isTablet) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
-      child: Center(
-        child: Container(
-          constraints:
-              BoxConstraints(maxWidth: isTablet ? 800.0 : double.infinity),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SocialLinksSection(
-                controller: controller,
-                isTablet: isTablet,
-              ),
-              SizedBox(height: isTablet ? 30.0 : 24.0),
-              _buildTermsAndConditions(isTablet),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavigationButtons(bool isTablet) {
-    return Padding(
-      padding: EdgeInsets.all(isTablet ? 15.0 : 10.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: EdgeInsets.all(isTablet ? 48.0 : 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Obx(() => controller.currentPage.value > 0
-              ? ElevatedButton(
-                  onPressed: controller.previousPage,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ElegantTheme.secondaryColor,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 30.0 : 20.0,
-                      vertical: isTablet ? 15.0 : 10.0,
-                    ),
-                    minimumSize: Size(isTablet ? 120.0 : 100.0, 0),
+          if (!isTablet) ...[
+            Image.asset(
+              'assets/logo.png',
+              width: 120,
+              height: 120,
+            ),
+            const SizedBox(height: 32),
+            _buildProgressIndicator(false),
+            const SizedBox(height: 32),
+          ],
+          ModernCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildProfileImagePicker(isTablet),
+                SizedBox(height: 24.h),
+                TextField(
+                  controller: controller.nameController,
+                  decoration: AppTheme.inputDecoration.copyWith(
+                    labelText: 'Full Name',
+                    prefixIcon: const Icon(Icons.person),
                   ),
-                  child: Text(
-                    "Previous",
-                    style: TextStyle(fontSize: isTablet ? 18.0 : 14.0),
-                  ),
-                )
-              : const SizedBox.shrink()),
-          Obx(() {
-            final isLastPage = controller.currentPage.value == 6;
-            final isLoading = controller.showProgressBar.value;
-
-            return ElevatedButton(
-              onPressed: isLoading
-                  ? null
-                  : isLastPage
-                      ? () async {
-                          if (!controller.termsAccepted.value) {
-                            Get.snackbar(
-                              'Error',
-                              'Please accept the terms and conditions',
-                              snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: Colors.red,
-                              colorText: Colors.white,
-                            );
-                            return;
-                          }
-                          await controller.register();
-                        }
-                      : controller.nextPage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ElegantTheme.primaryColor,
-                padding: EdgeInsets.symmetric(
-                  horizontal: isTablet ? 30.0 : 20.0,
-                  vertical: isTablet ? 15.0 : 10.0,
                 ),
-                minimumSize: Size(isTablet ? 120.0 : 100.0, 0),
-              ),
-              child: isLoading && isLastPage
-                  ? SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : Text(
-                      isLastPage ? "Create Account" : "Next",
-                      style: TextStyle(fontSize: isTablet ? 18.0 : 14.0),
-                    ),
-            );
-          }),
+                SizedBox(height: 16.h),
+                TextField(
+                  controller: controller.emailController,
+                  decoration: AppTheme.inputDecoration.copyWith(
+                    labelText: 'Email',
+                    prefixIcon: const Icon(Icons.email),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                SizedBox(height: 16.h),
+                PasswordInputField(
+                  controller: controller.passwordController,
+                  label: 'Password',
+                  isConfirmField: false,
+                  isTablet: isTablet,
+                  authController: controller,
+                  onChanged: (value) {
+                    controller.validatePassword(value);
+                  },
+                ),
+                const SizedBox(height: 16),
+                PasswordInputField(
+                  controller: controller.confirmPasswordController,
+                  label: 'Confirm Password',
+                  isConfirmField: true,
+                  isTablet: isTablet,
+                  authController: controller,
+                  onChanged: (value) {
+                    controller.validateConfirmPassword(value);
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildNavigationButtons(isTablet),
         ],
       ),
     );
   }
 
   Widget _buildProfileImagePicker(bool isTablet) {
-    return Obx(() => Column(
-          children: [
-            CircleAvatar(
-              radius: isTablet ? 80 : 60,
+    return Column(
+      children: [
+        Obx(() => CircleAvatar(
+              radius: isTablet ? 80.r : 60.r,
+              backgroundColor: AppTheme.primarySwatch.shade100,
               backgroundImage: controller.pickedImage.value != null
                   ? FileImage(controller.pickedImage.value!)
-                  : const AssetImage("assets/profile_avatar.jpg")
-                      as ImageProvider,
-              backgroundColor: ElegantTheme.primaryColor.withOpacity(0.1),
+                  : null,
+              child: controller.pickedImage.value == null
+                  ? Icon(
+                      Icons.add_a_photo,
+                      size: isTablet ? 40.r : 30.r,
+                      color: AppTheme.primarySwatch,
+                    )
+                  : null,
+            )),
+        SizedBox(height: 16.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ModernButton(
+              text: AppStrings.buttonTakePhoto,
+              onPressed: controller.captureImage,
+              isOutlined: true,
             ),
-            SizedBox(height: isTablet ? 20 : 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: controller.pickImage,
-                  icon: Icon(Icons.image, size: isTablet ? 24 : 20),
-                  label: Text(
-                    "Gallery",
-                    style: TextStyle(fontSize: isTablet ? 18 : 14),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ElegantTheme.secondaryColor,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 24 : 16,
-                      vertical: isTablet ? 16 : 12,
-                    ),
-                  ),
-                ),
-                SizedBox(width: isTablet ? 20 : 10),
-                ElevatedButton.icon(
-                  onPressed: controller.captureImage,
-                  icon: Icon(Icons.camera_alt, size: isTablet ? 24 : 20),
-                  label: Text(
-                    "Camera",
-                    style: TextStyle(fontSize: isTablet ? 18 : 14),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ElegantTheme.secondaryColor,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 24 : 16,
-                      vertical: isTablet ? 16 : 12,
-                    ),
-                  ),
-                ),
-              ],
+            SizedBox(width: 16.w),
+            ModernButton(
+              text: AppStrings.buttonChoosePhoto,
+              onPressed: controller.pickImage,
+              isOutlined: true,
             ),
-            SizedBox(height: isTablet ? 40 : 30),
           ],
-        ));
-  }
-
-  Widget _buildStartPage(bool isTablet, BuildContext context) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
-      child: Center(
-        child: Container(
-          constraints:
-              BoxConstraints(maxWidth: isTablet ? 800.0 : double.infinity),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildProfileImagePicker(isTablet),
-              _buildTextField(
-                controller.nameController,
-                "Name",
-                Icons.person_outline,
-                isTablet,
-              ),
-              _buildTextField(
-                controller.emailController,
-                "Email",
-                Icons.email_outlined,
-                isTablet,
-              ),
-              _buildPasswordField(
-                textController: controller.passwordController,
-                label: "Password",
-                icon: Icons.lock_outline,
-                isTablet: isTablet,
-                controller: controller,
-              ),
-              _buildPasswordField(
-                textController: controller.confirmPasswordController,
-                label: "Confirm Password",
-                icon: Icons.lock_outline,
-                isTablet: isTablet,
-                controller: controller,
-                isConfirmPassword: true,
-              ),
-            ],
-          ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildPasswordField({
-    required TextEditingController textController,
-    required String label,
-    required IconData icon,
-    required bool isTablet,
-    required AuthController controller,
-    bool isConfirmPassword = false,
-  }) {
-    return Obx(() => Padding(
-          padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: textController,
-                obscureText: controller.obsPass.value,
-                style: TextStyle(
-                  fontSize: isTablet ? 18.0 : 16.0,
-                  color: Colors.black,
-                ),
-                onChanged: (value) {
-                  if (!isConfirmPassword) {
-                    if (value.length >= 8) {
-                      controller.checks[0].value = true;
-                    } else {
-                      controller.checks[0].value = false;
-                    }
-                    if (value.contains(RegExp(r'[A-Z]'))) {
-                      controller.checks[1].value = true;
-                    } else {
-                      controller.checks[1].value = false;
-                    }
-                    if (value.contains(RegExp(r'[a-z]'))) {
-                      controller.checks[2].value = true;
-                    } else {
-                      controller.checks[2].value = false;
-                    }
-                    if (value.contains(RegExp(r'[0-9]'))) {
-                      controller.checks[3].value = true;
-                    } else {
-                      controller.checks[3].value = false;
-                    }
-                    if (value.contains(
-                        RegExp(r'[!@#$%^&*()_+\-=\[\]{};:\\\|,.<>\/?]+'))) {
-                      controller.checks[4].value = true;
-                    } else {
-                      controller.checks[4].value = false;
-                    }
-                    if (value.isEmpty) {
-                      for (var i = 0; i < 5; i++) {
-                        controller.checks[i].value = false;
-                      }
-                    }
-
-                    if (controller.confirmPasswordController.text.isNotEmpty) {
-                      if (value != controller.confirmPasswordController.text) {
-                        controller.confirmPasswordError.value =
-                            'Passwords do not match';
-                      } else {
-                        controller.confirmPasswordError.value = '';
-                      }
-                    }
-                  } else {
-                    if (value != controller.passwordController.text) {
-                      controller.confirmPasswordError.value =
-                          'Passwords do not match';
-                    } else {
-                      controller.confirmPasswordError.value = '';
-                    }
-                  }
-                },
-                decoration: InputDecoration(
-                  labelText: label,
-                  labelStyle: TextStyle(
-                    fontSize: isTablet ? 18.0 : 16.0,
-                    color: Colors.black,
-                  ),
-                  prefixIcon: Icon(
-                    icon,
-                    color: ElegantTheme.primaryColor,
-                    size: isTablet ? 28.0 : 24.0,
-                  ),
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      controller.obsPass.value = !controller.obsPass.value;
-                    },
-                    icon: Icon(
-                      controller.obsPass.value
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                      color: ElegantTheme.primaryColor,
-                    ),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
-                    borderSide:
-                        const BorderSide(color: ElegantTheme.primaryColor),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
-                    borderSide: BorderSide(
-                      color: Colors.black,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
-                    borderSide: BorderSide(
-                      color: ElegantTheme.primaryColor,
-                      width: isTablet ? 2.5 : 2.0,
-                    ),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 20.0 : 15.0,
-                    vertical: isTablet ? 20.0 : 15.0,
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  errorText: isConfirmPassword
-                      ? controller.confirmPasswordError.value.isNotEmpty
-                          ? controller.confirmPasswordError.value
-                          : null
-                      : controller.passwordError.value.isNotEmpty
-                          ? controller.passwordError.value
-                          : null,
-                ),
-              ),
-              if (!isConfirmPassword) ...[
-                SizedBox(height: isTablet ? 20.0 : 15.0),
-                Text(
-                  "Password Strength",
-                  style: TextStyle(
-                    color: Color(0xFF787A8D),
-                    fontSize: isTablet ? 14.0 : 12.0,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 5.0),
-                SizedBox(
-                  width: double.infinity,
-                  height: 12.0,
-                  child: CustomProgressBar(
-                    var1: controller.checks[0].value,
-                    var2: controller.checks[1].value,
-                    var3: controller.checks[2].value,
-                    var4: controller.checks[3].value,
-                    var5: controller.checks[4].value,
-                    isTablet: isTablet,
-                  ),
-                ),
-                SizedBox(height: 10.0),
-                Column(
-                  children: List.generate(
-                    5,
-                    (index) => Padding(
-                      padding: EdgeInsets.only(bottom: 5.0),
-                      child: CheckList(
-                        index: index,
-                        isTablet: isTablet,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ));
+  Widget _buildNavigationButtons(bool isTablet) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        if (controller.currentPage.value > 0)
+          ModernButton(
+            text: AppStrings.buttonPrevious,
+            onPressed: controller.previousPage,
+            isOutlined: true,
+          )
+        else
+          const SizedBox(),
+        ModernButton(
+          text: controller.currentPage.value == 4
+              ? AppStrings.buttonFinish
+              : AppStrings.buttonNext,
+          onPressed: () {
+            if (controller.currentPage.value == 4) {
+              controller.register();
+            } else {
+              controller.nextPage();
+            }
+          },
+        ),
+      ],
+    );
   }
 
   Widget _buildPersonalInfoPage(bool isTablet) {
@@ -704,13 +295,7 @@ class RegistrationScreen extends GetView<AuthController> {
                 Icons.cake_outlined,
                 isTablet,
               ),
-              _buildDropdown(
-                "Gender",
-                Icons.person_outlined,
-                gender,
-                (value) => controller.genderController.text = value,
-                isTablet,
-              ),
+              _buildGenderDropdown(isTablet),
               _buildTextField(
                 controller.phoneNoController,
                 "Phone",
@@ -721,7 +306,10 @@ class RegistrationScreen extends GetView<AuthController> {
                 "Country",
                 Icons.flag_outlined,
                 countries,
-                (value) => controller.countryController.text = value,
+                (value) {
+                  controller.countryController.text = value;
+                  controller.selectedCountry.value = value;
+                },
                 isTablet,
               ),
               _buildTextField(
@@ -730,12 +318,64 @@ class RegistrationScreen extends GetView<AuthController> {
                 Icons.location_city_outlined,
                 isTablet,
               ),
+              _buildDropdown(
+                "Nationality",
+                Icons.public_outlined,
+                nationalities,
+                (value) {
+                  controller.nationalityController.text = value;
+                  controller.selectedNationality.value = value;
+                },
+                isTablet,
+              ),
+              _buildDropdown(
+                "Education Level",
+                Icons.school_outlined,
+                educationLevels,
+                (value) {
+                  controller.educationController.text = value;
+                  controller.selectedEducation.value = value;
+                },
+                isTablet,
+              ),
+              _buildDropdown(
+                "Language",
+                Icons.language_outlined,
+                languages,
+                (value) {
+                  controller.languageSpokenController.text = value;
+                  controller.selectedLanguage.value = value;
+                },
+                isTablet,
+              ),
+              _buildDropdown(
+                "Religion",
+                Icons.church_outlined,
+                religion,
+                (value) {
+                  controller.religionController.text = value;
+                  controller.selectedReligion.value = value;
+                },
+                isTablet,
+              ),
+              _buildDropdown(
+                "Ethnicity",
+                Icons.people_outline,
+                ethnicities,
+                (value) {
+                  controller.ethnicityController.text = value;
+                  controller.selectedEthnicity.value = value;
+                },
+                isTablet,
+              ),
               _buildTextField(
                 controller.profileHeadingController,
                 "Profile Heading",
                 Icons.text_fields_outlined,
                 isTablet,
               ),
+              const SizedBox(height: 32),
+              _buildNavigationButtons(isTablet),
             ],
           ),
         ),
@@ -765,13 +405,9 @@ class RegistrationScreen extends GetView<AuthController> {
                 Icons.fitness_center_outlined,
                 isTablet,
               ),
-              _buildDropdown(
-                "Body Type",
-                Icons.accessibility_new_outlined,
-                bodyTypes,
-                (value) => controller.bodyTypeController.text = value,
-                isTablet,
-              ),
+              _buildBodyTypeDropdown(isTablet),
+              const SizedBox(height: 32),
+              _buildNavigationButtons(isTablet),
             ],
           ),
         ),
@@ -793,21 +429,30 @@ class RegistrationScreen extends GetView<AuthController> {
                 "Drinking Habits",
                 Icons.local_bar_outlined,
                 drinkingHabits,
-                (value) => controller.drinkController.text = value,
+                (value) {
+                  controller.drinkController.text = value;
+                  controller.selectedDrink.value = value;
+                },
                 isTablet,
               ),
               _buildDropdown(
                 "Smoking Habits",
                 Icons.smoking_rooms_outlined,
                 smokingHabits,
-                (value) => controller.smokeController.text = value,
+                (value) {
+                  controller.smokeController.text = value;
+                  controller.selectedSmoke.value = value;
+                },
                 isTablet,
               ),
               _buildDropdown(
                 "Marital Status",
                 Icons.people_outline,
                 maritalStatuses,
-                (value) => controller.martialStatusController.text = value,
+                (value) {
+                  controller.martialStatusController.text = value;
+                  controller.selectedMaritalStatus.value = value;
+                },
                 isTablet,
               ),
               _buildCheckboxGroup(
@@ -829,14 +474,20 @@ class RegistrationScreen extends GetView<AuthController> {
                 "Profession",
                 Icons.work_outline,
                 itJobs,
-                (value) => controller.professionController.text = value,
+                (value) {
+                  controller.professionController.text = value;
+                  controller.selectedProfession.value = value;
+                },
                 isTablet,
               ),
               _buildDropdown(
                 "Employment Status",
                 Icons.business_center_outlined,
                 employmentStatuses,
-                (value) => controller.employmentStatusController.text = value,
+                (value) {
+                  controller.employmentStatusController.text = value;
+                  controller.selectedEmploymentStatus.value = value;
+                },
                 isTablet,
               ),
               _buildTextField(
@@ -849,7 +500,10 @@ class RegistrationScreen extends GetView<AuthController> {
                 "Living Situation",
                 Icons.home_outlined,
                 livingSituations,
-                (value) => controller.livingSituationController.text = value,
+                (value) {
+                  controller.livingSituationController.text = value;
+                  controller.selectedLivingSituation.value = value;
+                },
                 isTablet,
               ),
               _buildCheckboxGroup(
@@ -860,354 +514,11 @@ class RegistrationScreen extends GetView<AuthController> {
                 controller.updateRelationshipOption,
                 isTablet,
               ),
+              const SizedBox(height: 32),
+              _buildNavigationButtons(isTablet),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _showTermsAndConditions() {
-    final isTablet = Get.width >= 600;
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Container(
-          width: isTablet ? Get.width * 0.7 : Get.width * 0.9,
-          padding: EdgeInsets.all(isTablet ? 32.0 : 24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'End User License Agreement',
-                style: TextStyle(
-                  fontSize: isTablet ? 24.0 : 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: Get.height * (isTablet ? 0.7 : 0.6),
-                child: SingleChildScrollView(
-                  child: Text(
-                    controller.eula,
-                    style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
-                  ),
-                ),
-              ),
-              SizedBox(height: isTablet ? 24.0 : 16.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      controller.updateTermsAcceptance(false);
-                      Get.back();
-                    },
-                    child: Text(
-                      'Close',
-                      style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
-                    ),
-                  ),
-                  SizedBox(width: isTablet ? 24.0 : 16.0),
-                  ElevatedButton(
-                    onPressed: () {
-                      Get.back();
-                      _showPrivacyPolicy();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isTablet ? 32.0 : 24.0,
-                        vertical: isTablet ? 16.0 : 12.0,
-                      ),
-                    ),
-                    child: Text(
-                      'Accept',
-                      style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      barrierDismissible: false,
-    );
-  }
-
-  void _showPrivacyPolicy() {
-    final isTablet = Get.width >= 600;
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Container(
-          width: isTablet ? Get.width * 0.7 : Get.width * 0.9,
-          padding: EdgeInsets.all(isTablet ? 32.0 : 24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Privacy Policy',
-                style: TextStyle(
-                  fontSize: isTablet ? 24.0 : 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: Get.height * (isTablet ? 0.7 : 0.6),
-                child: SingleChildScrollView(
-                  child: Text(
-                    controller.privacyPolicy,
-                    style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
-                  ),
-                ),
-              ),
-              SizedBox(height: isTablet ? 24.0 : 16.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      controller.updateTermsAcceptance(false);
-                      Get.back();
-                    },
-                    child: Text(
-                      'Close',
-                      style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
-                    ),
-                  ),
-                  SizedBox(width: isTablet ? 24.0 : 16.0),
-                  ElevatedButton(
-                    onPressed: () {
-                      controller.updateTermsAcceptance(true);
-                      Get.back();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isTablet ? 32.0 : 24.0,
-                        vertical: isTablet ? 16.0 : 12.0,
-                      ),
-                    ),
-                    child: Text(
-                      'Accept',
-                      style: TextStyle(fontSize: isTablet ? 18.0 : 16.0),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      barrierDismissible: false,
-    );
-  }
-
-  Widget _buildTermsAndConditions(bool isTablet) {
-    return GetBuilder<AuthController>(
-      builder: (controller) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CheckboxListTile(
-              title: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'I accept the ',
-                      style: TextStyle(
-                        fontSize: isTablet ? 18.0 : 16.0,
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'Terms and Conditions',
-                      style: TextStyle(
-                        fontSize: isTablet ? 18.0 : 16.0,
-                        color: ElegantTheme.primaryColor,
-                        decoration: TextDecoration.underline,
-                      ),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () => _showTermsAndConditions(),
-                    ),
-                  ],
-                ),
-              ),
-              value: controller.termsAccepted.value,
-              onChanged: (value) {
-                if (value == true) {
-                  _showTermsAndConditions();
-                } else {
-                  controller.updateTermsAcceptance(false);
-                }
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: isTablet ? 20.0 : 16.0,
-                vertical: isTablet ? 12.0 : 8.0,
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(isTablet ? 20.0 : 16.0),
-              margin: EdgeInsets.symmetric(
-                vertical: isTablet ? 16.0 : 12.0,
-                horizontal: isTablet ? 20.0 : 16.0,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Content Guidelines',
-                    style: TextStyle(
-                      fontSize: isTablet ? 18.0 : 16.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red.shade900,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '• No offensive or inappropriate content\n'
-                    '• No harassment or hate speech\n'
-                    '• No sharing of personal information\n'
-                    '• Reports are reviewed within 24 hours\n'
-                    '• Violations result in account termination',
-                    style: TextStyle(
-                      fontSize: isTablet ? 16.0 : 14.0,
-                      color: Colors.red.shade900,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(isTablet ? 20.0 : 16.0),
-              margin: EdgeInsets.symmetric(
-                horizontal: isTablet ? 20.0 : 16.0,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Content Moderation',
-                    style: TextStyle(
-                      fontSize: isTablet ? 18.0 : 16.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade900,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '• All content is subject to moderation\n'
-                    '• Report inappropriate content using 🚩\n'
-                    '• Block abusive users using ⛔\n'
-                    '• 24-hour moderation response time',
-                    style: TextStyle(
-                      fontSize: isTablet ? 16.0 : 14.0,
-                      color: Colors.blue.shade900,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildBackgroundPage(bool isTablet) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
-      child: Center(
-        child: Container(
-          constraints:
-              BoxConstraints(maxWidth: isTablet ? 800.0 : double.infinity),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildDropdown(
-                "Nationality",
-                Icons.public_outlined,
-                nationalities,
-                (value) => controller.nationalityController.text = value,
-                isTablet,
-              ),
-              _buildDropdown(
-                "Highest Education",
-                Icons.school_outlined,
-                highSchool,
-                (value) => controller.educationController.text = value,
-                isTablet,
-              ),
-              _buildDropdown(
-                "Languages",
-                Icons.language_outlined,
-                languages,
-                (value) => controller.languageSpokenController.text = value,
-                isTablet,
-              ),
-              _buildDropdown(
-                "Religion",
-                Icons.church_outlined,
-                religion,
-                (value) => controller.religionController.text = value,
-                isTablet,
-              ),
-              _buildDropdown(
-                "Ethnicity",
-                Icons.people_outline,
-                ethnicities,
-                (value) => controller.ethnicityController.text = value,
-                isTablet,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProgressIndicator(bool isTablet) {
-    return Obx(() => controller.isLoading.value
-        ? Container(
-            height: isTablet ? 80.0 : 60.0,
-            width: isTablet ? 80.0 : 60.0,
-            padding: EdgeInsets.all(isTablet ? 20.0 : 15.0),
-            child: const CircularProgressIndicator(
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(ElegantTheme.primaryColor),
-              strokeWidth: 3,
-            ),
-          )
-        : const SizedBox.shrink());
-  }
-
-  Widget _buildPageContent(Widget content, bool isTablet) {
-    return Center(
-      child: Container(
-        constraints: BoxConstraints(
-          maxWidth: isTablet ? 800.0 : double.infinity,
-          maxHeight: double.infinity,
-        ),
-        child: content,
       ),
     );
   }
@@ -1227,7 +538,7 @@ class RegistrationScreen extends GetView<AuthController> {
                 style: TextStyle(
                   fontSize: isTablet ? 24.0 : 20.0,
                   fontWeight: FontWeight.bold,
-                  color: ElegantTheme.primaryColor,
+                  color: AppTheme.primarySwatch,
                 ),
               ),
               SizedBox(height: isTablet ? 30.0 : 20.0),
@@ -1238,6 +549,8 @@ class RegistrationScreen extends GetView<AuthController> {
               _buildWorkExperienceSection(isTablet),
               SizedBox(height: isTablet ? 30.0 : 20.0),
               _buildProjectsSection(isTablet),
+              const SizedBox(height: 32),
+              _buildNavigationButtons(isTablet),
             ],
           ),
         ),
@@ -1251,32 +564,23 @@ class RegistrationScreen extends GetView<AuthController> {
       children: [
         Text(
           'Career Goals',
-          style: TextStyle(
-            fontSize: isTablet ? 20.0 : 18.0,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTheme.textTheme.titleLarge,
         ),
-        SizedBox(height: isTablet ? 20.0 : 15.0),
+        const SizedBox(height: 16),
         TextField(
           controller: controller.careerGoalController,
-          maxLines: 3,
-          decoration: InputDecoration(
-            hintText: 'Describe your career goals...',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
-            ),
-            contentPadding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+          decoration: AppTheme.inputDecoration.copyWith(
+            labelText: 'What are your career goals?',
+            prefixIcon: const Icon(Icons.flag),
           ),
+          maxLines: 3,
         ),
-        SizedBox(height: isTablet ? 15.0 : 10.0),
+        const SizedBox(height: 16),
         TextField(
           controller: controller.targetPositionController,
-          decoration: InputDecoration(
-            hintText: 'Target Position',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
-            ),
-            contentPadding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+          decoration: AppTheme.inputDecoration.copyWith(
+            labelText: 'Target Position',
+            prefixIcon: const Icon(Icons.work),
           ),
         ),
       ],
@@ -1289,44 +593,48 @@ class RegistrationScreen extends GetView<AuthController> {
       children: [
         Text(
           'Skills',
-          style: TextStyle(
-            fontSize: isTablet ? 20.0 : 18.0,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTheme.textTheme.titleLarge,
         ),
-        SizedBox(height: isTablet ? 20.0 : 15.0),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: controller.skillController,
+                decoration: AppTheme.inputDecoration.copyWith(
+                  labelText: 'Add a skill',
+                  prefixIcon: const Icon(Icons.code),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            ModernButton(
+              text: 'Add',
+              onPressed: () {
+                if (controller.skillController.text.isNotEmpty) {
+                  controller.selectedSkills
+                      .add(controller.skillController.text);
+                  controller.skillController.clear();
+                }
+              },
+              isOutlined: true,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
         Obx(() => Wrap(
               spacing: 8,
               runSpacing: 8,
               children: controller.selectedSkills
                   .map((skill) => Chip(
                         label: Text(skill),
-                        onDeleted: () => controller.removeSkill(skill),
-                        deleteIcon:
-                            Icon(Icons.close, size: isTablet ? 20.0 : 16.0),
+                        onDeleted: () =>
+                            controller.selectedSkills.remove(skill),
+                        backgroundColor: AppTheme.primarySwatch.shade50,
+                        labelStyle: TextStyle(color: AppTheme.primarySwatch),
                       ))
                   .toList(),
             )),
-        SizedBox(height: isTablet ? 15.0 : 10.0),
-        TextField(
-          controller: controller.skillController,
-          decoration: InputDecoration(
-            hintText: 'Add a skill',
-            suffixIcon: IconButton(
-              icon: Icon(Icons.add),
-              onPressed: () {
-                if (controller.skillController.text.isNotEmpty) {
-                  controller.addSkill(controller.skillController.text);
-                  controller.skillController.clear();
-                }
-              },
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(isTablet ? 12.0 : 10.0),
-            ),
-            contentPadding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
-          ),
-        ),
       ],
     );
   }
@@ -1335,47 +643,72 @@ class RegistrationScreen extends GetView<AuthController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Work Experience',
-          style: TextStyle(
-            fontSize: isTablet ? 20.0 : 18.0,
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Work Experience',
+              style: AppTheme.textTheme.titleLarge,
+            ),
+            ModernButton(
+              text: 'Add Experience',
+              onPressed: () => controller.showAddWorkExperienceDialog(isTablet),
+              isOutlined: true,
+            ),
+          ],
         ),
-        SizedBox(height: isTablet ? 20.0 : 15.0),
-        Obx(() => ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: controller.workExperiences.length,
-              itemBuilder: (context, index) {
-                final experience = controller.workExperiences[index];
-                return Card(
-                  margin: EdgeInsets.only(bottom: isTablet ? 15.0 : 10.0),
-                  child: ListTile(
-                    title: Text(experience.title),
-                    subtitle: Text(
-                        '${experience.company} • ${_formatDuration(experience.startDate, experience.endDate)}'),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () => controller.removeWorkExperience(index),
-                    ),
-                  ),
-                );
-              },
+        const SizedBox(height: 16),
+        Obx(() => Column(
+              children: controller.workExperiences
+                  .map((exp) => _buildExperienceItem(exp, isTablet))
+                  .toList(),
             )),
-        SizedBox(height: isTablet ? 15.0 : 10.0),
-        ElevatedButton.icon(
-          onPressed: () => controller.showAddWorkExperienceDialog(isTablet),
-          icon: Icon(Icons.add),
-          label: Text('Add Work Experience'),
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.symmetric(
-              horizontal: isTablet ? 20.0 : 15.0,
-              vertical: isTablet ? 15.0 : 10.0,
+      ],
+    );
+  }
+
+  Widget _buildExperienceItem(WorkExperience exp, bool isTablet) {
+    return ModernCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            exp.title,
+            style: AppTheme.textTheme.titleMedium,
+          ),
+          Text(
+            exp.company,
+            style: AppTheme.textTheme.bodyLarge,
+          ),
+          Text(
+            '${exp.startDate} - ${exp.endDate ?? 'Present'}',
+            style: AppTheme.textTheme.bodyMedium?.copyWith(
+              color: Colors.grey,
             ),
           ),
-        ),
-      ],
+          if (exp.description != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              exp.description!,
+              style: AppTheme.textTheme.bodyMedium,
+            ),
+          ],
+          if (exp.technologies.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: exp.technologies
+                  .map((tech) => Chip(
+                        label: Text(tech),
+                        backgroundColor: AppTheme.primarySwatch.shade50,
+                        labelStyle: TextStyle(color: AppTheme.primarySwatch),
+                      ))
+                  .toList(),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -1383,59 +716,352 @@ class RegistrationScreen extends GetView<AuthController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Projects',
-          style: TextStyle(
-            fontSize: isTablet ? 20.0 : 18.0,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: isTablet ? 20.0 : 15.0),
-        Obx(() => ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: controller.projects.length,
-              itemBuilder: (context, index) {
-                final project = controller.projects[index];
-                return Card(
-                  margin: EdgeInsets.only(bottom: isTablet ? 15.0 : 10.0),
-                  child: ListTile(
-                    title: Text(project.title),
-                    subtitle: Text(project.description),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () => controller.removeProject(index),
-                    ),
-                  ),
-                );
-              },
-            )),
-        SizedBox(height: isTablet ? 15.0 : 10.0),
-        ElevatedButton.icon(
-          onPressed: () => controller.showAddProjectDialog(isTablet),
-          icon: Icon(Icons.add),
-          label: Text('Add Project'),
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.symmetric(
-              horizontal: isTablet ? 20.0 : 15.0,
-              vertical: isTablet ? 15.0 : 10.0,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Projects',
+              style: AppTheme.textTheme.titleLarge,
             ),
-          ),
+            ModernButton(
+              text: 'Add Project',
+              onPressed: () => controller.showAddProjectDialog(isTablet),
+              isOutlined: true,
+            ),
+          ],
         ),
+        const SizedBox(height: 16),
+        Obx(() => Column(
+              children: controller.projects
+                  .map((project) => _buildProjectItem(project, isTablet))
+                  .toList(),
+            )),
       ],
     );
   }
 
-  String _formatDuration(DateTime startDate, DateTime? endDate) {
-    final end = endDate ?? DateTime.now();
-    final difference = end.difference(startDate);
-    final years = difference.inDays ~/ 365;
-    final months = (difference.inDays % 365) ~/ 30;
+  Widget _buildProjectItem(Project project, bool isTablet) {
+    return ModernCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            project.title,
+            style: AppTheme.textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            project.description,
+            style: AppTheme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: project.technologies
+                .map((tech) => Chip(
+                      label: Text(tech),
+                      backgroundColor: AppTheme.primarySwatch.shade50,
+                      labelStyle: TextStyle(color: AppTheme.primarySwatch),
+                    ))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
 
-    if (years > 0) {
-      return '$years yıl${months > 0 ? ' $months ay' : ''}';
-    }
-    return '$months ay';
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    IconData icon,
+    bool isTablet, {
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
+      child: TextField(
+        controller: controller,
+        decoration: AppTheme.inputDecoration.copyWith(
+          labelText: label,
+          prefixIcon: Icon(icon),
+        ),
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
+        style: TextStyle(
+          fontSize: isTablet ? 16.0 : 14.0,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGenderDropdown(bool isTablet) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 13.0),
+      child: Obx(() => DropdownButtonFormField<String>(
+            value: controller.selectedGender.value.isNotEmpty
+                ? controller.selectedGender.value
+                : gender.first,
+            onChanged: (value) {
+              final selectedValue = value ?? gender.first;
+              controller.genderController.text = selectedValue;
+              controller.selectedGender.value = selectedValue;
+            },
+            items: gender.map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(
+                  value,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              );
+            }).toList(),
+            decoration: AppTheme.inputDecoration.copyWith(
+              labelText: "Gender",
+              prefixIcon: const Icon(Icons.person_outlined),
+            ),
+            isExpanded: true,
+            menuMaxHeight: 200,
+            dropdownColor: Colors.white,
+            icon: const Icon(Icons.arrow_drop_down),
+            style: TextStyle(
+              fontSize: isTablet ? 16.0 : 14.0,
+              color: Colors.black87,
+            ),
+          )),
+    );
+  }
+
+  Widget _buildBodyTypeDropdown(bool isTablet) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 13.0),
+      child: Obx(() => DropdownButtonFormField<String>(
+            value: controller.selectedBodyType.value.isNotEmpty
+                ? controller.selectedBodyType.value
+                : bodyTypes.first,
+            onChanged: (value) {
+              final selectedValue = value ?? bodyTypes.first;
+              controller.bodyTypeController.text = selectedValue;
+              controller.selectedBodyType.value = selectedValue;
+            },
+            items: bodyTypes.map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(
+                  value,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              );
+            }).toList(),
+            decoration: AppTheme.inputDecoration.copyWith(
+              labelText: "Body Type",
+              prefixIcon: const Icon(Icons.accessibility_new_outlined),
+            ),
+            isExpanded: true,
+            menuMaxHeight: 200,
+            dropdownColor: Colors.white,
+            icon: const Icon(Icons.arrow_drop_down),
+            style: TextStyle(
+              fontSize: isTablet ? 16.0 : 14.0,
+              color: Colors.black87,
+            ),
+          )),
+    );
+  }
+
+  Widget _buildDropdown(
+    String label,
+    IconData icon,
+    List<String> items,
+    Function(String) onChanged,
+    bool isTablet,
+  ) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 13.0),
+      child: Obx(() {
+        // Dropdown değerini belirle
+        String? currentValue;
+
+        // Her dropdown için uygun observable değişkeni kontrol et
+        switch (label) {
+          case "Country":
+            currentValue = controller.selectedCountry.value.isNotEmpty
+                ? controller.selectedCountry.value
+                : items.first;
+            break;
+          case "Nationality":
+            currentValue = controller.selectedNationality.value.isNotEmpty
+                ? controller.selectedNationality.value
+                : items.first;
+            break;
+          case "Education Level":
+            currentValue = controller.selectedEducation.value.isNotEmpty
+                ? controller.selectedEducation.value
+                : items.first;
+            break;
+          case "Language":
+            currentValue = controller.selectedLanguage.value.isNotEmpty
+                ? controller.selectedLanguage.value
+                : items.first;
+            break;
+          case "Religion":
+            currentValue = controller.selectedReligion.value.isNotEmpty
+                ? controller.selectedReligion.value
+                : items.first;
+            break;
+          case "Ethnicity":
+            currentValue = controller.selectedEthnicity.value.isNotEmpty
+                ? controller.selectedEthnicity.value
+                : items.first;
+            break;
+          case "Drinking Habits":
+            currentValue = controller.selectedDrink.value.isNotEmpty
+                ? controller.selectedDrink.value
+                : items.first;
+            break;
+          case "Smoking Habits":
+            currentValue = controller.selectedSmoke.value.isNotEmpty
+                ? controller.selectedSmoke.value
+                : items.first;
+            break;
+          case "Marital Status":
+            currentValue = controller.selectedMaritalStatus.value.isNotEmpty
+                ? controller.selectedMaritalStatus.value
+                : items.first;
+            break;
+          case "Profession":
+            currentValue = controller.selectedProfession.value.isNotEmpty
+                ? controller.selectedProfession.value
+                : items.first;
+            break;
+          case "Employment Status":
+            currentValue = controller.selectedEmploymentStatus.value.isNotEmpty
+                ? controller.selectedEmploymentStatus.value
+                : items.first;
+            break;
+          case "Living Situation":
+            currentValue = controller.selectedLivingSituation.value.isNotEmpty
+                ? controller.selectedLivingSituation.value
+                : items.first;
+            break;
+          default:
+            currentValue = items.first;
+        }
+
+        return DropdownButtonFormField<String>(
+          value: currentValue,
+          onChanged: (value) {
+            if (value != null) {
+              onChanged(value);
+
+              // Dropdown değerini uygun observable değişkene ata
+              switch (label) {
+                case "Country":
+                  controller.selectedCountry.value = value;
+                  break;
+                case "Nationality":
+                  controller.selectedNationality.value = value;
+                  break;
+                case "Education Level":
+                  controller.selectedEducation.value = value;
+                  break;
+                case "Language":
+                  controller.selectedLanguage.value = value;
+                  break;
+                case "Religion":
+                  controller.selectedReligion.value = value;
+                  break;
+                case "Ethnicity":
+                  controller.selectedEthnicity.value = value;
+                  break;
+                case "Drinking Habits":
+                  controller.selectedDrink.value = value;
+                  break;
+                case "Smoking Habits":
+                  controller.selectedSmoke.value = value;
+                  break;
+                case "Marital Status":
+                  controller.selectedMaritalStatus.value = value;
+                  break;
+                case "Profession":
+                  controller.selectedProfession.value = value;
+                  break;
+                case "Employment Status":
+                  controller.selectedEmploymentStatus.value = value;
+                  break;
+                case "Living Situation":
+                  controller.selectedLivingSituation.value = value;
+                  break;
+              }
+            }
+          },
+          items: items.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(
+                value,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            );
+          }).toList(),
+          decoration: AppTheme.inputDecoration.copyWith(
+            labelText: label,
+            prefixIcon: Icon(icon),
+          ),
+          isExpanded: true,
+          menuMaxHeight: 200,
+          dropdownColor: Colors.white,
+          icon: const Icon(Icons.arrow_drop_down),
+          style: TextStyle(
+            fontSize: isTablet ? 16.0 : 14.0,
+            color: Colors.black87,
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildCheckboxGroup(
+    String label,
+    IconData icon,
+    List<String> options,
+    RxString selection,
+    Function(String) onChanged,
+    bool isTablet,
+  ) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: AppTheme.primarySwatch),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: AppTheme.textTheme.titleMedium,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ...options.map((option) => Obx(() => CheckboxListTile(
+                title: Text(option),
+                value: selection.value == option,
+                onChanged: (bool? value) {
+                  if (value == true) {
+                    onChanged(option);
+                  }
+                },
+                activeColor: AppTheme.primarySwatch,
+              ))),
+        ],
+      ),
+    );
   }
 }
 
@@ -1444,6 +1070,8 @@ class PasswordInputField extends StatelessWidget {
   final String label;
   final bool isConfirmField;
   final Function(String) onChanged;
+  final bool isTablet;
+  final AuthController authController;
 
   const PasswordInputField({
     super.key,
@@ -1451,6 +1079,8 @@ class PasswordInputField extends StatelessWidget {
     required this.label,
     this.isConfirmField = false,
     required this.onChanged,
+    this.isTablet = false,
+    required this.authController,
   });
 
   @override
@@ -1459,8 +1089,14 @@ class PasswordInputField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Obx(() {
+          // Şifre metnini observable değişkene ata
+          if (!isConfirmField) {
+            authController.passwordText.value = controller.text;
+          }
+
           final strength = !isConfirmField
-              ? PasswordValidator.validatePassword(controller.text)
+              ? PasswordValidator.validatePassword(
+                  authController.passwordText.value)
               : null;
 
           return Column(
@@ -1468,55 +1104,139 @@ class PasswordInputField extends StatelessWidget {
             children: [
               TextField(
                 controller: controller,
-                obscureText: true,
-                onChanged: onChanged,
-                decoration: InputDecoration(
+                obscureText: authController.obsPass.value,
+                onChanged: (value) {
+                  onChanged(value);
+                  // Şifre değiştiğinde observable değişkeni güncelle
+                  if (!isConfirmField) {
+                    authController.passwordText.value = value;
+                  }
+                },
+                decoration: AppTheme.inputDecoration.copyWith(
                   labelText: label,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
-                    icon: const Icon(Icons.visibility_outlined),
-                    onPressed: () {
-                      // Toggle password visibility
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    icon: Icon(
+                      authController.obsPass.value
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () => authController.obsPass.value =
+                        !authController.obsPass.value,
                   ),
                 ),
+                style: TextStyle(
+                  fontSize: isTablet ? 16.0 : 14.0,
+                ),
               ),
-              const SizedBox(height: 8),
-              LinearProgressIndicator(
-                value: strength!.score / 100,
-                backgroundColor: Colors.grey[200],
-                valueColor: AlwaysStoppedAnimation<Color>(strength.color),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: strength.requirements.map((req) {
-                  return Chip(
-                    avatar: Icon(
-                      req.isMet ? Icons.check : Icons.close,
-                      color: req.isMet ? Colors.green : Colors.red,
-                      size: 16,
-                    ),
-                    label: Text(
-                      req.description,
-                      style: TextStyle(
-                        color: req.isMet ? Colors.green : Colors.red,
-                        fontSize: 12,
-                      ),
-                    ),
-                    backgroundColor: req.isMet
-                        ? Colors.green.withOpacity(0.1)
-                        : Colors.red.withOpacity(0.1),
-                  );
-                }).toList(),
-              ),
+              if (!isConfirmField && strength != null) ...[
+                SizedBox(height: isTablet ? 16.h : 12.h),
+                _buildPasswordStrengthIndicator(strength, isTablet),
+                SizedBox(height: isTablet ? 16.h : 12.h),
+                _buildPasswordRequirementsList(strength, isTablet),
+              ],
             ],
           );
         }),
       ],
+    );
+  }
+
+  Widget _buildPasswordStrengthIndicator(
+      PasswordStrength strength, bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Şifre Gücü: ',
+              style: TextStyle(
+                fontSize: isTablet ? 14.0 : 12.0,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
+              ),
+            ),
+            Text(
+              strength.strengthText,
+              style: TextStyle(
+                fontSize: isTablet ? 14.0 : 12.0,
+                fontWeight: FontWeight.bold,
+                color: strength.color,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: isTablet ? 8.h : 6.h),
+        LinearProgressIndicator(
+          value: strength.score / 100,
+          backgroundColor: Colors.grey[200],
+          valueColor: AlwaysStoppedAnimation<Color>(strength.color),
+          minHeight: isTablet ? 8.0 : 6.0,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPasswordRequirementsList(
+      PasswordStrength strength, bool isTablet) {
+    return Container(
+      padding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Şifre Gereksinimleri:',
+            style: TextStyle(
+              fontSize: isTablet ? 14.0 : 12.0,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+          ),
+          SizedBox(height: isTablet ? 12.h : 8.h),
+          ...strength.requirements
+              .map((req) => _buildRequirementItem(req, isTablet)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRequirementItem(PasswordRequirement req, bool isTablet) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isTablet ? 8.h : 6.h),
+      child: Row(
+        children: [
+          Container(
+            width: isTablet ? 20.0 : 16.0,
+            height: isTablet ? 20.0 : 16.0,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: req.isMet ? Colors.green : Colors.grey[300],
+            ),
+            child: Icon(
+              req.isMet ? Icons.check : Icons.close,
+              color: req.isMet ? Colors.white : Colors.grey[600],
+              size: isTablet ? 12.0 : 10.0,
+            ),
+          ),
+          SizedBox(width: isTablet ? 12.w : 8.w),
+          Expanded(
+            child: Text(
+              req.description,
+              style: TextStyle(
+                fontSize: isTablet ? 13.0 : 11.0,
+                color: req.isMet ? Colors.green[700] : Colors.grey[600],
+                fontWeight: req.isMet ? FontWeight.w500 : FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1648,34 +1368,16 @@ class SocialLinksSection extends StatelessWidget {
             style: TextStyle(
               fontSize: isTablet ? 20.0 : 18.0,
               fontWeight: FontWeight.bold,
-              color: ElegantTheme.primaryColor,
+              color: AppTheme.primarySwatch,
             ),
           ),
           SizedBox(height: 16),
-          _buildSocialInput(
-            controller: controller.linkedInController,
-            prefix: 'linkedin.com/in/',
-            icon: Icons.business,
-            label: 'LinkedIn',
-            color: Color(0xFF0A66C2),
-            placeholder: 'username',
-          ),
-          SizedBox(height: isTablet ? 20.0 : 16.0),
           _buildSocialInput(
             controller: controller.instagramController,
             prefix: '@',
             icon: Icons.camera_alt,
             label: 'Instagram',
             color: Color(0xFFE4405F),
-            placeholder: 'username',
-          ),
-          SizedBox(height: isTablet ? 20.0 : 16.0),
-          _buildSocialInput(
-            controller: controller.githubController,
-            prefix: 'github.com/',
-            icon: Icons.code,
-            label: 'GitHub',
-            color: Color(0xFF24292E),
             placeholder: 'username',
           ),
         ],
@@ -1739,7 +1441,7 @@ class SocialLinksSection extends StatelessWidget {
                 child: TextField(
                   controller: controller,
                   decoration: InputDecoration(
-                    hintText: placeholder,
+                    hintText: AppStrings.placeholderUsername,
                     hintStyle: TextStyle(color: Colors.grey.shade400),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(
@@ -1770,12 +1472,6 @@ class SocialLinksSection extends StatelessWidget {
 
   String? _extractUsername(String text, String platform) {
     switch (platform) {
-      case 'LinkedIn':
-        final match = RegExp(r'linkedin\.com/in/([^/]+)').firstMatch(text);
-        return match?.group(1);
-      case 'GitHub':
-        final match = RegExp(r'github\.com/([^/]+)').firstMatch(text);
-        return match?.group(1);
       case 'Instagram':
         if (text.contains('instagram.com')) {
           final match = RegExp(r'instagram\.com/([^/]+)').firstMatch(text);

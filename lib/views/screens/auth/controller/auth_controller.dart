@@ -5,11 +5,9 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:http/http.dart' as http;
 import 'package:tuncforwork/models/models.dart';
 import 'package:tuncforwork/models/person.dart' as pM;
@@ -20,6 +18,7 @@ import 'package:tuncforwork/views/screens/home/home_bindings.dart';
 import 'package:tuncforwork/views/screens/home/home_controller.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
@@ -28,7 +27,6 @@ class AuthController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final ImagePicker _imagePicker = ImagePicker();
 
   // Observable variables
@@ -39,6 +37,7 @@ class AuthController extends GetxController {
   late PageController pageController;
   RxInt currentPage = 0.obs;
   RxBool obsPass = true.obs;
+  RxString passwordText = ''.obs;
 
   // Form Controllers
   final TextEditingController emailController = TextEditingController();
@@ -69,9 +68,7 @@ class AuthController extends GetxController {
       TextEditingController();
   final TextEditingController willingToRelocateController =
       TextEditingController();
-  final TextEditingController linkedInController = TextEditingController();
   final TextEditingController instagramController = TextEditingController();
-  final TextEditingController githubController = TextEditingController();
   final TextEditingController nationalityController = TextEditingController();
   final TextEditingController educationController = TextEditingController();
   final TextEditingController languageSpokenController =
@@ -88,6 +85,26 @@ class AuthController extends GetxController {
   var radioRelationshipStatusController = ''.obs;
   final passwordError = ''.obs;
   final confirmPasswordError = ''.obs;
+
+  // Dropdown observable variables
+  final RxString selectedGender = ''.obs;
+  final RxString selectedHeight = ''.obs;
+  final RxString selectedWeight = ''.obs;
+  final RxString selectedBodyType = ''.obs;
+  final RxString selectedDrink = ''.obs;
+  final RxString selectedSmoke = ''.obs;
+  final RxString selectedMaritalStatus = ''.obs;
+  final RxString selectedProfession = ''.obs;
+  final RxString selectedEmploymentStatus = ''.obs;
+  final RxString selectedIncome = ''.obs;
+  final RxString selectedLivingSituation = ''.obs;
+  final RxString selectedWillingToRelocate = ''.obs;
+  final RxString selectedNationality = ''.obs;
+  final RxString selectedEducation = ''.obs;
+  final RxString selectedLanguage = ''.obs;
+  final RxString selectedReligion = ''.obs;
+  final RxString selectedEthnicity = ''.obs;
+  final RxString selectedCountry = ''.obs;
 
   // Options lists
   final childrenOptions = ['Yes', 'No'];
@@ -198,13 +215,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
   ''';
 
   final List<RxBool> checks = List.generate(5, (index) => false.obs);
-  final List<String> textler = [
-    "At least 8 character",
-    "At least one capital letter (A-Z)",
-    "At least 1 small letter (a-z)",
-    "At least 1 digit (0-9)",
-    "At least 1 special character (!,#...)",
-  ];
+  final List<String> textler = AppStrings.passwordRequirements;
   final RxBool isVisible = true.obs;
 
   // Kariyer ve Beceri Alanları için Yeni Controller'lar
@@ -223,8 +234,12 @@ By accepting this privacy policy, you declare that you understand and agree to t
   void onInit() {
     super.onInit();
     pageController = PageController();
+    _initializeDropdownValues();
 
     passwordController.addListener(() {
+      // Observable değişkeni güncelle
+      passwordText.value = passwordController.text;
+
       if (confirmPasswordController.text.isNotEmpty) {
         if (passwordController.text != confirmPasswordController.text) {
           confirmPasswordError.value = 'Passwords do not match';
@@ -233,6 +248,46 @@ By accepting this privacy policy, you declare that you understand and agree to t
         }
       }
     });
+  }
+
+  void _initializeDropdownValues() {
+    // Dropdown değerlerini başlat
+    if (selectedCountry.value.isEmpty) {
+      selectedCountry.value = '';
+    }
+    if (selectedNationality.value.isEmpty) {
+      selectedNationality.value = '';
+    }
+    if (selectedEducation.value.isEmpty) {
+      selectedEducation.value = '';
+    }
+    if (selectedLanguage.value.isEmpty) {
+      selectedLanguage.value = '';
+    }
+    if (selectedReligion.value.isEmpty) {
+      selectedReligion.value = '';
+    }
+    if (selectedEthnicity.value.isEmpty) {
+      selectedEthnicity.value = '';
+    }
+    if (selectedDrink.value.isEmpty) {
+      selectedDrink.value = '';
+    }
+    if (selectedSmoke.value.isEmpty) {
+      selectedSmoke.value = '';
+    }
+    if (selectedMaritalStatus.value.isEmpty) {
+      selectedMaritalStatus.value = '';
+    }
+    if (selectedProfession.value.isEmpty) {
+      selectedProfession.value = '';
+    }
+    if (selectedEmploymentStatus.value.isEmpty) {
+      selectedEmploymentStatus.value = '';
+    }
+    if (selectedLivingSituation.value.isEmpty) {
+      selectedLivingSituation.value = '';
+    }
   }
 
   @override
@@ -251,14 +306,30 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
   }
 
+  Future<bool> _checkEmailExists(String email) async {
+    try {
+      // Firebase Auth'da email kontrolü
+      final methods = await _auth.fetchSignInMethodsForEmail(email);
+      return methods.isNotEmpty;
+    } catch (e) {
+      log('Error checking email existence: $e');
+      return false;
+    }
+  }
+
   Future<void> register() async {
     try {
       showProgressBar.value = true;
 
+      // Email kontrolü
+      final emailExists = await _checkEmailExists(emailController.text.trim());
+      if (emailExists) {
+        _showError(AppStrings.errorEmailExists);
+        return;
+      }
+
       // Debug için sosyal medya değerlerini kontrol edelim
-      log('LinkedIn URL: ${linkedInController.text}');
       log('Instagram URL: ${instagramController.text}');
-      log('Github URL: ${githubController.text}');
 
       final UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
@@ -268,7 +339,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
       final User? user = userCredential.user;
       if (user == null) {
-        throw 'User creation failed';
+        throw AppStrings.errorUserCreationFailed;
       }
 
       String profileImageUrl = '';
@@ -277,9 +348,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       }
 
       // Sosyal medya URL'lerini temizleyelim
-      final linkedInUrl = linkedInController.text.trim();
       final instagramUrl = instagramController.text.trim();
-      final githubUrl = githubController.text.trim();
 
       final pM.Person userData = pM.Person(
         uid: user.uid,
@@ -293,19 +362,35 @@ By accepting this privacy policy, you declare that you understand and agree to t
         country: countryController.text.trim(),
         profileHeading: profileHeadingController.text.trim(),
         publishedDateTime: DateTime.now().millisecondsSinceEpoch,
-        gender: genderController.text.trim(),
+        gender: selectedGender.value.isNotEmpty
+            ? selectedGender.value
+            : genderController.text.trim(),
         height: heightController.text.trim(),
         weight: weightController.text.trim(),
-        bodyType: bodyTypeController.text.trim(),
-        drink: drinkController.text.trim(),
-        smoke: smokeController.text.trim(),
-        martialStatus: martialStatusController.text.trim(),
+        bodyType: selectedBodyType.value.isNotEmpty
+            ? selectedBodyType.value
+            : bodyTypeController.text.trim(),
+        drink: selectedDrink.value.isNotEmpty
+            ? selectedDrink.value
+            : drinkController.text.trim(),
+        smoke: selectedSmoke.value.isNotEmpty
+            ? selectedSmoke.value
+            : smokeController.text.trim(),
+        martialStatus: selectedMaritalStatus.value.isNotEmpty
+            ? selectedMaritalStatus.value
+            : martialStatusController.text.trim(),
         haveChildren: childrenSelection.value,
         noOfChildren: noOfChildrenController.text.trim(),
-        profession: professionController.text.trim(),
-        employmentStatus: employmentStatusController.text.trim(),
+        profession: selectedProfession.value.isNotEmpty
+            ? selectedProfession.value
+            : professionController.text.trim(),
+        employmentStatus: selectedEmploymentStatus.value.isNotEmpty
+            ? selectedEmploymentStatus.value
+            : employmentStatusController.text.trim(),
         income: incomeController.text.trim(),
-        livingSituation: livingSituationController.text.trim(),
+        livingSituation: selectedLivingSituation.value.isNotEmpty
+            ? selectedLivingSituation.value
+            : livingSituationController.text.trim(),
         willingToRelocate: willingToRelocateController.text.trim(),
         nationality: nationalityController.text.trim(),
         education: educationController.text.trim(),
@@ -313,9 +398,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         religion: religionController.text.trim(),
         ethnicity: ethnicityController.text.trim(),
         // Sosyal medya URL'lerini boş string yerine null olarak ayarlayalım
-        linkedInUrl: linkedInUrl.isNotEmpty ? linkedInUrl : null,
         instagramUrl: instagramUrl.isNotEmpty ? instagramUrl : null,
-        githubUrl: githubUrl.isNotEmpty ? githubUrl : null,
       );
 
       await _firestore.collection('users').doc(user.uid).set(userData.toJson());
@@ -348,8 +431,8 @@ By accepting this privacy policy, you declare that you understand and agree to t
       ]);
 
       Get.snackbar(
-        'Success',
-        'Account created successfully!',
+        AppStrings.successTitle,
+        AppStrings.successAccountCreated,
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green.shade50,
         colorText: Colors.green.shade900,
@@ -363,6 +446,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
       clearAllFields();
 
+      // Basit geçiş - HomeController'ı binding ile yükle
       Get.offAll(
         () => const HomeScreen(),
         binding: HomeBindings(),
@@ -372,7 +456,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     } on FirebaseAuthException catch (e) {
       handleAuthError(e);
     } catch (e) {
-      _showError('Registration failed: ${e.toString()}');
+      _showError('${AppStrings.errorRegistrationFailed}${e.toString()}');
       log('Registration error: $e');
     } finally {
       showProgressBar.value = false;
@@ -505,13 +589,22 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
   Future<void> login() async {
     if (!termsAccepted.value) {
-      Get.snackbar('Terms Required',
-          'Please accept the terms and conditions to continue');
+      Get.snackbar(
+          AppStrings.termsAndConditions, AppStrings.validateTermsAccept);
       return;
     }
 
     try {
       isLoading.value = true;
+
+      // Email kontrolü
+      final methods =
+          await _auth.fetchSignInMethodsForEmail(emailController.text.trim());
+
+      if (methods.isEmpty) {
+        _showError(AppStrings.errorNoAccount);
+        return;
+      }
 
       // 1. Auth işlemi
       final userCredential = await _auth.signInWithEmailAndPassword(
@@ -542,7 +635,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       final homeController = Get.put(HomeController(), permanent: true);
       await homeController.initializeControllers();
 
-      // 6. Ana ekrana yönlendir - HomeBindings kullanma
+      // 6. Ana ekrana yönlendir
       await Get.offAll(
         () => const HomeScreen(),
         transition: Transition.fadeIn,
@@ -552,13 +645,35 @@ By accepting this privacy policy, you declare that you understand and agree to t
       handleAuthError(e);
     } catch (e) {
       log('Login error: $e');
-      _showError('Login failed: ${e.toString()}');
+      _showError('${AppStrings.errorLoginFailed}${e.toString()}');
     } finally {
       isLoading.value = false;
     }
   }
 
-  void _handleLoginError(dynamic error) {
+  Future<void> handleAuthError(FirebaseAuthException e) {
+    String message;
+    switch (e.code) {
+      case 'email-already-in-use':
+        message = 'This email is already registered';
+        break;
+      case 'invalid-email':
+        message = 'Invalid email address';
+        break;
+      case 'operation-not-allowed':
+        message = 'Email/password registration is disabled';
+        break;
+      case 'weak-password':
+        message = 'Password is too weak';
+        break;
+      default:
+        message = e.message ?? 'An error occurred';
+    }
+    _showError(message);
+    return Future.value();
+  }
+
+  Future<void> _handleLoginError(dynamic error) {
     String message = 'An error occurred while signing in';
 
     if (error is FirebaseAuthException) {
@@ -587,6 +702,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
 
     _showError(message);
+    return Future.value();
   }
 
   Future<void> logout() async {
@@ -601,32 +717,9 @@ By accepting this privacy policy, you declare that you understand and agree to t
   Future<void> resetPassword(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
-      _showSuccess('Password reset email sent');
+      _showSuccess(AppStrings.successPasswordReset);
     } catch (error) {
       _showError(error.toString());
-    }
-  }
-
-  Future<void> signInWithGoogle() async {
-    try {
-      isLoading.value = true;
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return;
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      await _handleSignIn(() => _auth.signInWithCredential(credential));
-    } on FirebaseAuthException catch (e) {
-      await handleSignInError(e);
-    } catch (e) {
-      _showError('Failed to sign in with Google: $e');
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -641,141 +734,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
       Get.snackbar('Error', error.toString());
     } finally {
       isLoading.value = false;
-    }
-  }
-
-  Future<void> signInWithApple() async {
-    try {
-      isLoading.value = true;
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-
-      final oauthCredential = OAuthProvider("apple.com").credential(
-        idToken: credential.identityToken,
-        accessToken: credential.authorizationCode,
-      );
-
-      await _handleSignIn(() => _auth.signInWithCredential(oauthCredential));
-    } on SignInWithAppleAuthorizationException catch (e) {
-      _showError('Apple sign in failed: ${e.message}');
-    } on FirebaseAuthException catch (e) {
-      await handleSignInError(e);
-    } catch (e) {
-      _showError('Failed to sign in with Apple: $e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  Future<void> _handleSignIn(
-      Future<UserCredential> Function() signInMethod) async {
-    try {
-      final userCredential = await signInMethod();
-      final user = userCredential.user!;
-      final isRegistered = await isUserRegistered(user.uid);
-      if (isRegistered) {
-        Get.offAllNamed('/home');
-      } else {
-        await _prefillUserData(user);
-        Get.toNamed('/register');
-      }
-    } on FirebaseAuthException catch (e) {
-      await handleSignInError(e);
-    } catch (e) {
-      _showError('Sign in failed: $e');
-    }
-  }
-
-  Future<bool> isUserRegistered(String uid) async {
-    try {
-      final userDoc = await _firestore.collection('users').doc(uid).get();
-      return userDoc.exists;
-    } catch (e) {
-      _showError('Failed to check user registration: $e');
-      return false;
-    }
-  }
-
-  Future<void> handleSignInError(FirebaseAuthException e) async {
-    switch (e.code) {
-      case 'account-exists-with-different-credential':
-        List<String> providers =
-            await _auth.fetchSignInMethodsForEmail(e.email!);
-        String providerName = _getProviderName(providers.first);
-        _showError(
-            'An account already exists with the same email address but different sign-in credentials. '
-            'Sign in using $providerName.');
-        break;
-      case 'invalid-credential':
-        _showError('The credential is malformed or has expired.');
-        break;
-      case 'user-disabled':
-        _showError('This user account has been disabled.');
-        break;
-      case 'user-not-found':
-        _showError('No user found for that email.');
-        break;
-      case 'wrong-password':
-        _showError('Wrong password provided for that user.');
-        break;
-      default:
-        _showError('An undefined error occurred: ${e.message}');
-    }
-  }
-
-  String _getProviderName(String providerId) {
-    switch (providerId) {
-      case 'google.com':
-        return 'Google';
-      case 'facebook.com':
-        return 'Facebook';
-      case 'apple.com':
-        return 'Apple';
-      case 'password':
-        return 'Email/Password';
-      default:
-        return 'Unknown Provider';
-    }
-  }
-
-  Future<void> _prefillUserData(User user) async {
-    emailController.text = user.email ?? '';
-    nameController.text = user.displayName ?? '';
-    phoneNoController.text = user.phoneNumber ?? '';
-
-    if (user.photoURL != null) {
-      try {
-        final response = await http.get(Uri.parse(user.photoURL!));
-        final bytes = response.bodyBytes;
-        final temp = await File(
-                '${(await getTemporaryDirectory()).path}/temp_profile.jpg')
-            .create();
-        await temp.writeAsBytes(bytes);
-        pickedImage.value = temp;
-      } catch (e) {
-        log('Error downloading profile picture: $e');
-      }
-    }
-
-    profileHeadingController.text = 'Hey there! I\'m new here.';
-    termsAccepted.value = false;
-
-    try {
-      DocumentSnapshot doc =
-          await _firestore.collection('users').doc(user.uid).get();
-      if (doc.exists) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        cityController.text = data['city'] ?? '';
-        countryController.text = data['country'] ?? '';
-        ageController.text = data['age']?.toString() ?? '';
-        genderController.text = data['gender'] ?? '';
-      }
-    } catch (e) {
-      log('Error fetching user data from Firestore: $e');
     }
   }
 
@@ -826,9 +784,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     incomeController.clear();
     livingSituationController.clear();
     willingToRelocateController.clear();
-    linkedInController.clear();
     instagramController.clear();
-    githubController.clear();
     nationalityController.clear();
     educationController.clear();
     languageSpokenController.clear();
@@ -841,6 +797,26 @@ By accepting this privacy policy, you declare that you understand and agree to t
     radioRelationshipStatusController.value = '';
     termsAccepted.value = false;
     pickedImage.value = null;
+    passwordText.value = '';
+
+    // Dropdown değerlerini temizle
+    selectedGender.value = '';
+    selectedHeight.value = '';
+    selectedWeight.value = '';
+    selectedBodyType.value = '';
+    selectedDrink.value = '';
+    selectedSmoke.value = '';
+    selectedMaritalStatus.value = '';
+    selectedProfession.value = '';
+    selectedEmploymentStatus.value = '';
+    selectedIncome.value = '';
+    selectedLivingSituation.value = '';
+    selectedWillingToRelocate.value = '';
+    selectedNationality.value = '';
+    selectedEducation.value = '';
+    selectedLanguage.value = '';
+    selectedReligion.value = '';
+    selectedEthnicity.value = '';
 
     currentPage.value = 0;
     pageController.jumpToPage(0);
@@ -947,23 +923,16 @@ By accepting this privacy policy, you declare that you understand and agree to t
         );
         break;
 
-      case 4: // Background
-        validationResult = RegistrationValidator.validateBackground(
-          nationality: nationalityController.text,
-          education: educationController.text,
-          language: languageSpokenController.text,
-          religion: religionController.text,
-          ethnicity: ethnicityController.text,
-        );
-        break;
-
-      case 5: // Social Links and Terms
-        validationResult = RegistrationValidator.validateSocialLinks(
-          linkedIn: linkedInController.text,
-          instagram: instagramController.text,
-          github: githubController.text,
-          termsAccepted: termsAccepted.value,
-        );
+      case 4: // Career Information
+        // Career validation - şimdilik basit kontrol
+        if (careerGoalController.text.trim().isEmpty) {
+          validationResult = ValidationResult(
+            isValid: false,
+            errorMessage: 'Please enter your career goals',
+          );
+        } else {
+          validationResult = ValidationResult(isValid: true);
+        }
         break;
 
       default:
@@ -971,7 +940,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
 
     if (validationResult.isValid) {
-      if (currentPage.value < 5) {
+      if (currentPage.value < 4) {
         pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
@@ -1002,6 +971,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         PasswordInputField(
           controller: passwordController,
           label: 'Şifre',
+          authController: this,
           onChanged: (value) {
             validatePassword(value);
           },
@@ -1011,6 +981,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
           controller: confirmPasswordController,
           label: 'Şifre Tekrar',
           isConfirmField: true,
+          authController: this,
           onChanged: (value) {
             validateConfirmPassword(value);
           },
@@ -1065,23 +1036,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
     return true;
   }
 
-  Future<void> _connectGithub(BuildContext context) async {
-    try {
-      final GithubAuthProvider githubProvider = GithubAuthProvider();
-      final UserCredential result =
-          await FirebaseAuth.instance.signInWithProvider(githubProvider);
-
-      if (result.additionalUserInfo?.username != null) {
-        githubController.text = result.additionalUserInfo!.username!;
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('GitHub profile connected successfully!')));
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to connect GitHub: ${e.toString()}')));
-    }
-  }
-
   // Validate Background Page (Page 3)
   bool _validateBackground() {
     if (nationalityController.text.trim().isEmpty) {
@@ -1105,27 +1059,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
       return false;
     }
     return true;
-  }
-
-  void handleAuthError(FirebaseAuthException e) {
-    String message;
-    switch (e.code) {
-      case 'email-already-in-use':
-        message = 'This email is already registered';
-        break;
-      case 'invalid-email':
-        message = 'Invalid email address';
-        break;
-      case 'operation-not-allowed':
-        message = 'Email/password registration is disabled';
-        break;
-      case 'weak-password':
-        message = 'Password is too weak';
-        break;
-      default:
-        message = e.message ?? 'An error occurred';
-    }
-    _showError(message);
   }
 
   // Beceri İşlemleri
@@ -1154,9 +1087,12 @@ By accepting this privacy policy, you declare that you understand and agree to t
     final titleController = TextEditingController();
     final companyController = TextEditingController();
     final descriptionController = TextEditingController();
-    final startDateController = TextEditingController();
-    final endDateController = TextEditingController();
     final technologiesController = TextEditingController();
+
+    DateTime? selectedStartDate;
+    DateTime? selectedEndDate;
+    RxString startDateText = ''.obs;
+    RxString endDateText = ''.obs;
 
     Get.dialog(
       Dialog(
@@ -1207,24 +1143,94 @@ By accepting this privacy policy, you declare that you understand and agree to t
                 ),
               ),
               SizedBox(height: isTablet ? 16.0 : 12.0),
-              TextField(
-                controller: startDateController,
-                decoration: InputDecoration(
-                  labelText: 'Başlangıç Tarihi (YYYY-MM-DD)',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+              Column(
+                children: [
+                  InkWell(
+                    onTap: () async {
+                      final DateTime? picked = await showDatePicker(
+                        context: Get.context!,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        selectedStartDate = picked;
+                        startDateText.value =
+                            '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.calendar_today, color: Colors.grey),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Obx(() => Text(
+                                  startDateText.value.isEmpty
+                                      ? 'Başlangıç Tarihi'
+                                      : startDateText.value,
+                                  style: TextStyle(
+                                    color: startDateText.value.isEmpty
+                                        ? Colors.grey
+                                        : Colors.black,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                )),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(height: isTablet ? 16.0 : 12.0),
-              TextField(
-                controller: endDateController,
-                decoration: InputDecoration(
-                  labelText: 'Bitiş Tarihi (YYYY-MM-DD)',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                  SizedBox(height: 12),
+                  InkWell(
+                    onTap: () async {
+                      final DateTime? picked = await showDatePicker(
+                        context: Get.context!,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        selectedEndDate = picked;
+                        endDateText.value =
+                            '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.calendar_today, color: Colors.grey),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Obx(() => Text(
+                                  endDateText.value.isEmpty
+                                      ? 'Bitiş Tarihi'
+                                      : endDateText.value,
+                                  style: TextStyle(
+                                    color: endDateText.value.isEmpty
+                                        ? Colors.grey
+                                        : Colors.black,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                )),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
               SizedBox(height: isTablet ? 16.0 : 12.0),
               TextField(
@@ -1250,35 +1256,31 @@ By accepting this privacy policy, you declare that you understand and agree to t
                       if (titleController.text.isNotEmpty &&
                           companyController.text.isNotEmpty &&
                           descriptionController.text.isNotEmpty &&
-                          startDateController.text.isNotEmpty &&
+                          selectedStartDate != null &&
                           technologiesController.text.isNotEmpty) {
-                        try {
-                          final startDate =
-                              DateTime.parse(startDateController.text);
-                          final endDate = endDateController.text.isNotEmpty
-                              ? DateTime.parse(endDateController.text)
-                              : null;
-                          final technologies = technologiesController.text
-                              .split(',')
-                              .map((e) => e.trim())
-                              .toList();
+                        final technologies = technologiesController.text
+                            .split(',')
+                            .map((e) => e.trim())
+                            .toList();
 
-                          addWorkExperience(WorkExperience(
-                            title: titleController.text,
-                            company: companyController.text,
-                            description: descriptionController.text,
-                            startDate: startDate,
-                            endDate: endDate,
-                            technologies: technologies,
-                          ));
-                          Get.back();
-                        } catch (e) {
-                          Get.snackbar(
-                            'Hata',
-                            'Tarih formatı hatalı. Lütfen YYYY-MM-DD formatında girin.',
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        }
+                        addWorkExperience(WorkExperience(
+                          title: titleController.text,
+                          company: companyController.text,
+                          description: descriptionController.text,
+                          startDate: selectedStartDate!
+                              .toIso8601String()
+                              .split('T')[0],
+                          endDate:
+                              selectedEndDate?.toIso8601String().split('T')[0],
+                          technologies: technologies,
+                        ));
+                        Get.back();
+                      } else {
+                        Get.snackbar(
+                          'Hata',
+                          'Lütfen tüm zorunlu alanları doldurun.',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
                       }
                     },
                     child: Text('Ekle'),
@@ -1307,7 +1309,9 @@ By accepting this privacy policy, you declare that you understand and agree to t
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
     final technologiesController = TextEditingController();
-    final dateController = TextEditingController();
+
+    DateTime? selectedDate;
+    RxString dateText = ''.obs;
 
     Get.dialog(
       Dialog(
@@ -1358,12 +1362,42 @@ By accepting this privacy policy, you declare that you understand and agree to t
                 ),
               ),
               SizedBox(height: isTablet ? 16.0 : 12.0),
-              TextField(
-                controller: dateController,
-                decoration: InputDecoration(
-                  labelText: 'Tarih (YYYY-MM-DD)',
-                  border: OutlineInputBorder(
+              InkWell(
+                onTap: () async {
+                  final DateTime? picked = await showDatePicker(
+                    context: Get.context!,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now(),
+                  );
+                  if (picked != null) {
+                    selectedDate = picked;
+                    dateText.value =
+                        '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today, color: Colors.grey),
+                      SizedBox(width: 8),
+                      Obx(() => Text(
+                            dateText.value.isEmpty
+                                ? 'Proje Tarihi'
+                                : dateText.value,
+                            style: TextStyle(
+                              color: dateText.value.isEmpty
+                                  ? Colors.grey
+                                  : Colors.black,
+                            ),
+                          )),
+                    ],
                   ),
                 ),
               ),
@@ -1381,28 +1415,25 @@ By accepting this privacy policy, you declare that you understand and agree to t
                       if (titleController.text.isNotEmpty &&
                           descriptionController.text.isNotEmpty &&
                           technologiesController.text.isNotEmpty &&
-                          dateController.text.isNotEmpty) {
-                        try {
-                          final date = DateTime.parse(dateController.text);
-                          final technologies = technologiesController.text
-                              .split(',')
-                              .map((e) => e.trim())
-                              .toList();
+                          selectedDate != null) {
+                        final technologies = technologiesController.text
+                            .split(',')
+                            .map((e) => e.trim())
+                            .toList();
 
-                          addProject(Project(
-                            title: titleController.text,
-                            description: descriptionController.text,
-                            technologies: technologies,
-                            date: date,
-                          ));
-                          Get.back();
-                        } catch (e) {
-                          Get.snackbar(
-                            'Hata',
-                            'Tarih formatı hatalı. Lütfen YYYY-MM-DD formatında girin.',
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        }
+                        addProject(Project(
+                          title: titleController.text,
+                          description: descriptionController.text,
+                          technologies: technologies,
+                          date: selectedDate!,
+                        ));
+                        Get.back();
+                      } else {
+                        Get.snackbar(
+                          'Hata',
+                          'Lütfen tüm zorunlu alanları doldurun.',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
                       }
                     },
                     child: Text('Ekle'),
@@ -1442,9 +1473,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     incomeController.dispose();
     livingSituationController.dispose();
     willingToRelocateController.dispose();
-    linkedInController.dispose();
     instagramController.dispose();
-    githubController.dispose();
     nationalityController.dispose();
     educationController.dispose();
     languageSpokenController.dispose();

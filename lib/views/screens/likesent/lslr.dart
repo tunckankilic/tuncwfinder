@@ -3,6 +3,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
+import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 
 class LikeSentLikeReceived extends GetView<LslrController> {
   const LikeSentLikeReceived({super.key});
@@ -195,7 +196,8 @@ class LikeSentLikeReceived extends GetView<LslrController> {
     final double locationSize = isTablet ? 14.0 : 12.0;
 
     return GestureDetector(
-      onTap: () => Get.to(() => UserDetails(userId: user["uid"])),
+      onTap: () => Get.to(() => UserDetails(userId: user["uid"]),
+          binding: ProfileBindings()),
       child: Card(
         elevation: cardElevation,
         shape: RoundedRectangleBorder(

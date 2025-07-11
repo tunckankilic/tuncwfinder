@@ -1151,3 +1151,34 @@ class CommunityService {
     return distance;
   }
 }
+
+// Örnek Rate Limiting İyileştirmesi
+class RateLimiter {
+  final int maxAttempts;
+  final Duration window;
+  final Map<String, List<DateTime>> attempts = {};
+
+  RateLimiter({
+    this.maxAttempts = 5,
+    this.window = const Duration(minutes: 1),
+  });
+
+  bool shouldLimit(String key) {
+    final now = DateTime.now();
+    if (!attempts.containsKey(key)) {
+      attempts[key] = [now];
+      return false;
+    }
+
+    attempts[key]!.removeWhere(
+      (attempt) => now.difference(attempt) > window,
+    );
+
+    if (attempts[key]!.length >= maxAttempts) {
+      return true;
+    }
+
+    attempts[key]!.add(now);
+    return false;
+  }
+}

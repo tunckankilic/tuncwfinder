@@ -1,12 +1,547 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:developer';
 
+// Firestore instance
+final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+// Dropdown değerlerini almak için metodlar
+Future<List<String>> getDropdownValues(String collectionName) async {
+  try {
+    log('$collectionName için getDropdownValues başlatıldı');
+    final snapshot = await _firestore.collection(collectionName).get();
+
+    if (snapshot.docs.isEmpty) {
+      log('$collectionName koleksiyonu boş');
+      return [];
+    }
+
+    final values = snapshot.docs
+        .map((doc) => doc.data()['value'] as String?)
+        .where((value) => value != null)
+        .cast<String>()
+        .toList();
+
+    log('$collectionName için ${values.length} değer bulundu');
+    return values;
+  } catch (e, stackTrace) {
+    log('$collectionName için getDropdownValues hatası: $e');
+    log('Stack trace: $stackTrace');
+    return [];
+  }
+}
+
+Future<Map<String, List<String>>> getAllDropdownValues() async {
+  try {
+    log('getAllDropdownValues başlatıldı');
+    final collections = [
+      'genders',
+      'countries',
+      'bodyTypes',
+      'drinkingHabits',
+      'smokingHabits',
+      'maritalStatuses',
+      'employmentStatuses',
+      'livingSituations',
+      'nationalities',
+      'educationLevels',
+      'languages',
+      'religions',
+      'ethnicities',
+      'professions',
+      'industries',
+    ];
+
+    Map<String, List<String>> values = {};
+
+    for (var collection in collections) {
+      try {
+        log('$collection koleksiyonu yükleniyor...');
+        final collectionValues = await getDropdownValues(collection);
+        if (collectionValues.isNotEmpty) {
+          values[collection] = collectionValues;
+          log('$collection koleksiyonu yüklendi: ${collectionValues.length} değer');
+        } else {
+          log('$collection koleksiyonu boş');
+        }
+      } catch (e) {
+        log('$collection koleksiyonu yüklenirken hata: $e');
+      }
+    }
+
+    if (values.isEmpty) {
+      log('Hiçbir dropdown değeri yüklenemedi!');
+    } else {
+      log('Toplam ${values.length} koleksiyon yüklendi');
+    }
+
+    return values;
+  } catch (e, stackTrace) {
+    log('getAllDropdownValues genel hata: $e');
+    log('Stack trace: $stackTrace');
+    return {};
+  }
+}
+
+// Global Variables
 String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-String fcmServerToken = "AIzaSyC7FQUiD1_JUJbKmGl3vU-kIL-ju52uD7A";
+String fcmServerToken = dotenv.env['FCM_SERVER_TOKEN'] ?? '';
 String? chosenAge;
 String? chosenCountry;
 String? chosenGender;
 
-// EULA and Privacy Policy
+// Programming and Technical Skills
+const List<String> programmingLanguages = [
+  'JavaScript',
+  'Python',
+  'Java',
+  'C#',
+  'C++',
+  'Ruby',
+  'PHP',
+  'Swift',
+  'Kotlin',
+  'Go',
+  'Rust',
+  'TypeScript',
+  'Dart',
+  'Other'
+];
+
+const List<String> frameworks = [
+  'React',
+  'Angular',
+  'Vue.js',
+  'Node.js',
+  'Django',
+  'Flask',
+  'Spring',
+  'ASP.NET',
+  'Laravel',
+  'Flutter',
+  'React Native',
+  'TensorFlow',
+  'PyTorch',
+  'Docker',
+  'Kubernetes',
+  'AWS',
+  'Azure',
+  'GCP',
+  'Other'
+];
+
+const List<String> databases = [
+  'MySQL',
+  'PostgreSQL',
+  'MongoDB',
+  'SQLite',
+  'Oracle',
+  'SQL Server',
+  'Redis',
+  'Cassandra',
+  'Firebase',
+  'Other'
+];
+
+const List<String> skillLevels = [
+  'Beginner',
+  'Intermediate',
+  'Advanced',
+  'Expert'
+];
+
+const List<String> languageLevels = [
+  'Native',
+  'Fluent',
+  'Advanced',
+  'Intermediate',
+  'Basic'
+];
+
+// Personal Information Options
+final List<String> gender = [
+  'Woman',
+  'Man',
+  'Transgender',
+  'Non-binary',
+  'Genderqueer',
+  'Gender fluid',
+  'Agender',
+  'Bigender',
+  'Two-Spirit',
+  'Androgynous',
+  'Demigender',
+  'Gender non-conforming',
+  'Questioning',
+  'Prefer not to say',
+  'Other (self-describe)',
+];
+
+final List<String> bodyTypes = [
+  'Slim',
+  'Athletic',
+  'Average',
+  'Curvy',
+  'Muscular',
+  'A few extra pounds',
+  'Heavyset',
+  'Stocky',
+  'Petite',
+  'Tall',
+  'Short',
+];
+
+final List<String> smokingHabits = [
+  'Non-smoker',
+  'Light smoker',
+  'Regular smoker',
+  'Heavy smoker',
+  'Trying to quit',
+  'Former smoker',
+  'Social smoker',
+  'Vaper',
+  'Cigar smoker',
+  'Pipe smoker',
+];
+
+final List<String> drinkingHabits = [
+  'Non-drinker',
+  'Social drinker',
+  'Light drinker',
+  'Moderate drinker',
+  'Heavy drinker',
+  'Recovering alcoholic',
+  'Occasional drinker',
+  'Drink on special occasions only',
+  'Beer enthusiast',
+  'Wine connoisseur',
+  'Cocktail lover',
+];
+
+final List<String> maritalStatuses = [
+  'Single (never married)',
+  'Married',
+  'Divorced',
+  'Widowed',
+  'Separated',
+  'Domestic partnership',
+  'Civil union',
+  'Engaged',
+  'Cohabiting',
+  'Common-law marriage',
+  'Remarried',
+  'Annulled',
+  'Single (divorced)',
+  'Single (widowed)',
+  'Legally separated',
+  'Married (living apart)',
+  'Married (same-sex)',
+  'Registered partnership',
+  'In a relationship',
+  'It\'s complicated',
+];
+
+// Location and Demographics
+final List<String> countries = [
+  'Belize',
+  'Canada',
+  'Costa Rica',
+  'El Salvador',
+  'Guatemala',
+  'Honduras',
+  'Mexico',
+  'Nicaragua',
+  'Panama',
+  'United States',
+  'Albania',
+  'Andorra',
+  'Austria',
+  'Belarus',
+  'Belgium',
+  'Bosnia and Herzegovina',
+  'Bulgaria',
+  'Croatia',
+  'Czech Republic',
+  'Denmark',
+  'Estonia',
+  'Finland',
+  'France',
+  'Germany',
+  'Greece',
+  'Hungary',
+  'Iceland',
+  'Ireland',
+  'Italy',
+  'Kosovo',
+  'Latvia',
+  'Liechtenstein',
+  'Lithuania',
+  'Luxembourg',
+  'Malta',
+  'Moldova',
+  'Monaco',
+  'Montenegro',
+  'Netherlands',
+  'North Macedonia',
+  'Norway',
+  'Poland',
+  'Portugal',
+  'Romania',
+  'Russia',
+  'San Marino',
+  'Serbia',
+  'Slovakia',
+  'Slovenia',
+  'Spain',
+  'Sweden',
+  'Switzerland',
+  'Ukraine',
+  'United Kingdom',
+  'Vatican City',
+  'Bahrain',
+  'Cyprus',
+  'Egypt',
+  'Iran',
+  'Iraq',
+  'Israel',
+  'Jordan',
+  'Kuwait',
+  'Lebanon',
+  'Oman',
+  'Palestine',
+  'Qatar',
+  'Saudi Arabia',
+  'Syria',
+  'Turkey',
+  'United Arab Emirates',
+  'Yemen',
+];
+
+final List<String> nationalities = [
+  'American',
+  'British',
+  'Canadian',
+  'French',
+  'German',
+  'Italian',
+  'Spanish',
+  'Chinese',
+  'Japanese',
+  'Russian',
+  'Brazilian',
+  'Mexican',
+  'Indian',
+  'Australian',
+  'Egyptian',
+  'Nigerian',
+  'South African',
+  'Swedish',
+  'Dutch',
+  'Turkish',
+];
+
+final List<String> ethnicities = [
+  'Han Chinese',
+  'Arabs',
+  'Bengalis',
+  'Hispanics',
+  'Punjabis',
+  'Yoruba',
+  'Javanese',
+  'Japanese',
+  'Korean',
+  'Vietnamese',
+  'Ashkenazi Jews',
+  'Hausa',
+  'Gujarati',
+  'Telugu',
+  'Tamil',
+  'Italians',
+  'Turks',
+  'Persians',
+  'Pashtuns',
+  'Fulani',
+  'Igbo',
+  'Oromo',
+  'Azeri',
+  'Malay',
+  'Sundanese',
+];
+
+// Education and Work
+final List<String> educationLevels = [
+  'High School',
+  'Bachelor\'s',
+  'Master\'s',
+  'Doctorate',
+  'Other'
+];
+
+final List<String> languages = [
+  'English',
+  'Spanish',
+  'French',
+  'German',
+  'Italian',
+  'Polish',
+  'Ukrainian',
+  'Dutch',
+  'Romanian',
+  'Greek',
+  'Chinese',
+  'Tagalog',
+  'Vietnamese',
+  'Korean',
+  'Arabic',
+];
+
+final List<String> employmentStatuses = [
+  "Employment Statuses",
+  'Full-time employed',
+  'Part-time employed',
+  'Self-employed',
+  'Freelancer',
+  'Contractor',
+  'Unemployed (seeking work)',
+  'Unemployed (not seeking work)',
+  'Student',
+  'Retired',
+  'Homemaker',
+  'Internship',
+  'Apprenticeship',
+  'Temporarily laid off',
+  'On leave (e.g., maternity, medical)',
+  'Seasonal worker',
+  'Gig worker',
+  'Remote worker',
+  'Hybrid worker (part remote, part in-office)',
+  'Business owner',
+  'Volunteer',
+  'Disabled (unable to work)',
+  'Underemployed',
+  'Multiple jobs',
+  'Zero-hour contract',
+  'Job-sharing',
+];
+
+final List<String> itJobs = [
+  "Profession",
+  // IT and Technical Roles
+  'Software Developer',
+  'Data Scientist',
+  'Cybersecurity Specialist',
+  'Network Administrator',
+  'System Administrator',
+  'Cloud Architect',
+  'DevOps Engineer',
+  'Artificial Intelligence Engineer',
+  'Mobile App Developer',
+  'Web Developer',
+  'Database Administrator',
+  'UI/UX Designer',
+  'QA Test Engineer',
+  'Game Developer',
+  'Blockchain Developer',
+  'Technical Support Specialist',
+
+  // IT Management Roles
+  'IT Project Manager',
+  'Chief Information Officer (CIO)',
+  'Chief Technology Officer (CTO)',
+  'IT Director',
+  'Product Manager',
+  'Scrum Master',
+  'IT Business Analyst',
+
+  // Human Resources Department
+  'HR Manager',
+  'Recruitment Specialist',
+  'Training and Development Coordinator',
+  'Compensation and Benefits Analyst',
+  'Employee Relations Specialist',
+  'HR Business Partner',
+  'Talent Acquisition Manager',
+
+  // Finance Department
+  'Chief Financial Officer (CFO)',
+  'Financial Analyst',
+  'Accountant',
+  'Financial Controller',
+  'Payroll Specialist',
+  'Tax Manager',
+  'Internal Auditor',
+
+  // Marketing Department
+  'Chief Marketing Officer (CMO)',
+  'Marketing Manager',
+  'Digital Marketing Specialist',
+  'Content Creator',
+  'Brand Manager',
+  'Social Media Coordinator',
+  'Market Research Analyst',
+
+  // Sales Department
+  'Sales Director',
+  'Account Manager',
+  'Sales Representative',
+  'Business Development Manager',
+  'Customer Success Manager',
+
+  // Operations Department
+  'Chief Operating Officer (COO)',
+  'Operations Manager',
+  'Supply Chain Manager',
+  'Logistics Coordinator',
+  'Quality Assurance Manager',
+
+  // Legal Department
+  'General Counsel',
+  'Legal Advisor',
+  'Compliance Officer',
+  'Intellectual Property Specialist',
+];
+
+final List<String> livingSituations = [
+  "Living Situations",
+  'Single-family home',
+  'Apartment',
+  'Shared house/flat',
+  'Studio apartment',
+  'Dormitory',
+  'With parents',
+  'Multigenerational household',
+  'Retirement community',
+  'Homeless shelter',
+  'Temporary housing',
+  'Mobile home',
+  'Boat house',
+  'Van life',
+  'Co-living space',
+  'Tiny house',
+  'Assisted living facility',
+  'Boarding house',
+  'Commune',
+  'Group home',
+  'Homeless (street living)',
+  'Hotel/motel long-term',
+  'Squat',
+  'Eco-village',
+  'Military barracks',
+  'Off-grid living',
+];
+
+final List<String> religion = [
+  "Christianity",
+  "Islam",
+  "Hinduism",
+  "Buddhism",
+  "Judaism",
+  "Other",
+  "None"
+];
+
+// Legal Documents
 final String eula = '''
    End User License Agreement (EULA)
 Last updated: November 12, 2024
@@ -96,7 +631,7 @@ When necessary to protect the rights of the application
 
 4. Data Security
 Appropriate technical and organizational measures are taken to ensure the security of user information. However, please note that transmission methods over the internet or electronic storage are not 100% secure.
-5. Children’s Privacy
+5. Children's Privacy
 The application does not knowingly collect personal information from children under 13 years of age. If you are a parent or guardian and believe that your child has provided us with personal information, please contact us.
 6. Changes to This Policy
 This privacy policy may be updated from time to time. Changes will be posted on this page, and users will be notified in case of significant changes.
@@ -105,415 +640,3 @@ If you have any questions about this privacy policy, please contact us at:
 email: ismail.tunc.kankilic@gmail.com
 By accepting this privacy policy, you declare that you understand and agree to the terms stated herein.
   ''';
-
-List<String> religion = [
-  "Religion",
-  "Christianity",
-  "Islam",
-  "Hinduism",
-  "Buddhism",
-  "Judaism",
-  "Other",
-  "None"
-];
-
-List<String> highSchool = [
-  "Education Level",
-  "High School",
-  "Bachelor's",
-  "Master's",
-  "Doctorate",
-  "Other"
-];
-
-final List<String> languages = [
-  "Language",
-  'English',
-  'Spanish',
-  'French',
-  'German',
-  'Italian',
-  'Polish',
-  'Ukrainian',
-  'Dutch',
-  'Romanian',
-  'Greek',
-  'Chinese',
-  'Tagalog',
-  'Vietnamese',
-  'Korean',
-  'Arabic',
-];
-
-final List<String> nationalities = [
-  "Nationalities",
-  'American',
-  'British',
-  'Canadian',
-  'French',
-  'German',
-  'Italian',
-  'Spanish',
-  'Chinese',
-  'Japanese',
-  'Russian',
-  'Brazilian',
-  'Mexican',
-  'Indian',
-  'Australian',
-  'Egyptian',
-  'Nigerian',
-  'South African',
-  'Swedish',
-  'Dutch',
-  'Turkish',
-];
-
-final List<String> ethnicities = [
-  "Ethnicities",
-  'Han Chinese',
-  'Arabs',
-  'Bengalis',
-  'Hispanics',
-  'Punjabis',
-  'Yoruba',
-  'Javanese',
-  'Japanese',
-  'Korean',
-  'Vietnamese',
-  'Ashkenazi Jews',
-  'Hausa',
-  'Gujarati',
-  'Telugu',
-  'Tamil',
-  'Italians',
-  'Turks',
-  'Persians',
-  'Pashtuns',
-  'Fulani',
-  'Igbo',
-  'Oromo',
-  'Azeri',
-  'Malay',
-  'Sundanese',
-];
-
-final List<String> livingSituations = [
-  "Living Situations",
-  'Single-family home',
-  'Apartment',
-  'Shared house/flat',
-  'Studio apartment',
-  'Dormitory',
-  'With parents',
-  'Multigenerational household',
-  'Retirement community',
-  'Homeless shelter',
-  'Temporary housing',
-  'Mobile home',
-  'Boat house',
-  'Van life',
-  'Co-living space',
-  'Tiny house',
-  'Assisted living facility',
-  'Boarding house',
-  'Commune',
-  'Group home',
-  'Homeless (street living)',
-  'Hotel/motel long-term',
-  'Squat',
-  'Eco-village',
-  'Military barracks',
-  'Off-grid living',
-];
-
-final List<String> employmentStatuses = [
-  "Employment Statuses",
-  'Full-time employed',
-  'Part-time employed',
-  'Self-employed',
-  'Freelancer',
-  'Contractor',
-  'Unemployed (seeking work)',
-  'Unemployed (not seeking work)',
-  'Student',
-  'Retired',
-  'Homemaker',
-  'Internship',
-  'Apprenticeship',
-  'Temporarily laid off',
-  'On leave (e.g., maternity, medical)',
-  'Seasonal worker',
-  'Gig worker',
-  'Remote worker',
-  'Hybrid worker (part remote, part in-office)',
-  'Business owner',
-  'Volunteer',
-  'Disabled (unable to work)',
-  'Underemployed',
-  'Multiple jobs',
-  'Zero-hour contract',
-  'Job-sharing',
-];
-
-final List<String> maritalStatuses = [
-  "Marital Statuses",
-  'Single (never married)',
-  'Married',
-  'Divorced',
-  'Widowed',
-  'Separated',
-  'Domestic partnership',
-  'Civil union',
-  'Engaged',
-  'Cohabiting',
-  'Common-law marriage',
-  'Remarried',
-  'Annulled',
-  'Single (divorced)',
-  'Single (widowed)',
-  'Legally separated',
-  'Married (living apart)',
-  'Married (same-sex)',
-  'Registered partnership',
-  'In a relationship',
-  'It\'s complicated',
-];
-
-final List<String> drinkingHabits = [
-  "Drinking Habits",
-  'Non-drinker',
-  'Social drinker',
-  'Light drinker',
-  'Moderate drinker',
-  'Heavy drinker',
-  'Recovering alcoholic',
-  'Occasional drinker',
-  'Drink on special occasions only',
-  'Beer enthusiast',
-  'Wine connoisseur',
-  'Cocktail lover',
-];
-
-final List<String> smokingHabits = [
-  "Smoking Habits",
-  'Non-smoker',
-  'Light smoker',
-  'Regular smoker',
-  'Heavy smoker',
-  'Trying to quit',
-  'Former smoker',
-  'Social smoker',
-  'Vaper',
-  'Cigar smoker',
-  'Pipe smoker',
-];
-
-final List<String> bodyTypes = [
-  "Body Types",
-  'Slim',
-  'Athletic',
-  'Average',
-  'Curvy',
-  'Muscular',
-  'A few extra pounds',
-  'Heavyset',
-  'Stocky',
-  'Petite',
-  'Tall',
-  'Short',
-];
-
-final List<String> gender = [
-  "Gender",
-  'Woman',
-  'Man',
-  'Transgender',
-  'Non-binary',
-  'Genderqueer',
-  'Gender fluid',
-  'Agender',
-  'Bigender',
-  'Two-Spirit',
-  'Androgynous',
-  'Demigender',
-  'Genderqueer',
-  'Gender non-conforming',
-  'Questioning',
-  'Prefer not to say',
-  'Other (self-describe)',
-];
-
-// European Countries (Alphabetical Order)
-List<String> countries = [
-  "Countries",
-  'Belize',
-  'Canada',
-  'Costa Rica',
-  'El Salvador',
-  'Guatemala',
-  'Honduras',
-  'Mexico',
-  'Nicaragua',
-  'Panama',
-  'United States',
-  'Albania',
-  'Andorra',
-  'Austria',
-  'Belarus',
-  'Belgium',
-  'Bosnia and Herzegovina',
-  'Bulgaria',
-  'Croatia',
-  'Czech Republic',
-  'Denmark',
-  'Estonia',
-  'Finland',
-  'France',
-  'Germany',
-  'Greece',
-  'Hungary',
-  'Iceland',
-  'Ireland',
-  'Italy',
-  'Kosovo',
-  'Latvia',
-  'Liechtenstein',
-  'Lithuania',
-  'Luxembourg',
-  'Malta',
-  'Moldova',
-  'Monaco',
-  'Montenegro',
-  'Netherlands',
-  'North Macedonia',
-  'Norway',
-  'Poland',
-  'Portugal',
-  'Romania',
-  'Russia',
-  'San Marino',
-  'Serbia',
-  'Slovakia',
-  'Slovenia',
-  'Spain',
-  'Sweden',
-  'Switzerland',
-  'Ukraine',
-  'United Kingdom',
-  'Vatican City',
-  'Bahrain',
-  'Cyprus',
-  'Egypt',
-  'Iran',
-  'Iraq',
-  'Israel',
-  'Jordan',
-  'Kuwait',
-  'Lebanon',
-  'Oman',
-  'Palestine',
-  'Qatar',
-  'Saudi Arabia',
-  'Syria',
-  'Turkey',
-  'United Arab Emirates',
-  'Yemen',
-];
-List<String> itJobs = [
-  "Profession",
-  // IT and Technical Roles
-  'Software Developer',
-  'Data Scientist',
-  'Cybersecurity Specialist',
-  'Network Administrator',
-  'System Administrator',
-  'Cloud Architect',
-  'DevOps Engineer',
-  'Artificial Intelligence Engineer',
-  'Mobile App Developer',
-  'Web Developer',
-  'Database Administrator',
-  'UI/UX Designer',
-  'QA Test Engineer',
-  'Game Developer',
-  'Blockchain Developer',
-  'Technical Support Specialist',
-
-  // IT Management Roles
-  'IT Project Manager',
-  'Chief Information Officer (CIO)',
-  'Chief Technology Officer (CTO)',
-  'IT Director',
-  'Product Manager',
-  'Scrum Master',
-  'IT Business Analyst',
-
-  // Human Resources Department
-  'HR Manager',
-  'Recruitment Specialist',
-  'Training and Development Coordinator',
-  'Compensation and Benefits Analyst',
-  'Employee Relations Specialist',
-  'HR Business Partner',
-  'Talent Acquisition Manager',
-
-  // Finance Department
-  'Chief Financial Officer (CFO)',
-  'Financial Analyst',
-  'Accountant',
-  'Financial Controller',
-  'Payroll Specialist',
-  'Tax Manager',
-  'Internal Auditor',
-
-  // Marketing Department
-  'Chief Marketing Officer (CMO)',
-  'Marketing Manager',
-  'Digital Marketing Specialist',
-  'Content Creator',
-  'Brand Manager',
-  'Social Media Coordinator',
-  'Market Research Analyst',
-
-  // Sales Department
-  'Sales Director',
-  'Account Manager',
-  'Sales Representative',
-  'Business Development Manager',
-  'Customer Success Manager',
-
-  // Operations Department
-  'Chief Operating Officer (COO)',
-  'Operations Manager',
-  'Supply Chain Manager',
-  'Logistics Coordinator',
-  'Quality Assurance Manager',
-
-  // Legal Department
-  'General Counsel',
-  'Legal Advisor',
-  'Compliance Officer',
-  'Intellectual Property Specialist',
-
-  // Customer Service Department
-  'Customer Service Manager',
-  'Customer Support Representative',
-  'Client Relations Specialist',
-
-  // Research and Development
-  'R&D Director',
-  'Research Scientist',
-  'Product Development Engineer',
-
-  // Administration
-  'Administrative Assistant',
-  'Office Manager',
-  'Facilities Manager',
-
-  // Executive Leadership
-  'Chief Executive Officer (CEO)',
-  'President',
-  'Board Member',
-  'Executive Assistant'
-];

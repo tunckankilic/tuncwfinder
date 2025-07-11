@@ -5,6 +5,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
+import 'package:tuncforwork/models/work_experience.dart';
+import 'package:tuncforwork/service/global.dart';
 
 class AccountSettingsController extends GetxController {
   // Loading States
@@ -52,8 +54,6 @@ class AccountSettingsController extends GetxController {
 
   // Connections Controllers
   final instagramController = TextEditingController();
-  final linkedInController = TextEditingController();
-  final gitHubController = TextEditingController();
 
   // Dropdown Selected Values
   final RxString selectedGender = ''.obs;
@@ -97,6 +97,73 @@ class AccountSettingsController extends GetxController {
     'connections': GlobalKey(),
   };
 
+  // Work Experience
+  final RxList<WorkExperience> workExperiences = <WorkExperience>[].obs;
+  final RxList<String> skills = <String>[].obs;
+
+  // Work Experience Form Controllers
+  final titleController = TextEditingController();
+  final companyController = TextEditingController();
+  final startDateController = TextEditingController();
+  final endDateController = TextEditingController();
+  final descriptionController = TextEditingController();
+  final skillController = TextEditingController();
+
+  // Dropdown Values
+  final RxMap<String, List<String>> dropdownValues =
+      <String, List<String>>{}.obs;
+
+  Future<void> loadDropdownValues() async {
+    try {
+      log('Dropdown değerleri yükleniyor...');
+      final values = await getAllDropdownValues();
+
+      if (values.isEmpty) {
+        log('Dikkat: Dropdown değerleri boş geldi!');
+        // Varsayılan değerleri kullan
+        dropdownValues.value = {
+          'genders': gender,
+          'countries': countries,
+          'bodyTypes': bodyTypes,
+          'drinkingHabits': drinkingHabits,
+          'smokingHabits': smokingHabits,
+          'maritalStatuses': maritalStatuses,
+          'employmentStatuses': employmentStatuses,
+          'livingSituations': livingSituations,
+          'nationalities': nationalities,
+          'educationLevels': educationLevels,
+          'languages': languages,
+          'religions': religion,
+          'ethnicities': ethnicities,
+          'professions': itJobs,
+        };
+      } else {
+        log('Dropdown değerleri başarıyla yüklendi: ${values.keys.join(", ")}');
+        dropdownValues.value = values;
+      }
+    } catch (e, stackTrace) {
+      log('Dropdown değerleri yüklenirken hata: $e');
+      log('Stack trace: $stackTrace');
+      // Hata durumunda varsayılan değerleri kullan
+      dropdownValues.value = {
+        'genders': gender,
+        'countries': countries,
+        'bodyTypes': bodyTypes,
+        'drinkingHabits': drinkingHabits,
+        'smokingHabits': smokingHabits,
+        'maritalStatuses': maritalStatuses,
+        'employmentStatuses': employmentStatuses,
+        'livingSituations': livingSituations,
+        'nationalities': nationalities,
+        'educationLevels': educationLevels,
+        'languages': languages,
+        'religions': religion,
+        'ethnicities': ethnicities,
+        'professions': itJobs,
+      };
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -107,9 +174,30 @@ class AccountSettingsController extends GetxController {
   Future<void> _initialize() async {
     try {
       isLoading.value = true;
-      await retrieveUserData(); // Önce verileri getir
-      initializeDropdownValues(); // Sonra dropdown değerlerini ayarla
-    } catch (e) {
+      log('Başlatma işlemi başladı');
+
+      // Önce kullanıcı verilerini yükle
+      await retrieveUserData();
+      log('Kullanıcı verileri yüklendi');
+
+      // Sonra dropdown değerlerini yükle
+      await loadDropdownValues();
+      log('Dropdown değerleri yüklendi');
+
+      // İş deneyimi ve yetenekleri yükle
+      await Future.wait([
+        loadWorkExperiences()
+            .then((_) => log('İş deneyimleri yükleme tamamlandı')),
+        loadSkills().then((_) => log('Yetenekler yükleme tamamlandı')),
+      ]);
+      log('İş deneyimi ve yetenekler yüklendi');
+
+      // En son dropdown değerlerini başlat
+      initializeDropdownValues();
+      log('Dropdown değerleri başlatıldı');
+    } catch (e, stackTrace) {
+      log('Başlatma hatası: $e');
+      log('Stack trace: $stackTrace');
       handleError('Error initializing controller: $e');
     } finally {
       isLoading.value = false;
@@ -118,115 +206,140 @@ class AccountSettingsController extends GetxController {
 
   Future<void> retrieveUserData() async {
     try {
-      log('Retrieving user data for ID: $currentUserId');
+      log('Kullanıcı verileri alınıyor. ID: $currentUserId');
       var snapshot = await FirebaseFirestore.instance
           .collection("users")
           .doc(currentUserId)
           .get();
 
       if (!snapshot.exists) {
-        log('Document does not exist for user: $currentUserId');
+        log('Belge bulunamadı. Kullanıcı ID: $currentUserId');
         handleError("User document does not exist");
         return;
       }
 
       var data = snapshot.data()!;
-      log('User data retrieved successfully');
+      log('Kullanıcı verileri başarıyla alındı');
+      log('Alınan veri alanları: ${data.keys.join(", ")}');
 
-      // Verileri yükle
+      // Önce resimleri yükle
+      await _loadImages(data);
+      log('Resimler yüklendi');
+
+      // Sonra diğer verileri yükle
       await _loadAllData(data);
+      log('Tüm veriler yüklendi');
 
-      log('All data loaded successfully');
-    } catch (e) {
-      log('Error retrieving user data: $e');
+      // Dropdown değerlerini güncelle
+      _updateDropdownValues(data);
+      log('Dropdown değerleri güncellendi');
+
+      // Checkbox değerlerini güncelle
+      childrenSelection.value = data['haveChildren']?.toString() ?? '';
+      relationshipSelection.value =
+          data['relationshipStatus']?.toString() ?? '';
+      log('Checkbox değerleri güncellendi');
+    } catch (e, stackTrace) {
+      log('Kullanıcı verileri alınırken hata: $e');
+      log('Stack trace: $stackTrace');
       handleError('Error retrieving user data: $e');
     }
   }
 
   Future<void> _loadAllData(Map<String, dynamic> data) async {
     try {
+      log('_loadAllData başladı');
+      log('Yüklenecek veri alanları: ${data.keys.join(", ")}');
+
       // Personal Info
       nameController.text = data['name']?.toString() ?? '';
       emailController.text = data['email']?.toString() ?? '';
       ageController.text = data['age']?.toString() ?? '';
       phoneNoController.text = data['phoneNo']?.toString() ?? '';
       cityController.text = data['city']?.toString() ?? '';
-      countryController.text = data['country']?.toString() ?? countries.first;
+      countryController.text = data['country']?.toString() ?? '';
       profileHeadingController.text = data['profileHeading']?.toString() ?? '';
-      genderController.text = data['gender']?.toString() ?? gender.first;
+      genderController.text = data['gender']?.toString() ?? '';
 
       // Appearance
       heightController.text = data['height']?.toString() ?? '';
       weightController.text = data['weight']?.toString() ?? '';
-      bodyTypeController.text = data['bodyType']?.toString() ?? bodyTypes.first;
+      bodyTypeController.text = data['bodyType']?.toString() ?? '';
 
       // Lifestyle
-      drinkController.text = data['drink']?.toString() ?? drinkingHabits.first;
-      smokeController.text = data['smoke']?.toString() ?? smokingHabits.first;
-      martialStatusController.text =
-          data['martialStatus']?.toString() ?? maritalStatuses.first;
-      childrenSelection.value =
-          data['haveChildren']?.toString() ?? childrenOptions.first;
+      drinkController.text = data['drink']?.toString() ?? '';
+      smokeController.text = data['smoke']?.toString() ?? '';
+      martialStatusController.text = data['martialStatus']?.toString() ?? '';
+      childrenSelection.value = data['haveChildren']?.toString() ?? '';
       noOfChildrenController.text = data['noOfChildren']?.toString() ?? '0';
-      professionController.text =
-          data['profession']?.toString() ?? itJobs.first;
+      professionController.text = data['profession']?.toString() ?? '';
       employmentStatusController.text =
-          data['employmentStatus']?.toString() ?? employmentStatuses.first;
+          data['employmentStatus']?.toString() ?? '';
       incomeController.text = data['income']?.toString() ?? '';
       livingSituationController.text =
-          data['livingSituation']?.toString() ?? livingSituations.first;
+          data['livingSituation']?.toString() ?? '';
       relationshipSelection.value =
-          data['relationshipStatus']?.toString() ?? relationshipOptions.first;
+          data['relationshipStatus']?.toString() ?? '';
 
       // Background
-      nationalityController.text =
-          data['nationality']?.toString() ?? nationalities.first;
-      educationController.text =
-          data['education']?.toString() ?? highSchool.first;
-      languageSpokenController.text =
-          data['languageSpoken']?.toString() ?? languages.first;
-      religionController.text = data['religion']?.toString() ?? religion.first;
-      ethnicityController.text =
-          data['ethnicity']?.toString() ?? ethnicities.first;
+      nationalityController.text = data['nationality']?.toString() ?? '';
+      educationController.text = data['education']?.toString() ?? '';
+      languageSpokenController.text = data['languageSpoken']?.toString() ?? '';
+      religionController.text = data['religion']?.toString() ?? '';
+      ethnicityController.text = data['ethnicity']?.toString() ?? '';
 
       // Social Links
-      linkedInController.text = data['linkedInUrl']?.toString() ?? '';
       instagramController.text = data['instagramUrl']?.toString() ?? '';
-      gitHubController.text = data['githubUrl']?.toString() ?? '';
 
-      // Images
-      await _loadImages(data);
-
-      // Dropdown values
-      _updateDropdownValues(data);
-    } catch (e) {
-      log('Error in _loadAllData: $e');
+      log('_loadAllData tamamlandı');
+      log('Yüklenen değerler:');
+      log('Name: ${nameController.text}');
+      log('Email: ${emailController.text}');
+      log('Age: ${ageController.text}');
+      log('Gender: ${genderController.text}');
+      log('Country: ${countryController.text}');
+      log('Body Type: ${bodyTypeController.text}');
+      log('Profession: ${professionController.text}');
+      log('Education: ${educationController.text}');
+      log('Instagram: ${instagramController.text}');
+    } catch (e, stackTrace) {
+      log('_loadAllData hatası: $e');
+      log('Stack trace: $stackTrace');
       handleError('Error loading data: $e');
     }
   }
 
   Future<void> _loadImages(Map<String, dynamic> data) async {
     try {
+      log('Resimler yükleniyor...');
       images.clear();
       urlsList.clear();
 
       // Profile image varsa ekle
-      if (data['profileImageUrl'] != null &&
-          data['profileImageUrl'].toString().isNotEmpty) {
-        urlsList.add(data['profileImageUrl']);
-        images.add(data['profileImageUrl']);
+      String? profileImageUrl = data['profileImageUrl'];
+      if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
+        log('Profil fotoğrafı bulundu: $profileImageUrl');
+        urlsList.add(profileImageUrl);
+        images.add(profileImageUrl);
+      } else {
+        log('Profil fotoğrafı bulunamadı');
       }
 
       // Diğer resimleri ekle
       for (int i = 1; i <= 5; i++) {
         String? url = data['urlImage$i'];
         if (url != null && url.isNotEmpty) {
+          log('urlImage$i bulundu: $url');
           urlsList.add(url);
           images.add(url);
         }
       }
-    } catch (e) {
-      log('Error loading images: $e');
+
+      log('Toplam ${images.length} resim yüklendi');
+      log('URLs: ${urlsList.join(", ")}');
+    } catch (e, stackTrace) {
+      log('Resimler yüklenirken hata: $e');
+      log('Stack trace: $stackTrace');
     }
   }
 
@@ -245,7 +358,8 @@ class AccountSettingsController extends GetxController {
         data['livingSituation']?.toString() ?? livingSituations.first;
     selectedNationality.value =
         data['nationality']?.toString() ?? nationalities.first;
-    selectedEducation.value = data['education']?.toString() ?? highSchool.first;
+    selectedEducation.value =
+        data['education']?.toString() ?? educationLevels.first;
     selectedLanguage.value =
         data['languageSpoken']?.toString() ?? languages.first;
     selectedReligion.value = data['religion']?.toString() ?? religion.first;
@@ -287,51 +401,85 @@ class AccountSettingsController extends GetxController {
   // }
 
   void initializeDropdownValues() {
-    // Set default values for all dropdown controllers
-    genderController.text = gender.first;
-    selectedGender.value = gender.first;
+    try {
+      log('initializeDropdownValues başlatıldı');
+      log('Mevcut değerler: ${dropdownValues.toString()}');
 
-    countryController.text = countries.first;
-    selectedCountry.value = countries.first;
+      // Eğer Firestore'dan gelen değer varsa onu kullan, yoksa varsayılan değeri kullan
+      genderController.text = genderController.text.isNotEmpty
+          ? genderController.text
+          : (dropdownValues['genders']?.firstOrNull ?? gender.first);
 
-    bodyTypeController.text = bodyTypes.first;
-    selectedBodyType.value = bodyTypes.first;
+      countryController.text = countryController.text.isNotEmpty
+          ? countryController.text
+          : (dropdownValues['countries']?.firstOrNull ?? countries.first);
 
-    drinkController.text = drinkingHabits.first;
-    selectedDrink.value = drinkingHabits.first;
+      bodyTypeController.text = bodyTypeController.text.isNotEmpty
+          ? bodyTypeController.text
+          : (dropdownValues['bodyTypes']?.firstOrNull ?? bodyTypes.first);
 
-    smokeController.text = smokingHabits.first;
-    selectedSmoke.value = smokingHabits.first;
+      drinkController.text = drinkController.text.isNotEmpty
+          ? drinkController.text
+          : (dropdownValues['drinkingHabits']?.firstOrNull ??
+              drinkingHabits.first);
 
-    martialStatusController.text = maritalStatuses.first;
-    selectedMaritalStatus.value = maritalStatuses.first;
+      smokeController.text = smokeController.text.isNotEmpty
+          ? smokeController.text
+          : (dropdownValues['smokingHabits']?.firstOrNull ??
+              smokingHabits.first);
 
-    professionController.text = itJobs.first;
-    selectedProfession.value = itJobs.first;
+      martialStatusController.text = martialStatusController.text.isNotEmpty
+          ? martialStatusController.text
+          : (dropdownValues['maritalStatuses']?.firstOrNull ??
+              maritalStatuses.first);
 
-    employmentStatusController.text = employmentStatuses.first;
-    selectedEmploymentStatus.value = employmentStatuses.first;
+      employmentStatusController.text =
+          employmentStatusController.text.isNotEmpty
+              ? employmentStatusController.text
+              : (dropdownValues['employmentStatuses']?.firstOrNull ??
+                  employmentStatuses.first);
 
-    livingSituationController.text = livingSituations.first;
-    selectedLivingSituation.value = livingSituations.first;
+      livingSituationController.text = livingSituationController.text.isNotEmpty
+          ? livingSituationController.text
+          : (dropdownValues['livingSituations']?.firstOrNull ??
+              livingSituations.first);
 
-    nationalityController.text = nationalities.first;
-    selectedNationality.value = nationalities.first;
+      nationalityController.text = nationalityController.text.isNotEmpty
+          ? nationalityController.text
+          : (dropdownValues['nationalities']?.firstOrNull ??
+              nationalities.first);
 
-    educationController.text = highSchool.first;
-    selectedEducation.value = highSchool.first;
+      educationController.text = educationController.text.isNotEmpty
+          ? educationController.text
+          : (dropdownValues['educationLevels']?.firstOrNull ??
+              educationLevels.first);
 
-    languageSpokenController.text = languages.first;
-    selectedLanguage.value = languages.first;
+      languageSpokenController.text = languageSpokenController.text.isNotEmpty
+          ? languageSpokenController.text
+          : (dropdownValues['languages']?.firstOrNull ?? languages.first);
 
-    religionController.text = religion.first;
-    selectedReligion.value = religion.first;
+      religionController.text = religionController.text.isNotEmpty
+          ? religionController.text
+          : (dropdownValues['religions']?.firstOrNull ?? religion.first);
 
-    ethnicityController.text = ethnicities.first;
-    selectedEthnicity.value = ethnicities.first;
+      ethnicityController.text = ethnicityController.text.isNotEmpty
+          ? ethnicityController.text
+          : (dropdownValues['ethnicities']?.firstOrNull ?? ethnicities.first);
 
-    childrenSelection.value = childrenOptions.first;
-    relationshipSelection.value = relationshipOptions.first;
+      professionController.text = professionController.text.isNotEmpty
+          ? professionController.text
+          : (dropdownValues['professions']?.firstOrNull ?? itJobs.first);
+
+      log('Dropdown değerleri başlatıldı');
+      log('Güncel değerler:');
+      log('Gender: ${genderController.text}');
+      log('Country: ${countryController.text}');
+      log('Body Type: ${bodyTypeController.text}');
+      log('Profession: ${professionController.text}');
+      // ... diğer değerler için de log ekleyebilirsiniz
+    } catch (e) {
+      log('Dropdown değerleri başlatılırken hata: $e');
+    }
   }
 
   // Load section methods
@@ -417,9 +565,10 @@ class AccountSettingsController extends GetxController {
         : nationalities.first;
     nationalityController.text = selectedNationality.value;
 
-    String educationData = data['education'] ?? highSchool.first;
-    selectedEducation.value =
-        highSchool.contains(educationData) ? educationData : highSchool.first;
+    String educationData = data['education'] ?? educationLevels.first;
+    selectedEducation.value = educationLevels.contains(educationData)
+        ? educationData
+        : educationLevels.first;
     educationController.text = selectedEducation.value;
 
     String languageData = data['languageSpoken'] ?? languages.first;
@@ -439,9 +588,7 @@ class AccountSettingsController extends GetxController {
   }
 
   void loadConnectionsInfo(Map<String, dynamic> data) {
-    linkedInController.text = data['linkedInUrl'] ?? '';
     instagramController.text = data['instagramUrl'] ?? '';
-    gitHubController.text = data['githubUrl'] ?? '';
   }
 
   void loadImages(Map<String, dynamic> data) {
@@ -613,8 +760,6 @@ class AccountSettingsController extends GetxController {
 
         // Connections
         'instagramUrl': instagramController.text,
-        'linkedInUrl': linkedInController.text,
-        'githubUrl': gitHubController.text,
 
         // Images
         if (profileImageUrl != null) 'profileImageUrl': profileImageUrl,
@@ -646,6 +791,218 @@ class AccountSettingsController extends GetxController {
     }
   }
 
+  Future<void> addWorkExperience() async {
+    try {
+      log('İş deneyimi ekleniyor...');
+      if (titleController.text.isEmpty || companyController.text.isEmpty) {
+        handleError('İş ünvanı ve şirket alanları zorunludur');
+        return;
+      }
+
+      final experience = WorkExperience(
+        title: titleController.text,
+        company: companyController.text,
+        startDate: startDateController.text,
+        endDate: endDateController.text,
+        description: descriptionController.text,
+        technologies: [],
+      );
+
+      log('Yeni iş deneyimi oluşturuldu: ${experience.toMap()}');
+
+      final docRef = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .collection('workExperience')
+          .add(experience.toMap());
+
+      log('İş deneyimi Firestore\'a eklendi. ID: ${docRef.id}');
+
+      workExperiences.add(experience);
+      clearWorkExperienceForm();
+
+      Get.snackbar(
+        'Başarılı',
+        'İş deneyimi başarıyla eklendi',
+        backgroundColor: Colors.green.shade50,
+        colorText: Colors.green.shade900,
+      );
+    } catch (e, stackTrace) {
+      log('İş deneyimi eklenirken hata: $e');
+      log('Stack trace: $stackTrace');
+      handleError('Error adding work experience: $e');
+    }
+  }
+
+  Future<void> addSkill(String skill) async {
+    try {
+      log('Yetenek ekleniyor: $skill');
+      if (skill.isEmpty) {
+        handleError('Yetenek alanı boş olamaz');
+        return;
+      }
+
+      if (!skills.contains(skill)) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUserId)
+            .update({
+          'skills': FieldValue.arrayUnion([skill])
+        });
+
+        skills.add(skill);
+        log('Yetenek başarıyla eklendi');
+
+        Get.snackbar(
+          'Başarılı',
+          'Yetenek başarıyla eklendi',
+          backgroundColor: Colors.green.shade50,
+          colorText: Colors.green.shade900,
+        );
+      } else {
+        log('Bu yetenek zaten mevcut');
+        Get.snackbar(
+          'Uyarı',
+          'Bu yetenek zaten eklenmiş',
+          backgroundColor: Colors.orange.shade50,
+          colorText: Colors.orange.shade900,
+        );
+      }
+    } catch (e, stackTrace) {
+      log('Yetenek eklenirken hata: $e');
+      log('Stack trace: $stackTrace');
+      handleError('Error adding skill: $e');
+    }
+  }
+
+  Future<void> removeSkill(String skill) async {
+    try {
+      log('Yetenek siliniyor: $skill');
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .update({
+        'skills': FieldValue.arrayRemove([skill])
+      });
+
+      skills.remove(skill);
+      log('Yetenek başarıyla silindi');
+
+      Get.snackbar(
+        'Başarılı',
+        'Yetenek başarıyla silindi',
+        backgroundColor: Colors.green.shade50,
+        colorText: Colors.green.shade900,
+      );
+    } catch (e, stackTrace) {
+      log('Yetenek silinirken hata: $e');
+      log('Stack trace: $stackTrace');
+      handleError('Error removing skill: $e');
+    }
+  }
+
+  void clearWorkExperienceForm() {
+    titleController.clear();
+    companyController.clear();
+    startDateController.clear();
+    endDateController.clear();
+    descriptionController.clear();
+  }
+
+  Future<void> loadWorkExperiences() async {
+    try {
+      log('İş deneyimleri yükleniyor...');
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .collection('workExperience')
+          .orderBy('startDate', descending: true)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        log('İş deneyimi bulunamadı');
+        workExperiences.clear();
+        return;
+      }
+
+      workExperiences.value = snapshot.docs.map((doc) {
+        log('İş deneyimi yüklendi: ${doc.data()}');
+        return WorkExperience.fromMap(doc.data());
+      }).toList();
+
+      log('Toplam ${workExperiences.length} iş deneyimi yüklendi');
+    } catch (e, stackTrace) {
+      log('İş deneyimleri yüklenirken hata: $e');
+      log('Stack trace: $stackTrace');
+      handleError('Error loading work experiences: $e');
+    }
+  }
+
+  Future<void> loadSkills() async {
+    try {
+      log('Yetenekler yükleniyor...');
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .get();
+
+      if (!doc.exists) {
+        log('Kullanıcı belgesi bulunamadı');
+        return;
+      }
+
+      if (doc.data()!.containsKey('skills')) {
+        skills.value = List<String>.from(doc.data()!['skills']);
+        log('Yetenekler yüklendi: ${skills.join(", ")}');
+      } else {
+        log('Yetenekler alanı bulunamadı');
+        skills.clear();
+      }
+    } catch (e, stackTrace) {
+      log('Yetenekler yüklenirken hata: $e');
+      log('Stack trace: $stackTrace');
+      handleError('Error loading skills: $e');
+    }
+  }
+
+  Future<void> selectDate(BuildContext context, bool isStartDate) async {
+    try {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(1950),
+        lastDate: DateTime.now(),
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: ColorScheme.light(
+                primary: Theme.of(context).primaryColor,
+                onPrimary: Colors.white,
+                onSurface: Colors.black,
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (picked != null) {
+        final formattedDate =
+            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+        if (isStartDate) {
+          startDateController.text = formattedDate;
+          log('Başlangıç tarihi seçildi: $formattedDate');
+        } else {
+          endDateController.text = formattedDate;
+          log('Bitiş tarihi seçildi: $formattedDate');
+        }
+      }
+    } catch (e) {
+      log('Tarih seçiminde hata: $e');
+      handleError('Error selecting date: $e');
+    }
+  }
+
   @override
   void onClose() {
     nameController.dispose();
@@ -673,8 +1030,6 @@ class AccountSettingsController extends GetxController {
     religionController.dispose();
     ethnicityController.dispose();
     instagramController.dispose();
-    linkedInController.dispose();
-    gitHubController.dispose();
     scrollController.dispose();
     super.onClose();
   }

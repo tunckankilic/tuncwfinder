@@ -4,6 +4,7 @@ import Firebase
 import UserNotifications
 import FirebaseMessaging
 
+
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
@@ -29,6 +30,8 @@ import FirebaseMessaging
     application.registerForRemoteNotifications()
     
     Messaging.messaging().delegate = self
+    
+
     
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

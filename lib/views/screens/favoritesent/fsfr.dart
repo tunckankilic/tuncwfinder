@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
+import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 
 class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
@@ -153,7 +154,8 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
     final double iconSize = isTablet ? 20 : 16;
 
     return GestureDetector(
-      onTap: () => Get.to(() => UserDetails(userId: user["uid"])),
+      onTap: () => Get.to(() => UserDetails(userId: user["uid"]),
+          binding: ProfileBindings()),
       child: Card(
         elevation: cardElevation,
         shape: RoundedRectangleBorder(
@@ -226,16 +228,3 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
     );
   }
 }
-
-// class ResponsiveValues {
-//   static const tabletBreakpoint = 768.0;
-  
-//   static const tabletPadding = 16.0;
-//   static const mobilePadding = 8.0;
-  
-//   static const tabletIconSize = 20.0;
-//   static const mobileIconSize = 16.0;
-  
-//   static const tabletFontSize = 18.0;
-//   static const mobileFontSize = 16.0;
-// }

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
+import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 import 'package:tuncforwork/views/screens/viewsent/vsvr_controller.dart';
 
 class ViewSentViewReceive extends GetView<VsvrController> {
@@ -97,9 +98,11 @@ class ViewSentViewReceive extends GetView<VsvrController> {
 
   Widget _buildGridTile(Map<String, dynamic> user) {
     return GestureDetector(
-      onTap: () => Get.to(() => UserDetails(
-            userId: user["uid"],
-          )),
+      onTap: () => Get.to(
+          () => UserDetails(
+                userId: user["uid"],
+              ),
+          binding: ProfileBindings()),
       child: Card(
         elevation: 5,
         shape: RoundedRectangleBorder(

@@ -11,6 +11,8 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         
+
+
         <!-- Firebase Messaging Service -->
         <service
             android:name=".java.MyFirebaseMessagingService"

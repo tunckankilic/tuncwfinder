@@ -9,175 +9,256 @@ import 'package:tuncforwork/views/screens/profile/account_settings/account_setti
 import 'package:tuncforwork/views/screens/profile/account_settings/pages/account_info_settings.dart';
 import 'package:tuncforwork/views/screens/profile/account_settings/pages/photo_settings_screen.dart';
 import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
+import 'package:get/get.dart';
+import 'package:tuncforwork/models/project.dart';
+import 'package:tuncforwork/models/work_experience.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UserDetailsController extends GetxController {
   final String userId;
-
-  UserDetailsController({required this.userId});
-
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final currentUser = FirebaseAuth.instance.currentUser;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // RxVariables for reactive UI
-  RxString name = ''.obs;
-  RxString age = ''.obs;
-  RxString phoneNo = ''.obs;
-  RxString city = ''.obs;
-  RxString country = ''.obs;
-  RxString profileHeading = ''.obs;
-  RxString lookingForInaPartner = ''.obs;
-  RxString gender = ''.obs;
+  // User Info
+  final RxString name = ''.obs;
+  final RxString imageUrl = ''.obs;
+  final RxString email = ''.obs;
+  final RxString phoneNo = ''.obs;
+  final RxString city = ''.obs;
+  final RxString country = ''.obs;
+  final RxString profession = ''.obs;
+  final RxString profileHeading = ''.obs;
+  final RxString education = ''.obs;
 
-  RxString height = ''.obs;
-  RxString weight = ''.obs;
-  RxString bodyType = ''.obs;
+  // Additional Info
+  final RxString age = ''.obs;
+  final RxString gender = ''.obs;
+  final RxString height = ''.obs;
+  final RxString weight = ''.obs;
+  final RxString bodyType = ''.obs;
+  final RxString drink = ''.obs;
+  final RxString smoke = ''.obs;
+  final RxString martialStatus = ''.obs;
+  final RxString haveChildren = ''.obs;
+  final RxString noOfChildren = ''.obs;
+  final RxString employmentStatus = ''.obs;
+  final RxString income = ''.obs;
+  final RxString livingSituation = ''.obs;
+  final RxString nationality = ''.obs;
+  final RxString languageSpoken = ''.obs;
+  final RxString religion = ''.obs;
+  final RxString ethnicity = ''.obs;
 
-  RxString drink = ''.obs;
-  RxString smoke = ''.obs;
-  RxString martialStatus = ''.obs;
-  RxString haveChildren = ''.obs;
-  RxString noOfChildren = ''.obs;
-  RxString profession = ''.obs;
-  RxString employmentStatus = ''.obs;
-  RxString income = ''.obs;
-  RxString livingSituation = ''.obs;
-  RxString willingToRelocate = ''.obs;
-  RxString relationshipYouAreLookingFor = ''.obs;
+  // Social Links
+  final RxString instagramUrl = ''.obs;
 
-  RxString nationality = ''.obs;
-  RxString education = ''.obs;
-  RxString languageSpoken = ''.obs;
-  RxString religion = ''.obs;
-  RxString ethnicity = ''.obs;
+  // Career Info
+  final RxList<WorkExperience> workExperiences = <WorkExperience>[].obs;
+  final RxList<String> skills = <String>[].obs;
+  final RxList<Project> projects = <Project>[].obs;
 
-  RxString linkedInUrl = ''.obs;
-  RxString instagramUrl = ''.obs;
-  RxString githubUrl = ''.obs;
+  // State
+  final RxBool isLoading = true.obs;
+  final RxBool isCurrentUser = false.obs;
+  final RxList<String> missingFields = <String>[].obs;
 
-  RxList<String> imageUrls = <String>[].obs;
-  final isMainProfilePage = false.obs;
-  RxBool isLoading = true.obs;
+  UserDetailsController({required this.userId}) {
+    _init();
+  }
 
-  Future<void> retrieveUserInfo(String userId) async {
+  Future<void> _init() async {
     try {
       isLoading.value = true;
-      DocumentSnapshot snapshot =
-          await _firestore.collection("users").doc(userId).get();
-
-      if (snapshot.exists) {
-        var data = snapshot.data() as Map<String, dynamic>?;
-        if (data != null) {
-          name.value = data['name'] as String? ?? '';
-          age.value = (data['age'] as int?)?.toString() ?? '';
-          phoneNo.value = data['phoneNo'] as String? ?? '';
-          city.value = data['city'] as String? ?? '';
-          country.value = data['country'] as String? ?? '';
-          profileHeading.value = data['profileHeading'] as String? ?? '';
-          lookingForInaPartner.value =
-              data['lookingForInaPartner'] as String? ?? '';
-          gender.value = data['gender'] as String? ?? '';
-
-          height.value = data['height'] as String? ?? '';
-          weight.value = data['weight'] as String? ?? '';
-          bodyType.value = data['bodyType'] as String? ?? '';
-
-          drink.value = data['drink'] as String? ?? '';
-          smoke.value = data['smoke'] as String? ?? '';
-          martialStatus.value = data['martialStatus'] as String? ?? '';
-          haveChildren.value = data['haveChildren'] as String? ?? '';
-          noOfChildren.value = data['noOfChildren'] as String? ?? '';
-          profession.value = data['profession'] as String? ?? '';
-          employmentStatus.value = data['employmentStatus'] as String? ?? '';
-          income.value = data['income'] as String? ?? '';
-          livingSituation.value = data['livingSituation'] as String? ?? '';
-          willingToRelocate.value = data['willingToRelocate'] as String? ?? '';
-          relationshipYouAreLookingFor.value =
-              data['relationshipYouAreLookingFor'] as String? ?? '';
-
-          nationality.value = data['nationality'] as String? ?? '';
-          education.value = data['education'] as String? ?? '';
-          languageSpoken.value = data['languageSpoken'] as String? ?? '';
-          religion.value = data['religion'] as String? ?? '';
-          ethnicity.value = data['ethnicity'] as String? ?? '';
-
-          linkedInUrl.value = data['linkedInUrl'] as String? ?? '';
-          instagramUrl.value = data['instagramUrl'] as String? ?? '';
-          githubUrl.value = data['githubUrl'] as String? ?? '';
-
-          imageUrls.value = [
-            data['urlImage1'] as String?,
-            data['urlImage2'] as String?,
-            data['urlImage3'] as String?,
-            data['urlImage4'] as String?,
-            data['urlImage5'] as String?,
-          ]
-              .where((url) => url != null && url.isNotEmpty)
-              .map((url) => url!)
-              .toList();
-
-          log("User data retrieved successfully for user: $userId");
-        } else {
-          log("User data is null for user: $userId");
-        }
-      } else {
-        log("User document does not exist for user: $userId");
+      isCurrentUser.value = userId == _auth.currentUser?.uid;
+      await retrieveUserInfo();
+      if (isCurrentUser.value) {
+        checkMissingInformation();
       }
     } catch (e) {
-      log("Error retrieving user info for user $userId: $e");
+      print('Error initializing user details: $e');
     } finally {
       isLoading.value = false;
     }
   }
 
-  void checkIfMainProfile() {
-    isMainProfilePage.value = userId == FirebaseAuth.instance.currentUser?.uid;
-    log("Is main profile page: ${isMainProfilePage.value}");
+  void checkMissingInformation() {
+    missingFields.clear();
+
+    // Temel Bilgiler
+    if (name.value.isEmpty) missingFields.add('İsim');
+    if (age.value == '0') missingFields.add('Yaş');
+    if (gender.value.isEmpty) missingFields.add('Cinsiyet');
+    if (phoneNo.value.isEmpty) missingFields.add('Telefon');
+    if (city.value.isEmpty) missingFields.add('Şehir');
+    if (country.value.isEmpty) missingFields.add('Ülke');
+    if (education.value.isEmpty) missingFields.add('Eğitim');
+
+    // Ek Bilgiler
+    if (height.value.isEmpty) missingFields.add('Boy');
+    if (weight.value.isEmpty) missingFields.add('Kilo');
+    if (bodyType.value.isEmpty) missingFields.add('Vücut Tipi');
+    if (drink.value.isEmpty) missingFields.add('İçki Tercihi');
+    if (smoke.value.isEmpty) missingFields.add('Sigara Tercihi');
+    if (martialStatus.value.isEmpty) missingFields.add('Medeni Durum');
+    if (haveChildren.value.isEmpty) missingFields.add('Çocuk Durumu');
+    if (employmentStatus.value.isEmpty) missingFields.add('İş Durumu');
+    if (income.value.isEmpty) missingFields.add('Gelir');
+    if (livingSituation.value.isEmpty) missingFields.add('Yaşam Durumu');
+    if (nationality.value.isEmpty) missingFields.add('Uyruk');
+    if (languageSpoken.value.isEmpty) missingFields.add('Konuşulan Dil');
+    if (religion.value.isEmpty) missingFields.add('Din');
+    if (ethnicity.value.isEmpty) missingFields.add('Etnik Köken');
+
+    // Kariyer Bilgileri
+    if (profession.value.isEmpty) missingFields.add('Meslek');
+    if (workExperiences.isEmpty) missingFields.add('İş Deneyimi');
+    if (skills.isEmpty) missingFields.add('Yetenekler');
+
+    // Sosyal Medya
+    if (instagramUrl.value.isEmpty) missingFields.add('Instagram');
+    if (phoneNo.value.isEmpty) missingFields.add('WhatsApp');
+
+    if (missingFields.isNotEmpty) {
+      Get.snackbar(
+        'Eksik Bilgiler',
+        'Profilinizde ${missingFields.length} eksik bilgi bulunuyor. Profilinizi düzenleyerek tamamlayabilirsiniz.',
+        duration: const Duration(seconds: 5),
+        backgroundColor: Colors.orange.shade50,
+        colorText: Colors.orange.shade900,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
+  }
+
+  Future<void> retrieveUserInfo() async {
+    try {
+      final doc = await _firestore.collection('users').doc(userId).get();
+      if (!doc.exists) return;
+
+      final data = doc.data()!;
+
+      // Basic Info
+      name.value = data['name'] ?? '';
+      imageUrl.value = data['imageProfile'] ?? '';
+      email.value = data['email'] ?? '';
+      phoneNo.value = data['phoneNo'] ?? '';
+      city.value = data['city'] ?? '';
+      country.value = data['country'] ?? '';
+      profession.value = data['profession'] ?? '';
+      profileHeading.value = data['profileHeading'] ?? '';
+      education.value = data['education'] ?? '';
+
+      // Additional Info
+      age.value = (data['age'] ?? 0).toString();
+      gender.value = data['gender'] ?? '';
+      height.value = data['height'] ?? '';
+      weight.value = data['weight'] ?? '';
+      bodyType.value = data['bodyType'] ?? '';
+      drink.value = data['drink'] ?? '';
+      smoke.value = data['smoke'] ?? '';
+      martialStatus.value = data['martialStatus'] ?? '';
+      haveChildren.value = data['haveChildren'] ?? '';
+      noOfChildren.value = data['noOfChildren'] ?? '';
+      employmentStatus.value = data['employmentStatus'] ?? '';
+      income.value = data['income'] ?? '';
+      livingSituation.value = data['livingSituation'] ?? '';
+      nationality.value = data['nationality'] ?? '';
+      languageSpoken.value = data['languageSpoken'] ?? '';
+      religion.value = data['religion'] ?? '';
+      ethnicity.value = data['ethnicity'] ?? '';
+
+      // Social Links
+      instagramUrl.value = data['instagramUrl'] ?? '';
+
+      // Career Info
+      await _loadWorkExperience();
+      await _loadSkills();
+      await _loadProjects();
+    } catch (e) {
+      print('Error retrieving user info: $e');
+    }
+  }
+
+  Future<void> _loadWorkExperience() async {
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('workExperience')
+          .orderBy('startDate', descending: true)
+          .get();
+
+      workExperiences.value = snapshot.docs
+          .map((doc) => WorkExperience.fromMap(doc.data()))
+          .toList();
+    } catch (e) {
+      print('Error loading work experience: $e');
+    }
+  }
+
+  Future<void> _loadSkills() async {
+    try {
+      log('Yetenekler yükleniyor...');
+      final doc = await _firestore.collection('users').doc(userId).get();
+
+      if (doc.exists && doc.data()!.containsKey('skills')) {
+        skills.value = List<String>.from(doc.data()!['skills'] ?? []);
+        log('Yetenekler başarıyla yüklendi: ${skills.join(", ")}');
+      } else {
+        log('Yetenekler bulunamadı veya boş');
+        skills.clear();
+      }
+    } catch (e, stackTrace) {
+      log('Yetenekler yüklenirken hata: $e');
+      log('Stack trace: $stackTrace');
+      print('Error loading skills: $e');
+    }
+  }
+
+  Future<void> _loadProjects() async {
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('projects')
+          .orderBy('date', descending: true)
+          .get();
+
+      projects.value =
+          snapshot.docs.map((doc) => Project.fromMap(doc.data())).toList();
+    } catch (e) {
+      print('Error loading projects: $e');
+    }
+  }
+
+  Future<void> launchURL(String url) async {
+    try {
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(Uri.parse(url));
+      } else {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      print('Error launching URL: $e');
+    }
   }
 
   void navigateToAccountSettings() {
-    Get.dialog(
-      AlertDialog(
-        title:
-            Text('Profile Settings', style: ElegantTheme.textTheme.titleLarge),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading:
-                  Icon(Icons.photo_library, color: ElegantTheme.primaryColor),
-              title:
-                  Text('Edit Photos', style: ElegantTheme.textTheme.bodyLarge),
-              onTap: () {
-                Get.back();
-                // PhotoSettingsScreen'e geçiş yapmadan önce binding'i ayarla
-                Get.delete<AccountSettingsController>(
-                    force: true); // Eski controller'ı temizle
-                Get.to(() => const PhotoSettingsScreen(),
-                    binding: ProfileBindings(userId: currentUser!.uid),
-                    preventDuplicates: false);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.person, color: ElegantTheme.primaryColor),
-              title: Text('Edit Profile Info',
-                  style: ElegantTheme.textTheme.bodyLarge),
-              onTap: () {
-                Get.back();
-                // ProfileInfoScreen'e geçiş yapmadan önce binding'i ayarla
-                Get.delete<AccountSettingsController>(
-                    force: true); // Eski controller'ı temizle
-                Get.to(() => ProfileInfoScreen(),
-                    binding: ProfileBindings(userId: currentUser!.uid),
-                    preventDuplicates: false);
-              },
-            ),
-          ],
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        backgroundColor: ElegantTheme.backgroundColor,
-      ),
-      barrierDismissible: true,
+    Get.to(
+      () => ProfileInfoScreen(),
+      binding: BindingsBuilder(() {
+        if (!Get.isRegistered<AccountSettingsController>()) {
+          Get.put(AccountSettingsController());
+        }
+      }),
+      transition: Transition.rightToLeft,
+      duration: const Duration(milliseconds: 300),
     );
+  }
+
+  void checkIfMainProfile() {
+    isCurrentUser.value = userId == _auth.currentUser?.uid;
+    log("Is main profile page: ${isCurrentUser.value}");
   }
 
   void updateName(String newName) {
@@ -185,11 +266,11 @@ class UserDetailsController extends GetxController {
   }
 
   void updateImageUrls(List<String> newUrls) {
-    imageUrls.assignAll(newUrls);
+    imageUrl.value = newUrls.first;
   }
 
   void signOut() {
-    FirebaseAuth.instance.signOut();
+    _auth.signOut();
     Get.offAll(
       () => const LoginScreen(),
       binding: AuthBindings(),
@@ -198,7 +279,7 @@ class UserDetailsController extends GetxController {
 
   Future<void> deleteAccountAndData(BuildContext context) async {
     try {
-      User? user = FirebaseAuth.instance.currentUser;
+      User? user = _auth.currentUser;
 
       if (user != null) {
         String uid = user.uid;
@@ -210,7 +291,7 @@ class UserDetailsController extends GetxController {
         await user.delete();
 
         // 3. Sign out the user
-        await FirebaseAuth.instance.signOut();
+        await _auth.signOut();
         Get.offAllNamed(LoginScreen.routeName);
       } else {
         log('User is not signed in.');
@@ -232,9 +313,9 @@ class UserDetailsController extends GetxController {
 
   Future<void> _deleteUserData(String uid) async {
     try {
-      await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+      await _firestore.collection('users').doc(uid).delete();
 
-      QuerySnapshot cardSnapshot = await FirebaseFirestore.instance
+      QuerySnapshot cardSnapshot = await _firestore
           .collection('users')
           .where('userId', isEqualTo: uid)
           .get();
@@ -253,7 +334,6 @@ class UserDetailsController extends GetxController {
   void onInit() {
     super.onInit();
     if (userId.isNotEmpty) {
-      retrieveUserInfo(userId);
       checkIfMainProfile();
     } else {
       log('User ID is missing');
