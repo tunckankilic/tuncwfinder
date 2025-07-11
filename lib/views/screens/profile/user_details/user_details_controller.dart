@@ -198,17 +198,19 @@ class UserDetailsController extends GetxController {
 
   Future<void> _loadSkills() async {
     try {
-      final doc = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('skills')
-          .doc('skillsList')
-          .get();
+      log('Yetenekler yükleniyor...');
+      final doc = await _firestore.collection('users').doc(userId).get();
 
-      if (doc.exists) {
-        skills.value = List<String>.from(doc.data()?['skills'] ?? []);
+      if (doc.exists && doc.data()!.containsKey('skills')) {
+        skills.value = List<String>.from(doc.data()!['skills'] ?? []);
+        log('Yetenekler başarıyla yüklendi: ${skills.join(", ")}');
+      } else {
+        log('Yetenekler bulunamadı veya boş');
+        skills.clear();
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      log('Yetenekler yüklenirken hata: $e');
+      log('Stack trace: $stackTrace');
       print('Error loading skills: $e');
     }
   }

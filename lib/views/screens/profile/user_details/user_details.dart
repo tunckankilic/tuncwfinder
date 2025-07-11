@@ -36,14 +36,65 @@ class UserDetails extends GetView<UserDetailsController> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () => Get.back(),
-        ),
+        leading: !controller.isCurrentUser.value
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+                onPressed: () => Get.back(),
+              )
+            : null,
         title: Text(
           controller.name.value,
           style: const TextStyle(color: Colors.black),
         ),
+        actions: controller.isCurrentUser.value
+            ? [
+                PopupMenuButton<String>(
+                  icon: Icon(Icons.more_vert, color: AppTheme.primarySwatch),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'edit':
+                        controller.navigateToAccountSettings();
+                        break;
+                      case 'logout':
+                        _showLogoutDialog(context);
+                        break;
+                      case 'delete':
+                        _showDeleteAccountDialog(context);
+                        break;
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => [
+                    PopupMenuItem<String>(
+                      value: 'edit',
+                      child: ListTile(
+                        leading:
+                            Icon(Icons.edit, color: AppTheme.primarySwatch),
+                        title: const Text('Profili Düzenle'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'logout',
+                      child: ListTile(
+                        leading:
+                            Icon(Icons.logout, color: AppTheme.primarySwatch),
+                        title: const Text('Oturumu Kapat'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'delete',
+                      child: ListTile(
+                        leading:
+                            const Icon(Icons.delete_forever, color: Colors.red),
+                        title: const Text('Hesabı Sil'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
+                ),
+              ]
+            : null,
       ),
       body: SafeArea(
         child: LayoutBuilder(
@@ -55,6 +106,64 @@ class UserDetails extends GetView<UserDetailsController> {
           },
         ),
       ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Oturumu Kapat'),
+          content: const Text('Oturumu kapatmak istediğinizden emin misiniz?'),
+          actions: [
+            TextButton(
+              child: const Text('İptal'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text(
+                'Oturumu Kapat',
+                style: TextStyle(color: AppTheme.primarySwatch),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                controller.signOut();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Hesabı Sil'),
+          content: const Text(
+            'Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz silinecektir.',
+          ),
+          actions: [
+            TextButton(
+              child: const Text('İptal'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text(
+                'Hesabı Sil',
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                controller.deleteAccountAndData(context);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -258,8 +367,6 @@ class UserDetails extends GetView<UserDetailsController> {
               _buildInfoRow('Yaşam Durumu', controller.livingSituation.value),
               _buildInfoRow('Uyruk', controller.nationality.value),
               _buildInfoRow('Konuşulan Dil', controller.languageSpoken.value),
-              _buildInfoRow('Din', controller.religion.value),
-              _buildInfoRow('Etnik Köken', controller.ethnicity.value),
             ],
           ),
         ));
@@ -285,15 +392,24 @@ class UserDetails extends GetView<UserDetailsController> {
                 ),
                 const SizedBox(height: 8),
                 ...controller.workExperiences
-                    .map((exp) => _buildExperienceItem(exp, isTablet)),
+                    .map((exp) => _buildExperienceItem(exp, isTablet))
+                    .toList(),
               ],
-              if (controller.skills.isNotEmpty) ...[
-                const SizedBox(height: 16),
+              const SizedBox(height: 16),
+              Text(
+                'Yetenekler',
+                style: AppTheme.textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              if (controller.skills.isEmpty)
                 Text(
-                  'Yetenekler',
-                  style: AppTheme.textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
+                  'Henüz yetenek eklenmemiş',
+                  style: AppTheme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                    fontStyle: FontStyle.italic,
+                  ),
+                )
+              else
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -301,10 +417,14 @@ class UserDetails extends GetView<UserDetailsController> {
                       .map((skill) => Chip(
                             label: Text(skill),
                             backgroundColor: AppTheme.primarySwatch.shade100,
+                            labelStyle: TextStyle(
+                              color: AppTheme.primarySwatch.shade900,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                           ))
                       .toList(),
                 ),
-              ],
             ],
           ),
         ));

@@ -1554,23 +1554,24 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         Row(
           children: [
             Expanded(
-              child: _buildTextField(
+              child: _buildDateField(
                 context: context,
-                controller: controller.startDateController,
                 label: "Başlangıç Tarihi",
-                icon: Icons.calendar_today_outlined,
+                icon: Icons.calendar_today,
+                controller: controller.startDateController,
+                isStartDate: true,
                 isTablet: isTablet,
               ),
             ),
             SizedBox(width: isTablet ? 24.0 : 16.0),
             Expanded(
-              child: _buildTextField(
+              child: _buildDateField(
                 context: context,
-                controller: controller.endDateController,
                 label: "Bitiş Tarihi",
-                icon: Icons.calendar_today_outlined,
+                icon: Icons.calendar_today,
+                controller: controller.endDateController,
+                isStartDate: false,
                 isTablet: isTablet,
-                helperText: "Devam ediyorsa boş bırakın",
               ),
             ),
           ],
@@ -1728,6 +1729,83 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDateField({
+    required BuildContext context,
+    required String label,
+    required IconData icon,
+    required TextEditingController controller,
+    required bool isStartDate,
+    required bool isTablet,
+  }) {
+    return Container(
+      margin: EdgeInsets.only(bottom: isTablet ? 24.0 : 16.0),
+      child: TextFormField(
+        controller: controller,
+        readOnly: true,
+        onTap: () => Get.find<AccountSettingsController>()
+            .selectDate(context, isStartDate),
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon),
+          suffixIcon: Icon(Icons.calendar_today),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: isTablet ? 20.0 : 16.0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWorkExperienceForm(BuildContext context, bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildTextField(
+          context: context,
+          controller: controller.titleController,
+          label: "İş Ünvanı",
+          icon: Icons.work_outline,
+          isTablet: isTablet,
+        ),
+        _buildTextField(
+          context: context,
+          controller: controller.companyController,
+          label: "Şirket",
+          icon: Icons.business_outlined,
+          isTablet: isTablet,
+        ),
+        _buildDateField(
+          context: context,
+          label: "Başlangıç Tarihi",
+          icon: Icons.calendar_today,
+          controller: controller.startDateController,
+          isStartDate: true,
+          isTablet: isTablet,
+        ),
+        _buildDateField(
+          context: context,
+          label: "Bitiş Tarihi",
+          icon: Icons.calendar_today,
+          controller: controller.endDateController,
+          isStartDate: false,
+          isTablet: isTablet,
+        ),
+        _buildTextField(
+          context: context,
+          controller: controller.descriptionController,
+          label: "Açıklama",
+          icon: Icons.description_outlined,
+          maxLines: 3,
+          isTablet: isTablet,
         ),
       ],
     );
