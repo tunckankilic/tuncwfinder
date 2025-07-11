@@ -105,7 +105,7 @@ class AppTheme {
       borderRadius: BorderRadius.circular(12),
       borderSide: const BorderSide(color: primarySwatch),
     ),
-    contentPadding: const EdgeInsets.all(16),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
   );
 
   // ThemeData
@@ -131,7 +131,7 @@ class AppTheme {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: primarySwatch),
       ),
-      contentPadding: const EdgeInsets.all(16),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     ),
     cardTheme: CardThemeData(
       color: cardColor,

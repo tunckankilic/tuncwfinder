@@ -344,6 +344,8 @@ class RegistrationScreen extends GetView<AuthController> {
                 Icons.text_fields_outlined,
                 isTablet,
               ),
+              const SizedBox(height: 32),
+              _buildNavigationButtons(isTablet),
             ],
           ),
         ),
@@ -380,6 +382,8 @@ class RegistrationScreen extends GetView<AuthController> {
                 (value) => controller.bodyTypeController.text = value,
                 isTablet,
               ),
+              const SizedBox(height: 32),
+              _buildNavigationButtons(isTablet),
             ],
           ),
         ),
@@ -468,6 +472,8 @@ class RegistrationScreen extends GetView<AuthController> {
                 controller.updateRelationshipOption,
                 isTablet,
               ),
+              const SizedBox(height: 32),
+              _buildNavigationButtons(isTablet),
             ],
           ),
         ),
@@ -501,6 +507,8 @@ class RegistrationScreen extends GetView<AuthController> {
               _buildWorkExperienceSection(isTablet),
               SizedBox(height: isTablet ? 30.0 : 20.0),
               _buildProjectsSection(isTablet),
+              const SizedBox(height: 32),
+              _buildNavigationButtons(isTablet),
             ],
           ),
         ),
@@ -741,6 +749,8 @@ class RegistrationScreen extends GetView<AuthController> {
               ),
               SizedBox(height: isTablet ? 30.0 : 20.0),
               _buildSkillsSection(isTablet),
+              const SizedBox(height: 32),
+              _buildNavigationButtons(isTablet),
             ],
           ),
         ),
@@ -766,6 +776,9 @@ class RegistrationScreen extends GetView<AuthController> {
         ),
         keyboardType: keyboardType,
         inputFormatters: inputFormatters,
+        style: TextStyle(
+          fontSize: isTablet ? 16.0 : 14.0,
+        ),
       ),
     );
   }
@@ -778,19 +791,31 @@ class RegistrationScreen extends GetView<AuthController> {
     bool isTablet,
   ) {
     return Padding(
-      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
+      padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 13.0),
       child: DropdownButtonFormField<String>(
         value: items.first,
         onChanged: (value) => onChanged(value ?? items.first),
         items: items.map((String value) {
           return DropdownMenuItem<String>(
             value: value,
-            child: Text(value),
+            child: Text(
+              value,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
           );
         }).toList(),
         decoration: AppTheme.inputDecoration.copyWith(
           labelText: label,
           prefixIcon: Icon(icon),
+        ),
+        isExpanded: true,
+        menuMaxHeight: 200,
+        dropdownColor: Colors.white,
+        icon: const Icon(Icons.arrow_drop_down),
+        style: TextStyle(
+          fontSize: isTablet ? 16.0 : 14.0,
+          color: Colors.black87,
         ),
       ),
     );

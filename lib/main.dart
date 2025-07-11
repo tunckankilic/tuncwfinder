@@ -19,7 +19,15 @@ import 'package:tuncforwork/constants/app_strings.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeApp();
-  await dotenv.load();
+
+  // .env.prod dosyasını yükle
+  try {
+    await dotenv.load(fileName: '.env.prod');
+  } catch (e) {
+    print(
+        'Warning: .env.prod file not found. Continuing without environment variables.');
+  }
+
   runApp(const MyApp());
 }
 
@@ -42,9 +50,7 @@ class MyApp extends StatelessWidget {
           home: const AuthenticationWrapper(),
           getPages: AppRoutes.routes,
           unknownRoute: AppRoutes.unknownRoute,
-          initialBinding: BindingsBuilder(() {
-            Get.put(PushNotificationSystem(), permanent: true);
-          }),
+          initialBinding: InitialBindings(),
           builder: (context, widget) {
             ScreenUtil.init(context);
             return MediaQuery(
@@ -65,7 +71,7 @@ class InitialBindings extends Bindings {
     Get.put(AuthService(), permanent: true);
     Get.put(PushNotificationSystem(), permanent: true);
 
-    // Core Controllers - sadece bunları yükle
+    // Core Controllers - permanent olarak yükle
     Get.put(UserController(), permanent: true);
     Get.put(AuthController(), permanent: true);
   }
