@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 
@@ -76,7 +77,7 @@ class _ButtonCardsState extends State<ButtonCards> {
                   children: [
                     CircularProgressIndicator(),
                     SizedBox(height: 16),
-                    Text('İşlemler işleniyor...'),
+                    Text(AppStrings.processingProfiles),
                   ],
                 ),
               );
@@ -92,12 +93,12 @@ class _ButtonCardsState extends State<ButtonCards> {
                         size: 64, color: Colors.grey),
                     SizedBox(height: 16),
                     Text(
-                      'Gösterilecek profil kalmadı',
+                      AppStrings.noProfilesLeft,
                       style: TextStyle(fontSize: 18, color: Colors.grey),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Filtreleri değiştirip tekrar deneyin',
+                      AppStrings.changeFiltersAndTryAgain,
                       style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
@@ -133,7 +134,7 @@ class _ButtonCardsState extends State<ButtonCards> {
                         icon: Icons.close,
                         color: Colors.red,
                         onPressed: () => _handleAction(widget.onDislike),
-                        label: 'Beğenme',
+                        label: AppStrings.dislike,
                         isTablet: isTablet,
                       ),
                       // Like butonu
@@ -141,7 +142,7 @@ class _ButtonCardsState extends State<ButtonCards> {
                         icon: Icons.favorite,
                         color: Colors.green,
                         onPressed: () => _handleAction(widget.onLike),
-                        label: 'Beğen',
+                        label: AppStrings.like,
                         isTablet: isTablet,
                       ),
                       // Favorite butonu
@@ -149,7 +150,7 @@ class _ButtonCardsState extends State<ButtonCards> {
                         icon: Icons.star,
                         color: Colors.orange,
                         onPressed: () => _handleAction(widget.onFavorite),
-                        label: 'Favori',
+                        label: AppStrings.favorite,
                         isTablet: isTablet,
                       ),
                     ],

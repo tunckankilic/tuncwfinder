@@ -4,6 +4,7 @@ import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/widgets/modern_widgets.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class ModernSwipeCards extends StatefulWidget {
   final List<Person> profiles;
@@ -104,9 +105,9 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
     if (widget.profiles.isEmpty || _currentIndex >= widget.profiles.length) {
       return ModernEmptyState(
         icon: Icons.sentiment_dissatisfied,
-        title: 'Gösterilecek profil kalmadı',
-        subtitle: 'Filtreleri değiştirip tekrar deneyin',
-        actionText: 'Yenile',
+        title: AppStrings.noProfilesToShow,
+        subtitle: AppStrings.changeFiltersAndTryAgain,
+        actionText: AppStrings.refresh,
         onActionPressed: () {
           setState(() {
             _currentIndex = 0;
@@ -193,7 +194,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            person.name ?? 'İsimsiz',
+                            person.name ?? AppStrings.nameless,
                             style: theme.textTheme.headlineSmall?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -225,7 +226,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
                   children: [
                     if (person.profileHeading != null) ...[
                       Text(
-                        'Hakkında',
+                        AppStrings.about,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -241,7 +242,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
                     ],
                     if (person.skills != null && person.skills!.isNotEmpty) ...[
                       Text(
-                        'Yetenekler',
+                        AppStrings.skillsLabel,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -261,7 +262,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Text(
-                              skill.name ?? 'Bilinmeyen',
+                              skill.name ?? AppStrings.unknown,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.onPrimaryContainer,
                                 fontWeight: FontWeight.w500,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class NotificationAlertDialog extends StatelessWidget {
   final String title;
@@ -20,12 +21,12 @@ class NotificationAlertDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Kapat'),
+          child: Text(AppStrings.closeButton),
         ),
         if (onTap != null)
           TextButton(
             onPressed: onTap,
-            child: const Text('Görüntüle'),
+            child: Text(AppStrings.viewButton),
           ),
       ],
     );

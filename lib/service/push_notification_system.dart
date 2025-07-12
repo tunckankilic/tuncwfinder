@@ -9,6 +9,7 @@ import 'package:tuncforwork/views/screens/screens.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class PushNotificationSystem extends GetxController {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -363,7 +364,7 @@ class PushNotificationSystem extends GetxController {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
                               ),
-                              child: const Text("View Profile"),
+                              child: const Text(AppStrings.viewProfile),
                             ),
                             ElevatedButton(
                               onPressed: () {
@@ -371,7 +372,7 @@ class PushNotificationSystem extends GetxController {
                               },
                               style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.redAccent),
-                              child: const Text("Close"),
+                              child: const Text(AppStrings.closeDialog),
                             ),
                           ],
                         ),

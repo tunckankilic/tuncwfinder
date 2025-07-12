@@ -13,6 +13,7 @@ import 'package:get/get.dart';
 import 'package:tuncforwork/models/project.dart';
 import 'package:tuncforwork/models/work_experience.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class UserDetailsController extends GetxController {
   final String userId;
@@ -85,43 +86,49 @@ class UserDetailsController extends GetxController {
     missingFields.clear();
 
     // Temel Bilgiler
-    if (name.value.isEmpty) missingFields.add('İsim');
-    if (age.value == '0') missingFields.add('Yaş');
-    if (gender.value.isEmpty) missingFields.add('Cinsiyet');
-    if (phoneNo.value.isEmpty) missingFields.add('Telefon');
-    if (city.value.isEmpty) missingFields.add('Şehir');
-    if (country.value.isEmpty) missingFields.add('Ülke');
-    if (education.value.isEmpty) missingFields.add('Eğitim');
+    if (name.value.isEmpty) missingFields.add(AppStrings.missingNameField);
+    if (age.value == '0') missingFields.add(AppStrings.ageField);
+    if (gender.value.isEmpty) missingFields.add(AppStrings.genderField);
+    if (phoneNo.value.isEmpty) missingFields.add(AppStrings.phoneField);
+    if (city.value.isEmpty) missingFields.add(AppStrings.cityField);
+    if (country.value.isEmpty) missingFields.add(AppStrings.countryField);
+    if (education.value.isEmpty) missingFields.add(AppStrings.educationField);
 
     // Ek Bilgiler
-    if (height.value.isEmpty) missingFields.add('Boy');
-    if (weight.value.isEmpty) missingFields.add('Kilo');
-    if (bodyType.value.isEmpty) missingFields.add('Vücut Tipi');
-    if (drink.value.isEmpty) missingFields.add('İçki Tercihi');
-    if (smoke.value.isEmpty) missingFields.add('Sigara Tercihi');
-    if (martialStatus.value.isEmpty) missingFields.add('Medeni Durum');
-    if (haveChildren.value.isEmpty) missingFields.add('Çocuk Durumu');
-    if (employmentStatus.value.isEmpty) missingFields.add('İş Durumu');
-    if (income.value.isEmpty) missingFields.add('Gelir');
-    if (livingSituation.value.isEmpty) missingFields.add('Yaşam Durumu');
-    if (nationality.value.isEmpty) missingFields.add('Uyruk');
-    if (languageSpoken.value.isEmpty) missingFields.add('Konuşulan Dil');
-    if (religion.value.isEmpty) missingFields.add('Din');
-    if (ethnicity.value.isEmpty) missingFields.add('Etnik Köken');
+    if (height.value.isEmpty) missingFields.add(AppStrings.height);
+    if (weight.value.isEmpty) missingFields.add(AppStrings.weight);
+    if (bodyType.value.isEmpty) missingFields.add(AppStrings.bodyTypeField);
+    if (drink.value.isEmpty) missingFields.add(AppStrings.drinkingPreference);
+    if (smoke.value.isEmpty) missingFields.add(AppStrings.smokingPreference);
+    if (martialStatus.value.isEmpty)
+      missingFields.add(AppStrings.maritalStatusField);
+    if (haveChildren.value.isEmpty)
+      missingFields.add(AppStrings.childrenStatus);
+    if (employmentStatus.value.isEmpty)
+      missingFields.add(AppStrings.employmentField);
+    if (income.value.isEmpty) missingFields.add(AppStrings.incomeField);
+    if (livingSituation.value.isEmpty)
+      missingFields.add(AppStrings.livingSituationField);
+    if (nationality.value.isEmpty)
+      missingFields.add(AppStrings.nationalityField);
+    if (languageSpoken.value.isEmpty)
+      missingFields.add(AppStrings.spokenLanguageField);
+    if (religion.value.isEmpty) missingFields.add(AppStrings.religionField);
+    if (ethnicity.value.isEmpty) missingFields.add(AppStrings.ethnicityField);
 
     // Kariyer Bilgileri
-    if (profession.value.isEmpty) missingFields.add('Meslek');
-    if (workExperiences.isEmpty) missingFields.add('İş Deneyimi');
-    if (skills.isEmpty) missingFields.add('Yetenekler');
+    if (profession.value.isEmpty) missingFields.add(AppStrings.professionField);
+    if (workExperiences.isEmpty) missingFields.add(AppStrings.workExperience);
+    if (skills.isEmpty) missingFields.add(AppStrings.skills);
 
     // Sosyal Medya
-    if (instagramUrl.value.isEmpty) missingFields.add('Instagram');
-    if (phoneNo.value.isEmpty) missingFields.add('WhatsApp');
+    if (instagramUrl.value.isEmpty) missingFields.add(AppStrings.instagram);
+    if (phoneNo.value.isEmpty) missingFields.add(AppStrings.whatsapp);
 
     if (missingFields.isNotEmpty) {
       Get.snackbar(
-        'Eksik Bilgiler',
-        'Profilinizde ${missingFields.length} eksik bilgi bulunuyor. Profilinizi düzenleyerek tamamlayabilirsiniz.',
+        AppStrings.missingInformationTitle,
+        AppStrings.missingInformationDescription,
         duration: const Duration(seconds: 5),
         backgroundColor: Colors.orange.shade50,
         colorText: Colors.orange.shade900,
@@ -198,18 +205,18 @@ class UserDetailsController extends GetxController {
 
   Future<void> _loadSkills() async {
     try {
-      log('Yetenekler yükleniyor...');
+      log(AppStrings.loadingSkills);
       final doc = await _firestore.collection('users').doc(userId).get();
 
       if (doc.exists && doc.data()!.containsKey('skills')) {
         skills.value = List<String>.from(doc.data()!['skills'] ?? []);
-        log('Yetenekler başarıyla yüklendi: ${skills.join(", ")}');
+        log('${AppStrings.skillsLoadedSuccessfully}: ${skills.join(", ")}');
       } else {
-        log('Yetenekler bulunamadı veya boş');
+        log(AppStrings.skillsNotFoundOrEmpty);
         skills.clear();
       }
     } catch (e, stackTrace) {
-      log('Yetenekler yüklenirken hata: $e');
+      log('${AppStrings.errorLoadingSkills}: $e');
       log('Stack trace: $stackTrace');
       print('Error loading skills: $e');
     }

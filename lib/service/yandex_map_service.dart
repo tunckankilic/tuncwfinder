@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class YandexMapService extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -25,7 +26,7 @@ class YandexMapService extends GetxController {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          errorMessage.value = 'Konum izinleri reddedildi';
+          errorMessage.value = AppStrings.locationPermissionDenied;
           return;
         }
       }
@@ -55,7 +56,7 @@ class YandexMapService extends GetxController {
       // Yakındaki yerleri yükle
       await loadNearbyPlaces();
     } catch (e) {
-      errorMessage.value = 'Harita başlatılırken hata: $e';
+      errorMessage.value = '${AppStrings.errorInitializingMap}: $e';
     } finally {
       isLoading.value = false;
     }
@@ -77,7 +78,7 @@ class YandexMapService extends GetxController {
         opacity: 1,
         isVisible: true,
         text: PlacemarkText(
-          text: 'Konumunuz',
+          text: 'Your Location',
           style: PlacemarkTextStyle(
             color: Colors.blue,
             size: 12,
@@ -157,7 +158,7 @@ class YandexMapService extends GetxController {
         }
       }
     } catch (e) {
-      errorMessage.value = 'Yakındaki yerler yüklenirken hata: $e';
+      errorMessage.value = '${AppStrings.errorLoadingNearbyPlaces}: $e';
     } finally {
       isLoading.value = false;
     }

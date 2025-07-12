@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class SwipeCards extends StatefulWidget {
   final List<Person> profiles;
@@ -154,7 +155,7 @@ class _SwipeCardsState extends State<SwipeCards>
                   children: [
                     CircularProgressIndicator(),
                     SizedBox(height: 16),
-                    Text('İşlemler işleniyor...'),
+                    Text(AppStrings.processingOperations),
                   ],
                 ),
               );
@@ -170,12 +171,12 @@ class _SwipeCardsState extends State<SwipeCards>
                         size: 64, color: Colors.grey),
                     SizedBox(height: 16),
                     Text(
-                      'Gösterilecek profil kalmadı',
+                      AppStrings.noProfilesToShow,
                       style: TextStyle(fontSize: 18, color: Colors.grey),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Filtreleri değiştirip tekrar deneyin',
+                      AppStrings.changeFiltersAndTryAgain,
                       style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
@@ -317,28 +318,28 @@ class SwipeCardContent extends StatelessWidget {
         color: Colors.black.withOpacity(0.7),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.thumb_down, color: Colors.red, size: 16),
-          SizedBox(width: 4),
+          const Icon(Icons.thumb_down, color: Colors.red, size: 16),
+          const SizedBox(width: 4),
           Text(
-            'Sola',
-            style: TextStyle(color: Colors.white, fontSize: 12),
+            AppStrings.swipeLeft,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
           ),
-          SizedBox(width: 8),
-          Icon(Icons.thumb_up, color: Colors.green, size: 16),
-          SizedBox(width: 4),
+          const SizedBox(width: 8),
+          const Icon(Icons.thumb_up, color: Colors.green, size: 16),
+          const SizedBox(width: 4),
           Text(
-            'Sağa',
-            style: TextStyle(color: Colors.white, fontSize: 12),
+            AppStrings.swipeRight,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
           ),
-          SizedBox(width: 8),
-          Icon(Icons.favorite, color: Colors.pink, size: 16),
-          SizedBox(width: 4),
+          const SizedBox(width: 8),
+          const Icon(Icons.favorite, color: Colors.pink, size: 16),
+          const SizedBox(width: 4),
           Text(
-            'Yukarı',
-            style: TextStyle(color: Colors.white, fontSize: 12),
+            AppStrings.swipeUp,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
           ),
         ],
       ),

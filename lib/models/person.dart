@@ -210,40 +210,82 @@ class Person {
 
       // Kariyer ve beceri alanlarını doldur (eğer mevcutsa)
       if (data.containsKey('skills') && data['skills'] != null) {
-        person.skills = (data['skills'] as List)
-            .map((skillMap) => Skill.fromMap(skillMap as Map<String, dynamic>))
-            .toList();
+        try {
+          final skillsList = data['skills'] as List;
+          person.skills = skillsList
+              .where((item) => item is Map<String, dynamic>)
+              .map(
+                  (skillMap) => Skill.fromMap(skillMap as Map<String, dynamic>))
+              .toList();
+        } catch (e) {
+          print('Error parsing skills: $e');
+          person.skills = [];
+        }
       }
 
       if (data.containsKey('workExperiences') &&
           data['workExperiences'] != null) {
-        person.workExperiences = (data['workExperiences'] as List)
-            .map((expMap) =>
-                WorkExperience.fromMap(expMap as Map<String, dynamic>))
-            .toList();
+        try {
+          final workExpList = data['workExperiences'] as List;
+          person.workExperiences = workExpList
+              .where((item) => item is Map<String, dynamic>)
+              .map((expMap) =>
+                  WorkExperience.fromMap(expMap as Map<String, dynamic>))
+              .toList();
+        } catch (e) {
+          print('Error parsing work experiences: $e');
+          person.workExperiences = [];
+        }
       }
 
       if (data.containsKey('projects') && data['projects'] != null) {
-        person.projects = (data['projects'] as List)
-            .map((projectMap) =>
-                Project.fromMap(projectMap as Map<String, dynamic>))
-            .toList();
+        try {
+          final projectsList = data['projects'] as List;
+          person.projects = projectsList
+              .where((item) => item is Map<String, dynamic>)
+              .map((projectMap) =>
+                  Project.fromMap(projectMap as Map<String, dynamic>))
+              .toList();
+        } catch (e) {
+          print('Error parsing projects: $e');
+          person.projects = [];
+        }
       }
 
       if (data.containsKey('educationHistory') &&
           data['educationHistory'] != null) {
-        person.educationHistory =
-            List<String>.from(data['educationHistory'] as List<dynamic>);
+        try {
+          final educationList = data['educationHistory'] as List;
+          person.educationHistory = educationList
+              .where((item) => item is String)
+              .map((item) => item as String)
+              .toList();
+        } catch (e) {
+          print('Error parsing education history: $e');
+          person.educationHistory = [];
+        }
       }
 
       if (data.containsKey('careerGoal') && data['careerGoal'] != null) {
-        person.careerGoal =
-            CareerGoal.fromMap(data['careerGoal'] as Map<String, dynamic>);
+        try {
+          if (data['careerGoal'] is Map<String, dynamic>) {
+            person.careerGoal =
+                CareerGoal.fromMap(data['careerGoal'] as Map<String, dynamic>);
+          }
+        } catch (e) {
+          print('Error parsing career goal: $e');
+        }
       }
 
       if (data.containsKey('skillGaps') && data['skillGaps'] != null) {
-        person.skillGaps =
-            Map<String, double>.from(data['skillGaps'] as Map<String, dynamic>);
+        try {
+          if (data['skillGaps'] is Map<String, dynamic>) {
+            person.skillGaps = Map<String, double>.from(
+                data['skillGaps'] as Map<String, dynamic>);
+          }
+        } catch (e) {
+          print('Error parsing skill gaps: $e');
+        }
       }
 
       return person;

@@ -39,7 +39,16 @@ class ProfileController extends GetxController {
 
     usersProfileList.bindStream(query.snapshots().map((querySnapshot) {
       return querySnapshot.docs
-          .map((doc) => Person.fromDataSnapshot(doc))
+          .map((doc) {
+            try {
+              return Person.fromDataSnapshot(doc);
+            } catch (e) {
+              print('Error parsing user document ${doc.id}: $e');
+              return null;
+            }
+          })
+          .where((person) => person != null)
+          .cast<Person>()
           .toList();
     }));
   }

@@ -1150,7 +1150,7 @@ class PasswordInputField extends StatelessWidget {
         Row(
           children: [
             Text(
-              'Şifre Gücü: ',
+              AppStrings.passwordStrength,
               style: TextStyle(
                 fontSize: isTablet ? 14.0 : 12.0,
                 fontWeight: FontWeight.w500,
@@ -1191,7 +1191,7 @@ class PasswordInputField extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Şifre Gereksinimleri:',
+            AppStrings.validatePasswordRequirements,
             style: TextStyle(
               fontSize: isTablet ? 14.0 : 12.0,
               fontWeight: FontWeight.w600,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tuncforwork/service/global.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/profile/account_settings/account_settings_controller.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 import 'dart:io';
 
 class ProfileInfoScreen extends GetView<AccountSettingsController> {
@@ -1540,14 +1541,14 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         _buildTextField(
           context: context,
           controller: controller.titleController,
-          label: "İş Ünvanı",
+          label: AppStrings.jobTitle,
           icon: Icons.work_outline,
           isTablet: isTablet,
         ),
         _buildTextField(
           context: context,
           controller: controller.companyController,
-          label: "Şirket",
+          label: AppStrings.companyName,
           icon: Icons.business_outlined,
           isTablet: isTablet,
         ),
@@ -1556,7 +1557,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
             Expanded(
               child: _buildDateField(
                 context: context,
-                label: "Başlangıç Tarihi",
+                label: AppStrings.startDateTurkish,
                 icon: Icons.calendar_today,
                 controller: controller.startDateController,
                 isStartDate: true,
@@ -1567,7 +1568,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
             Expanded(
               child: _buildDateField(
                 context: context,
-                label: "Bitiş Tarihi",
+                label: AppStrings.endDateTurkish,
                 icon: Icons.calendar_today,
                 controller: controller.endDateController,
                 isStartDate: false,
@@ -1579,7 +1580,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         _buildTextField(
           context: context,
           controller: controller.descriptionController,
-          label: "Açıklama",
+          label: AppStrings.descriptionTurkish,
           icon: Icons.description_outlined,
           isTablet: isTablet,
           maxLines: 3,
@@ -1587,7 +1588,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         const SizedBox(height: 16),
         ElevatedButton(
           onPressed: controller.addWorkExperience,
-          child: const Text("İş Deneyimi Ekle"),
+          child: const Text(AppStrings.addWorkExperienceTurkish),
         ),
 
         const SizedBox(height: 24),
@@ -1596,7 +1597,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
 
         // İş Deneyimi Listesi
         Text(
-          "İş Deneyimleri",
+          AppStrings.workExperiences,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 16),
@@ -1615,7 +1616,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                       children: [
                         Text(exp.company),
                         Text(
-                            "${exp.startDate} - ${exp.endDate ?? 'Devam ediyor'}"),
+                            "${exp.startDate} - ${exp.endDate ?? AppStrings.ongoing}"),
                         if (exp.description != null)
                           Text(
                             exp.description!,
@@ -1632,7 +1633,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
 
         // Yetenekler
         Text(
-          "Yetenekler",
+          AppStrings.skillsTitle,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 16),
@@ -1642,7 +1643,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
               child: _buildTextField(
                 context: context,
                 controller: controller.skillController,
-                label: "Yetenek",
+                label: AppStrings.skillLabel,
                 icon: Icons.psychology_outlined,
                 isTablet: isTablet,
               ),
@@ -1655,7 +1656,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                   controller.skillController.clear();
                 }
               },
-              child: const Text("Ekle"),
+              child: const Text(AppStrings.addButton),
             ),
           ],
         ),
@@ -1772,20 +1773,20 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         _buildTextField(
           context: context,
           controller: controller.titleController,
-          label: "İş Ünvanı",
+          label: AppStrings.jobTitle,
           icon: Icons.work_outline,
           isTablet: isTablet,
         ),
         _buildTextField(
           context: context,
           controller: controller.companyController,
-          label: "Şirket",
+          label: AppStrings.companyName,
           icon: Icons.business_outlined,
           isTablet: isTablet,
         ),
         _buildDateField(
           context: context,
-          label: "Başlangıç Tarihi",
+          label: AppStrings.startDateTurkish,
           icon: Icons.calendar_today,
           controller: controller.startDateController,
           isStartDate: true,
@@ -1793,7 +1794,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         ),
         _buildDateField(
           context: context,
-          label: "Bitiş Tarihi",
+          label: AppStrings.endDateTurkish,
           icon: Icons.calendar_today,
           controller: controller.endDateController,
           isStartDate: false,
@@ -1802,7 +1803,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         _buildTextField(
           context: context,
           controller: controller.descriptionController,
-          label: "Açıklama",
+          label: AppStrings.descriptionTurkish,
           icon: Icons.description_outlined,
           maxLines: 3,
           isTablet: isTablet,

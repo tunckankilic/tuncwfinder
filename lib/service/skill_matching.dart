@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:tuncforwork/models/models.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class SkillMatchingService {
   // TF-IDF hesaplama için yardımcı fonksiyonlar
@@ -202,13 +203,13 @@ class SkillMatchingService {
 
   String _generateMatchReason(Person user, JobPosting job, double score) {
     if (score >= 90) {
-      return "Mükemmel eşleşme! Aranan becerilerin çoğuna sahipsiniz.";
+      return AppStrings.perfectMatch;
     } else if (score >= 70) {
-      return "İyi eşleşme. Temel becerileriniz iş için uygun.";
+      return AppStrings.goodMatch;
     } else if (score >= 50) {
-      return "Kısmi eşleşme. Bazı becerilere sahipsiniz ancak gelişim alanları var.";
+      return AppStrings.partialMatch;
     } else {
-      return "Düşük eşleşme. Bu pozisyon için becerilerinizi geliştirmeniz gerekebilir.";
+      return AppStrings.lowMatch;
     }
   }
 }
