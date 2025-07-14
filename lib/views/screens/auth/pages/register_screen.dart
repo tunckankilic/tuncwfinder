@@ -231,15 +231,16 @@ class RegistrationScreen extends GetView<AuthController> {
                   : null,
             )),
         SizedBox(height: 16.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 16.w,
+          runSpacing: 8.h,
           children: [
             ModernButton(
               text: AppStrings.buttonTakePhoto,
               onPressed: controller.captureImage,
               isOutlined: true,
             ),
-            SizedBox(width: 16.w),
             ModernButton(
               text: AppStrings.buttonChoosePhoto,
               onPressed: controller.pickImage,
@@ -256,24 +257,29 @@ class RegistrationScreen extends GetView<AuthController> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         if (controller.currentPage.value > 0)
-          ModernButton(
-            text: AppStrings.buttonPrevious,
-            onPressed: controller.previousPage,
-            isOutlined: true,
+          Expanded(
+            child: ModernButton(
+              text: AppStrings.buttonPrevious,
+              onPressed: controller.previousPage,
+              isOutlined: true,
+            ),
           )
         else
-          const SizedBox(),
-        ModernButton(
-          text: controller.currentPage.value == 4
-              ? AppStrings.buttonFinish
-              : AppStrings.buttonNext,
-          onPressed: () {
-            if (controller.currentPage.value == 4) {
-              controller.register();
-            } else {
-              controller.nextPage();
-            }
-          },
+          const Spacer(),
+        SizedBox(width: 16.w),
+        Expanded(
+          child: ModernButton(
+            text: controller.currentPage.value == 4
+                ? AppStrings.buttonFinish
+                : AppStrings.buttonNext,
+            onPressed: () {
+              if (controller.currentPage.value == 4) {
+                controller.register();
+              } else {
+                controller.nextPage();
+              }
+            },
+          ),
         ),
       ],
     );

@@ -196,7 +196,18 @@ class UserDetailsController extends GetxController {
           .get();
 
       workExperiences.value = snapshot.docs
-          .map((doc) => WorkExperience.fromMap(doc.data()))
+          .map((doc) {
+            try {
+              return WorkExperience.fromMap(doc.data());
+            } catch (e) {
+              print('Error parsing work experience ${doc.id}: $e');
+              print('Data: ${doc.data()}');
+              // Hatalı veriyi atla ve devam et
+              return null;
+            }
+          })
+          .where((exp) => exp != null)
+          .cast<WorkExperience>()
           .toList();
     } catch (e) {
       print('Error loading work experience: $e');
@@ -209,7 +220,30 @@ class UserDetailsController extends GetxController {
       final doc = await _firestore.collection('users').doc(userId).get();
 
       if (doc.exists && doc.data()!.containsKey('skills')) {
-        skills.value = List<String>.from(doc.data()!['skills'] ?? []);
+        final skillsData = doc.data()!['skills'];
+
+        if (skillsData is List) {
+          // Skills verisi List olarak geliyor
+          if (skillsData.isNotEmpty &&
+              skillsData.first is Map<String, dynamic>) {
+            // Map listesi olarak geliyor (Skill objesi)
+            skills.value = skillsData
+                .map((skillMap) => skillMap['name'] as String)
+                .where((name) => name != null)
+                .cast<String>()
+                .toList();
+          } else if (skillsData.isNotEmpty && skillsData.first is String) {
+            // String listesi olarak geliyor
+            skills.value = List<String>.from(skillsData);
+          } else {
+            // Boş liste
+            skills.clear();
+          }
+        } else {
+          log('Skills data is not a list');
+          skills.clear();
+        }
+
         log('${AppStrings.skillsLoadedSuccessfully}: ${skills.join(", ")}');
       } else {
         log(AppStrings.skillsNotFoundOrEmpty);

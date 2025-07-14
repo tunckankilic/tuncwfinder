@@ -212,11 +212,27 @@ class Person {
       if (data.containsKey('skills') && data['skills'] != null) {
         try {
           final skillsList = data['skills'] as List;
-          person.skills = skillsList
-              .where((item) => item is Map<String, dynamic>)
-              .map(
-                  (skillMap) => Skill.fromMap(skillMap as Map<String, dynamic>))
-              .toList();
+          if (skillsList.isNotEmpty &&
+              skillsList.first is Map<String, dynamic>) {
+            // Map listesi olarak geliyor (Skill objesi)
+            person.skills = skillsList
+                .where((item) => item is Map<String, dynamic>)
+                .map((skillMap) =>
+                    Skill.fromMap(skillMap as Map<String, dynamic>))
+                .toList();
+          } else if (skillsList.isNotEmpty && skillsList.first is String) {
+            // String listesi olarak geliyor, Skill objelerine dönüştür
+            person.skills = skillsList
+                .where((item) => item is String)
+                .map((skillName) => Skill(
+                      name: skillName as String,
+                      proficiency: 0.5, // Varsayılan değer
+                      yearsOfExperience: 1, // Varsayılan değer
+                    ))
+                .toList();
+          } else {
+            person.skills = [];
+          }
         } catch (e) {
           print('Error parsing skills: $e');
           person.skills = [];
@@ -229,8 +245,17 @@ class Person {
           final workExpList = data['workExperiences'] as List;
           person.workExperiences = workExpList
               .where((item) => item is Map<String, dynamic>)
-              .map((expMap) =>
-                  WorkExperience.fromMap(expMap as Map<String, dynamic>))
+              .map((expMap) {
+                try {
+                  return WorkExperience.fromMap(expMap as Map<String, dynamic>);
+                } catch (e) {
+                  print('Error parsing work experience: $e');
+                  print('Data: $expMap');
+                  return null;
+                }
+              })
+              .where((exp) => exp != null)
+              .cast<WorkExperience>()
               .toList();
         } catch (e) {
           print('Error parsing work experiences: $e');
@@ -492,16 +517,47 @@ class Person {
 
     // Kariyer ve beceri alanlarını ekle
     if (map.containsKey('skills') && map['skills'] != null) {
-      person.skills = (map['skills'] as List)
-          .map((skillMap) => Skill.fromMap(skillMap as Map<String, dynamic>))
-          .toList();
+      final skillsData = map['skills'] as List;
+      if (skillsData.isNotEmpty && skillsData.first is Map<String, dynamic>) {
+        // Map listesi olarak geliyor (Skill objesi)
+        person.skills = skillsData
+            .map((skillMap) => Skill.fromMap(skillMap as Map<String, dynamic>))
+            .toList();
+      } else if (skillsData.isNotEmpty && skillsData.first is String) {
+        // String listesi olarak geliyor, Skill objelerine dönüştür
+        person.skills = skillsData
+            .map((skillName) => Skill(
+                  name: skillName as String,
+                  proficiency: 0.5, // Varsayılan değer
+                  yearsOfExperience: 1, // Varsayılan değer
+                ))
+            .toList();
+      } else {
+        person.skills = [];
+      }
     }
 
     if (map.containsKey('workExperiences') && map['workExperiences'] != null) {
-      person.workExperiences = (map['workExperiences'] as List)
-          .map((expMap) =>
-              WorkExperience.fromMap(expMap as Map<String, dynamic>))
-          .toList();
+      try {
+        final workExpList = map['workExperiences'] as List;
+        person.workExperiences = workExpList
+            .where((item) => item is Map<String, dynamic>)
+            .map((expMap) {
+              try {
+                return WorkExperience.fromMap(expMap as Map<String, dynamic>);
+              } catch (e) {
+                print('Error parsing work experience in fromMap: $e');
+                print('Data: $expMap');
+                return null;
+              }
+            })
+            .where((exp) => exp != null)
+            .cast<WorkExperience>()
+            .toList();
+      } catch (e) {
+        print('Error parsing work experiences in fromMap: $e');
+        person.workExperiences = [];
+      }
     }
 
     if (map.containsKey('projects') && map['projects'] != null) {
