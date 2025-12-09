@@ -23,11 +23,12 @@ target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
-  # Firebase pods
+  # Firebase pods (Messaging and Functions removed for performance)
   pod 'FirebaseCore', :modular_headers => true
   pod 'FirebaseAuth', :modular_headers => true
   pod 'FirebaseStorage', :modular_headers => true
   pod 'FirebaseFirestore', :modular_headers => true
+  # Note: FirebaseAnalytics and FirebaseCrashlytics added via Flutter plugins
   
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
@@ -37,27 +38,31 @@ post_install do |installer|
     flutter_additional_ios_build_settings(target)
 
     target.build_configurations.each do |config|
-      # M1 specific settings
+      # M1 Apple Silicon optimizations
       config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
       config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386'
       config.build_settings['EXCLUDED_ARCHS[sdk=iphoneos*]'] = 'armv7'
       
-      # Basic settings
+      # iOS version and basic settings
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
       config.build_settings['ENABLE_BITCODE'] = 'NO'
       config.build_settings['SWIFT_VERSION'] = '5.0'
       
-      # M1 specific framework settings
+      # Framework distribution
       config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
       
-      # Permissions
+      # Debug optimization for faster builds on M1
+      if config.name == 'Debug'
+        config.build_settings['GCC_OPTIMIZATION_LEVEL'] = '0'
+        config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
+        config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf'
+      end
+      
+      # Permission flags (only camera and photos used)
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
         'PERMISSION_CAMERA=1',
         'PERMISSION_PHOTOS=1',
-        'PERMISSION_NOTIFICATIONS=1',
-        'PERMISSION_MEDIA_LIBRARY=1',
-        'PERMISSION_MICROPHONE=1',
       ]
     end
   end

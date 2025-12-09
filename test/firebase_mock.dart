@@ -57,6 +57,11 @@ void setupFirebaseMocks() {
   });
 }
 
+// Alias for setupFirebaseMocks to support both naming conventions
+void setupFirebaseAuthMocks() {
+  setupFirebaseMocks();
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setupFirebaseMocks();

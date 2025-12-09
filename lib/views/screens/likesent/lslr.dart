@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/theme/modern_theme.dart';
 import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
 import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
@@ -16,7 +17,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
         if (controller.isLoading.value) {
           return const Center(
             child: CircularProgressIndicator(
-              color: ElegantTheme.primaryColor,
+              color: ModernTheme.primaryColor,
             ),
           );
         }
@@ -35,7 +36,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
         children: [
           Icon(
             Icons.favorite_border,
-            color: ElegantTheme.accentBordeaux,
+            color: ModernTheme.secondaryColor,
             size: iconSize,
           ),
           const SizedBox(height: 16),
@@ -45,7 +46,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
                 : 'No one has liked you yet',
             style: TextStyle(
               fontSize: isTablet ? 24.0 : 18.0,
-              color: ElegantTheme.accentBordeaux,
+              color: ModernTheme.secondaryColor,
             ),
           ),
         ],
@@ -62,7 +63,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
       child: AppBar(
         automaticallyImplyLeading: false,
         elevation: 0,
-        backgroundColor: ElegantTheme.primaryColor,
+        backgroundColor: ModernTheme.primaryColor,
         title: isTablet
             ? _buildTabletAppBarTitle(context)
             : _buildPhoneAppBarTitle(context),
@@ -75,7 +76,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       decoration: BoxDecoration(
-        color: ElegantTheme.primaryColor.withOpacity(0.1),
+        color: ModernTheme.primaryColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
@@ -86,7 +87,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
           Container(
             height: 30,
             width: 2,
-            color: ElegantTheme.accentBordeaux,
+            color: ModernTheme.secondaryColor,
           ),
           const SizedBox(width: 16),
           _buildTabButton("They liked me", false, isTablet: true),
@@ -103,7 +104,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
         Text(
           "   |   ",
           style: TextStyle(
-            color: ElegantTheme.accentBordeaux,
+            color: ModernTheme.secondaryColor,
             fontSize: 16,
           ),
         ),
@@ -174,8 +175,8 @@ class LikeSentLikeReceived extends GetView<LslrController> {
           text,
           style: TextStyle(
             color: isSelected
-                ? ElegantTheme.lightGrey
-                : ElegantTheme.secondaryColor,
+                ? ModernTheme.surfaceVariant
+                : ModernTheme.secondaryColor,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             fontSize: isTablet ? 16.0 : 14.0,
           ),
@@ -233,7 +234,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
                     "${user["name"]} • ${user["age"]}",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: ElegantTheme.textTheme.titleMedium!.copyWith(
+                    style: ModernTheme.textTheme.titleMedium!.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: nameSize,
@@ -253,7 +254,7 @@ class LikeSentLikeReceived extends GetView<LslrController> {
                           "${user["city"]}, ${user["country"]}",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: ElegantTheme.textTheme.bodySmall!.copyWith(
+                          style: ModernTheme.textTheme.bodySmall!.copyWith(
                             color: Colors.white70,
                             fontSize: locationSize,
                           ),

@@ -2,7 +2,6 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tuncforwork/service/push_notification_system.dart';
 import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
 import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
 import 'package:tuncforwork/views/screens/profile/controller/profile_controllers.dart';
@@ -18,7 +17,7 @@ class HomeController extends GetxController {
   final RxBool isInitialized = false.obs;
 
   // Controllers
-  PushNotificationSystem? notificationSystem;
+  // 🔕 PushNotificationSystem kaldırıldı (performans için)
   FsfrController? fsfrController;
   VsvrController? vsvrController;
   LslrController? lslrController;
@@ -76,9 +75,7 @@ class HomeController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Core servisleri initialize et
-      notificationSystem = Get.find<PushNotificationSystem>();
-      await notificationSystem?.initialize();
+      // Notification system kaldırıldı (performans için)
 
       // Controller'ları initialize et
       await initializeControllers();

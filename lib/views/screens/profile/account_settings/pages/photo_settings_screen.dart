@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/theme/modern_theme.dart';
 import 'package:tuncforwork/views/screens/profile/account_settings/account_settings_controller.dart';
 import 'package:tuncforwork/views/screens/profile/account_settings/pages/account_info_settings.dart';
 
@@ -32,7 +33,7 @@ class PhotoSettingsScreen extends GetView<AccountSettingsController> {
     final double toolbarHeight = isTablet ? 70.0 : kToolbarHeight;
 
     return AppBar(
-      backgroundColor: ElegantTheme.primaryColor,
+      backgroundColor: ModernTheme.primaryColor,
       toolbarHeight: toolbarHeight,
       title: Text(
         "Edit Photos",
@@ -133,7 +134,7 @@ class PhotoSettingsScreen extends GetView<AccountSettingsController> {
           decoration: BoxDecoration(
             border: Border.all(
               width: isTablet ? 1.5 : 1.0,
-              color: ElegantTheme.primaryColor,
+              color: ModernTheme.primaryColor,
             ),
             borderRadius: BorderRadius.circular(borderRadius),
             boxShadow: [
@@ -211,10 +212,10 @@ class PhotoSettingsScreen extends GetView<AccountSettingsController> {
       borderRadius: BorderRadius.circular(borderRadius),
       child: Container(
         decoration: BoxDecoration(
-          color: ElegantTheme.primaryColor.withOpacity(0.1),
+          color: ModernTheme.primaryColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(borderRadius),
           border: Border.all(
-            color: ElegantTheme.primaryColor.withOpacity(0.3),
+            color: ModernTheme.primaryColor.withOpacity(0.3),
             width: isTablet ? 2.0 : 1.0,
           ),
         ),
@@ -223,14 +224,14 @@ class PhotoSettingsScreen extends GetView<AccountSettingsController> {
           children: [
             Icon(
               Icons.add_photo_alternate,
-              color: ElegantTheme.primaryColor,
+              color: ModernTheme.primaryColor,
               size: iconSize,
             ),
             SizedBox(height: isTablet ? 12.0 : 8.0),
             Text(
               'Add Photo',
               style: TextStyle(
-                color: ElegantTheme.primaryColor,
+                color: ModernTheme.primaryColor,
                 fontSize: isTablet ? 16.0 : 14.0,
                 fontWeight: FontWeight.w500,
               ),

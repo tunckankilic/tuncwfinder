@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/tech_event.dart';
-import 'package:tuncforwork/service/push_notification_system.dart';
 import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
 import 'package:tuncforwork/views/screens/home/home_controller.dart';
 import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
@@ -18,8 +17,7 @@ class MockHomeController extends GetxController implements HomeController {
   @override
   final RxString errorMessage = ''.obs;
 
-  @override
-  PushNotificationSystem? notificationSystem;
+  //  PushNotificationSystem kaldırıldı (performans için)
   @override
   FsfrController? fsfrController;
   @override

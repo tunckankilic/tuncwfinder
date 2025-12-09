@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 
 import 'models.dart';
 
@@ -369,7 +370,7 @@ class Person {
       bodyType: bodyType ?? this.bodyType,
       drink: drink ?? this.drink,
       smoke: smoke ?? this.smoke,
-      maritalStatus: maritalStatus ?? this.maritalStatus,
+      maritalStatus: maritalStatus ?? maritalStatus,
       haveChildren: haveChildren ?? this.haveChildren,
       noOfChildren: noOfChildren ?? this.noOfChildren,
       profession: profession ?? this.profession,
@@ -586,6 +587,7 @@ class Person {
   bool operator ==(covariant Person other) {
     if (identical(this, other)) return true;
 
+    // Use deep equality checks for lists and maps from collection package
     return other.uid == uid &&
         other.imageProfile == imageProfile &&
         other.email == email &&
@@ -616,51 +618,58 @@ class Person {
         other.religion == religion &&
         other.ethnicity == ethnicity &&
         other.instagramUrl == instagramUrl &&
-        other.skills.toString() == skills.toString() &&
-        other.workExperiences.toString() == workExperiences.toString() &&
-        other.projects.toString() == projects.toString() &&
-        other.educationHistory.toString() == educationHistory.toString() &&
-        other.careerGoal.toString() == careerGoal.toString() &&
-        other.skillGaps.toString() == skillGaps.toString();
+        const DeepCollectionEquality().equals(other.skills, skills) &&
+        const DeepCollectionEquality()
+            .equals(other.workExperiences, workExperiences) &&
+        const DeepCollectionEquality().equals(other.projects, projects) &&
+        const ListEquality().equals(other.educationHistory, educationHistory) &&
+        other.careerGoal == careerGoal &&
+        const MapEquality().equals(other.skillGaps, skillGaps);
   }
 
   @override
   int get hashCode {
-    return uid.hashCode ^
-        imageProfile.hashCode ^
-        email.hashCode ^
-        name.hashCode ^
-        age.hashCode ^
-        phoneNo.hashCode ^
-        city.hashCode ^
-        country.hashCode ^
-        profileHeading.hashCode ^
-        publishedDateTime.hashCode ^
-        gender.hashCode ^
-        height.hashCode ^
-        weight.hashCode ^
-        bodyType.hashCode ^
-        drink.hashCode ^
-        smoke.hashCode ^
-        maritalStatus.hashCode ^
-        haveChildren.hashCode ^
-        noOfChildren.hashCode ^
-        profession.hashCode ^
-        employmentStatus.hashCode ^
-        income.hashCode ^
-        livingSituation.hashCode ^
-        willingToRelocate.hashCode ^
-        nationality.hashCode ^
-        education.hashCode ^
-        languageSpoken.hashCode ^
-        religion.hashCode ^
-        ethnicity.hashCode ^
-        instagramUrl.hashCode ^
-        skills.hashCode ^
-        workExperiences.hashCode ^
-        projects.hashCode ^
-        educationHistory.hashCode ^
-        careerGoal.hashCode ^
-        skillGaps.hashCode;
+    // Use Object.hash for better hash code generation (max 20 fields)
+    // Split into multiple hash combinations for all fields
+    return Object.hash(
+          uid,
+          imageProfile,
+          email,
+          name,
+          age,
+          phoneNo,
+          city,
+          country,
+          profileHeading,
+          publishedDateTime,
+          gender,
+          height,
+          weight,
+          bodyType,
+          drink,
+          smoke,
+          maritalStatus,
+          haveChildren,
+          noOfChildren,
+          profession,
+        ) ^
+        Object.hash(
+          employmentStatus,
+          income,
+          livingSituation,
+          willingToRelocate,
+          nationality,
+          education,
+          languageSpoken,
+          religion,
+          ethnicity,
+          instagramUrl,
+          const DeepCollectionEquality().hash(skills),
+          const DeepCollectionEquality().hash(workExperiences),
+          const DeepCollectionEquality().hash(projects),
+          const ListEquality().hash(educationHistory),
+          careerGoal,
+          const MapEquality().hash(skillGaps),
+        );
   }
 }

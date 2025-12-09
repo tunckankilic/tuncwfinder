@@ -473,7 +473,7 @@ class ResponsiveSocialButtons extends GetView<SwipeController> {
               ),
             ),
           _buildIgnoreButton(
-            () => controller.blockUser(person.uid!),
+            () => controller.blockUser(person.uid!, "Blocked from swipe"),
           ),
         ],
       ),

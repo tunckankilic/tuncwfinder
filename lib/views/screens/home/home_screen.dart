@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/theme/modern_theme.dart';
 import 'package:tuncforwork/views/screens/home/home_controller.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
 import 'package:tuncforwork/views/screens/profile/controller/profile_controllers.dart';
@@ -13,7 +14,7 @@ class HomeScreen extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    PushNotificationSystem().whenNotificationReceived(context);
+    //  Push notification system kaldırıldı (performans için)
     final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
     Get.put(HomeController());
     Get.lazyPut<ProfileController>(() => ProfileController());
@@ -44,7 +45,7 @@ class HomeScreen extends GetView<HomeController> {
           Container(
             width: sideNavWidth,
             decoration: BoxDecoration(
-              color: ElegantTheme.primaryColor,
+              color: ModernTheme.primaryColor,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.1),
@@ -104,7 +105,7 @@ class HomeScreen extends GetView<HomeController> {
                 icon,
                 size: isSelected ? 32 : 28,
                 color: isSelected
-                    ? ElegantTheme.secondaryColor
+                    ? ModernTheme.secondaryColor
                     : Colors.white.withValues(alpha: 0.6),
               ),
               const SizedBox(height: 8),
@@ -112,7 +113,7 @@ class HomeScreen extends GetView<HomeController> {
                 label,
                 style: TextStyle(
                   color: isSelected
-                      ? ElegantTheme.secondaryColor
+                      ? ModernTheme.secondaryColor
                       : Colors.white.withValues(alpha: 0.6),
                   fontSize: isSelected ? 14 : 12,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -140,8 +141,8 @@ class HomeScreen extends GetView<HomeController> {
       child: BottomNavigationBar(
         onTap: controller.changeScreen,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: ElegantTheme.primaryColor,
-        selectedItemColor: ElegantTheme.secondaryColor,
+        backgroundColor: ModernTheme.primaryColor,
+        selectedItemColor: ModernTheme.secondaryColor,
         unselectedItemColor: Colors.white.withValues(alpha: 0.6),
         currentIndex: controller.screenIndex.value,
         items: [

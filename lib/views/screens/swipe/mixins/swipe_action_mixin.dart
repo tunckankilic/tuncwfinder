@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tuncforwork/service/user_blocking_service.dart';
 
 /// SwipeController için action mantığını içerir (like, dislike, favorite, block)
 mixin SwipeActionMixin on GetxController {
@@ -143,7 +144,7 @@ mixin SwipeActionMixin on GetxController {
     }
   }
 
-  /// Block action
+  /// Block action (now uses UserBlockingService for efficiency)
   Future<void> blockUser(String userId, String reason) async {
     if (_isProcessing.value) return;
 
@@ -164,17 +165,9 @@ mixin SwipeActionMixin on GetxController {
     try {
       _isProcessing.value = true;
 
-      // Block user
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(currentUserId)
-          .collection("blockedUsers")
-          .doc(userId)
-          .set({
-        'reason': reason,
-        'timestamp': FieldValue.serverTimestamp(),
-        'blockedAt': DateTime.now().millisecondsSinceEpoch,
-      });
+      // Use UserBlockingService for optimized blocking with cache management
+      await userBlockingService.blockUser(currentUserId, userId,
+          reason: reason);
 
       // Mark as processed
       await markUserAsProcessed(userId, 'block');
@@ -182,7 +175,7 @@ mixin SwipeActionMixin on GetxController {
       // Update rate limiting
       _lastBlockTimes[userId] = DateTime.now();
 
-      log('User $userId blocked');
+      log('User $userId blocked via UserBlockingService');
 
       Get.snackbar(
         'Başarılı',

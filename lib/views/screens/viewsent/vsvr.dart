@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/theme/modern_theme.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
 import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 import 'package:tuncforwork/views/screens/viewsent/vsvr_controller.dart';
@@ -26,7 +27,7 @@ class ViewSentViewReceive extends GetView<VsvrController> {
       flexibleSpace: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [ElegantTheme.primaryColor, ElegantTheme.accentBordeaux],
+            colors: [ModernTheme.primaryColor, ModernTheme.secondaryColor],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -52,7 +53,7 @@ class ViewSentViewReceive extends GetView<VsvrController> {
         ? Center(
             child: Icon(
               Icons.person_off_sharp,
-              color: ElegantTheme.textColor,
+              color: ModernTheme.secondaryColor,
               size: 60.sp,
             ),
           )
@@ -130,7 +131,7 @@ class ViewSentViewReceive extends GetView<VsvrController> {
                 Text(
                   "${user["name"]} ◉ ${user["age"]}",
                   maxLines: 2,
-                  style: ElegantTheme.textTheme.titleLarge?.copyWith(
+                  style: ModernTheme.textTheme.titleLarge?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 18.sp,
@@ -150,7 +151,7 @@ class ViewSentViewReceive extends GetView<VsvrController> {
                       child: Text(
                         "${user["city"]}, ${user["country"]}",
                         maxLines: 2,
-                        style: ElegantTheme.textTheme.bodyLarge?.copyWith(
+                        style: ModernTheme.textTheme.bodyLarge?.copyWith(
                           color: Colors.white,
                           fontSize: 14.sp,
                           shadows: [

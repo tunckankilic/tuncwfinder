@@ -3,11 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/person.dart';
-import 'package:tuncforwork/service/global.dart';
 import 'package:tuncforwork/views/screens/auth/pages/screens.dart';
-import 'package:tuncforwork/service/push_notification_system.dart';
+import 'package:tuncforwork/views/screens/swipe/mixins/swipe_filter_mixin.dart';
 
-class ProfileController extends GetxController {
+class ProfileController extends GetxController with SwipeFilterMixin {
   final Rx<List<Person>> usersProfileList = Rx<List<Person>>([]);
   List<Person> get allUsersProfileList => usersProfileList.value;
 
@@ -27,12 +26,13 @@ class ProfileController extends GetxController {
         .collection("users")
         .where("uid", isNotEqualTo: _auth.currentUser!.uid);
 
-    if (chosenGender != null && chosenCountry != null && chosenAge != null) {
+    if (chosenGender.value.isNotEmpty &&
+        chosenCountry.value.isNotEmpty &&
+        chosenAge.value.isNotEmpty) {
       query = query
-          .where("gender", isEqualTo: chosenGender.toString().toLowerCase())
-          .where("country", isEqualTo: chosenCountry)
-          .where("age",
-              isGreaterThanOrEqualTo: int.parse(chosenAge.toString()));
+          .where("gender", isEqualTo: chosenGender.value.toLowerCase())
+          .where("country", isEqualTo: chosenCountry.value)
+          .where("age", isGreaterThanOrEqualTo: int.parse(chosenAge.value));
     }
 
     usersProfileList.bindStream(query.snapshots().map((querySnapshot) {
@@ -115,6 +115,8 @@ class ProfileController extends GetxController {
     update();
   }
 
+  // Notification sistemi kaldırıldı (performans için)
+  // Bildirimler artık gönderilmiyor, sadece Firestore'a kaydediliyor
   Future<void> sendNotificationToUser(
       String receiverID, String featureType, String senderName) async {
     try {
@@ -123,43 +125,16 @@ class ProfileController extends GetxController {
         return;
       }
 
-      final userDoc =
-          await _firestore.collection("users").doc(receiverID).get();
+      // Bildirim sistemi kaldırıldı - sadece log tutuyoruz
+      log(' Notification disabled: $featureType from $senderName to $receiverID');
+      log(' Push notification system removed for better performance');
 
-      final userDeviceToken = userDoc.data()?["userDeviceToken"] as String?;
-
-      if (userDeviceToken == null) {
-        log('User device token not found for user: $receiverID');
-        return;
-      }
-
-      final notificationSystem = Get.find<PushNotificationSystem>();
-
-      NotificationType type;
-      switch (featureType.toLowerCase()) {
-        case "like":
-          type = NotificationType.like;
-          break;
-        case "view":
-          type = NotificationType.view;
-          break;
-        case "favorite":
-          type = NotificationType.favorite;
-          break;
-        default:
-          log('Invalid feature type: $featureType');
-          return;
-      }
-
-      await notificationSystem.sendInteractionNotification(
-        userDeviceToken: userDeviceToken,
-        senderName: senderName,
-        type: type,
-        receiverId: receiverID,
-        senderId: currentUserId,
-      );
+      // İleride tekrar aktif etmek isterseniz:
+      // 1. firebase_messaging ve cloud_functions paketlerini geri ekleyin
+      // 2. PushNotificationSystem sınıfını geri ekleyin
+      // 3. Bu fonksiyonu eski haline getirin
     } catch (e) {
-      log('Error sending notification: $e');
+      log('Error in notification placeholder: $e');
     }
   }
 
