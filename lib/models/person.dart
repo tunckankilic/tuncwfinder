@@ -10,7 +10,6 @@ class Person {
   String? uid;
   String? imageProfile;
   String? email;
-  String? password;
   String? name;
   int? age;
   String? phoneNo;
@@ -28,7 +27,7 @@ class Person {
   //Life style
   String? drink;
   String? smoke;
-  String? martialStatus;
+  String? maritalStatus;
   String? haveChildren;
   String? noOfChildren;
   String? profession;
@@ -63,7 +62,6 @@ class Person {
     this.uid,
     this.imageProfile,
     this.email,
-    this.password,
     this.name,
     this.age,
     this.phoneNo,
@@ -77,7 +75,7 @@ class Person {
     this.bodyType,
     this.drink,
     this.smoke,
-    this.martialStatus,
+    this.maritalStatus,
     this.haveChildren,
     this.noOfChildren,
     this.profession,
@@ -106,7 +104,6 @@ class Person {
       "uid": uid,
       "imageProfile": imageProfile,
       "email": email,
-      "password": password,
       "name": name,
       "age": age,
       "phoneNo": phoneNo,
@@ -124,7 +121,7 @@ class Person {
       //Life style
       "drink": drink,
       "smoke": smoke,
-      "martialStatus": martialStatus,
+      "maritalStatus": maritalStatus,
       "haveChildren": haveChildren,
       "noOfChildren": noOfChildren,
       "profession": profession,
@@ -192,7 +189,7 @@ class Person {
         bodyType: data['bodyType'] as String?,
         drink: data['drink'] as String?,
         smoke: data['smoke'] as String?,
-        martialStatus: data['martialStatus'] as String?,
+        maritalStatus: data['maritalStatus'] as String?,
         haveChildren: data['haveChildren'] as String?,
         noOfChildren: data['noOfChildren'] as String?,
         profession: data['profession'] as String?,
@@ -210,40 +207,103 @@ class Person {
 
       // Kariyer ve beceri alanlarını doldur (eğer mevcutsa)
       if (data.containsKey('skills') && data['skills'] != null) {
-        person.skills = (data['skills'] as List)
-            .map((skillMap) => Skill.fromMap(skillMap as Map<String, dynamic>))
-            .toList();
+        try {
+          final skillsList = data['skills'] as List;
+          if (skillsList.isNotEmpty &&
+              skillsList.first is Map<String, dynamic>) {
+            // Map listesi olarak geliyor (Skill objesi)
+            person.skills = skillsList
+                .whereType<Map<String, dynamic>>()
+                .map((skillMap) => Skill.fromMap(skillMap))
+                .toList();
+          } else if (skillsList.isNotEmpty && skillsList.first is String) {
+            // String listesi olarak geliyor, Skill objelerine dönüştür
+            person.skills = skillsList
+                .whereType<String>()
+                .map((skillName) => Skill(
+                      name: skillName,
+                      proficiency: 0.5, // Varsayılan değer
+                      yearsOfExperience: 1, // Varsayılan değer
+                    ))
+                .toList();
+          } else {
+            person.skills = [];
+          }
+        } catch (e) {
+          log('Error parsing skills: $e');
+          person.skills = [];
+        }
       }
 
       if (data.containsKey('workExperiences') &&
           data['workExperiences'] != null) {
-        person.workExperiences = (data['workExperiences'] as List)
-            .map((expMap) =>
-                WorkExperience.fromMap(expMap as Map<String, dynamic>))
-            .toList();
+        try {
+          final workExpList = data['workExperiences'] as List;
+          person.workExperiences = workExpList
+              .whereType<Map<String, dynamic>>()
+              .map((expMap) {
+                try {
+                  return WorkExperience.fromMap(expMap);
+                } catch (e) {
+                  log('Error parsing work experience: $e');
+                  log('Data: $expMap');
+                  return null;
+                }
+              })
+              .where((exp) => exp != null)
+              .cast<WorkExperience>()
+              .toList();
+        } catch (e) {
+          log('Error parsing work experiences: $e');
+          person.workExperiences = [];
+        }
       }
 
       if (data.containsKey('projects') && data['projects'] != null) {
-        person.projects = (data['projects'] as List)
-            .map((projectMap) =>
-                Project.fromMap(projectMap as Map<String, dynamic>))
-            .toList();
+        try {
+          final projectsList = data['projects'] as List;
+          person.projects = projectsList
+              .whereType<Map<String, dynamic>>()
+              .map((projectMap) => Project.fromMap(projectMap))
+              .toList();
+        } catch (e) {
+          log('Error parsing projects: $e');
+          person.projects = [];
+        }
       }
 
       if (data.containsKey('educationHistory') &&
           data['educationHistory'] != null) {
-        person.educationHistory =
-            List<String>.from(data['educationHistory'] as List<dynamic>);
+        try {
+          final educationList = data['educationHistory'] as List;
+          person.educationHistory =
+              educationList.whereType<String>().map((item) => item).toList();
+        } catch (e) {
+          log('Error parsing education history: $e');
+          person.educationHistory = [];
+        }
       }
 
       if (data.containsKey('careerGoal') && data['careerGoal'] != null) {
-        person.careerGoal =
-            CareerGoal.fromMap(data['careerGoal'] as Map<String, dynamic>);
+        try {
+          if (data['careerGoal'] is Map<String, dynamic>) {
+            person.careerGoal =
+                CareerGoal.fromMap(data['careerGoal'] as Map<String, dynamic>);
+          }
+        } catch (e) {
+          log('Error parsing career goal: $e');
+        }
       }
 
       if (data.containsKey('skillGaps') && data['skillGaps'] != null) {
-        person.skillGaps =
-            Map<String, double>.from(data['skillGaps'] as Map<String, dynamic>);
+        try {
+          if (data['skillGaps'] is Map<String, dynamic>) {
+            person.skillGaps = Map<String, double>.from(
+                data['skillGaps'] as Map<String, dynamic>);
+          }
+        } catch (e) {
+          log('Error parsing skill gaps: $e');
+        }
       }
 
       return person;
@@ -257,7 +317,6 @@ class Person {
     String? uid,
     String? imageProfile,
     String? email,
-    String? password,
     String? name,
     int? age,
     String? phoneNo,
@@ -297,7 +356,6 @@ class Person {
       uid: uid ?? this.uid,
       imageProfile: imageProfile ?? this.imageProfile,
       email: email ?? this.email,
-      password: password ?? this.password,
       name: name ?? this.name,
       age: age ?? this.age,
       phoneNo: phoneNo ?? this.phoneNo,
@@ -311,7 +369,7 @@ class Person {
       bodyType: bodyType ?? this.bodyType,
       drink: drink ?? this.drink,
       smoke: smoke ?? this.smoke,
-      martialStatus: martialStatus ?? this.martialStatus,
+      maritalStatus: maritalStatus ?? this.maritalStatus,
       haveChildren: haveChildren ?? this.haveChildren,
       noOfChildren: noOfChildren ?? this.noOfChildren,
       profession: profession ?? this.profession,
@@ -339,7 +397,6 @@ class Person {
       'uid': uid,
       'imageProfile': imageProfile,
       'email': email,
-      'password': password,
       'name': name,
       'age': age,
       'phoneNo': phoneNo,
@@ -353,7 +410,7 @@ class Person {
       'bodyType': bodyType,
       'drink': drink,
       'smoke': smoke,
-      'martialStatus': martialStatus,
+      'maritalStatus': maritalStatus,
       'haveChildren': haveChildren,
       'noOfChildren': noOfChildren,
       'profession': profession,
@@ -400,7 +457,6 @@ class Person {
       imageProfile:
           map['imageProfile'] != null ? map['imageProfile'] as String : null,
       email: map['email'] != null ? map['email'] as String : null,
-      password: map['password'] != null ? map['password'] as String : null,
       name: map['name'] != null ? map['name'] as String : null,
       age: map['age'] != null ? map['age'] as int : null,
       phoneNo: map['phoneNo'] != null ? map['phoneNo'] as String : null,
@@ -418,8 +474,8 @@ class Person {
       bodyType: map['bodyType'] != null ? map['bodyType'] as String : null,
       drink: map['drink'] != null ? map['drink'] as String : null,
       smoke: map['smoke'] != null ? map['smoke'] as String : null,
-      martialStatus:
-          map['martialStatus'] != null ? map['martialStatus'] as String : null,
+      maritalStatus:
+          map['maritalStatus'] != null ? map['maritalStatus'] as String : null,
       haveChildren:
           map['haveChildren'] != null ? map['haveChildren'] as String : null,
       noOfChildren:
@@ -450,16 +506,47 @@ class Person {
 
     // Kariyer ve beceri alanlarını ekle
     if (map.containsKey('skills') && map['skills'] != null) {
-      person.skills = (map['skills'] as List)
-          .map((skillMap) => Skill.fromMap(skillMap as Map<String, dynamic>))
-          .toList();
+      final skillsData = map['skills'] as List;
+      if (skillsData.isNotEmpty && skillsData.first is Map<String, dynamic>) {
+        // Map listesi olarak geliyor (Skill objesi)
+        person.skills = skillsData
+            .map((skillMap) => Skill.fromMap(skillMap as Map<String, dynamic>))
+            .toList();
+      } else if (skillsData.isNotEmpty && skillsData.first is String) {
+        // String listesi olarak geliyor, Skill objelerine dönüştür
+        person.skills = skillsData
+            .map((skillName) => Skill(
+                  name: skillName as String,
+                  proficiency: 0.5, // Varsayılan değer
+                  yearsOfExperience: 1, // Varsayılan değer
+                ))
+            .toList();
+      } else {
+        person.skills = [];
+      }
     }
 
     if (map.containsKey('workExperiences') && map['workExperiences'] != null) {
-      person.workExperiences = (map['workExperiences'] as List)
-          .map((expMap) =>
-              WorkExperience.fromMap(expMap as Map<String, dynamic>))
-          .toList();
+      try {
+        final workExpList = map['workExperiences'] as List;
+        person.workExperiences = workExpList
+            .whereType<Map<String, dynamic>>()
+            .map((expMap) {
+              try {
+                return WorkExperience.fromMap(expMap);
+              } catch (e) {
+                log('Error parsing work experience in fromMap: $e');
+                log('Data: $expMap');
+                return null;
+              }
+            })
+            .where((exp) => exp != null)
+            .cast<WorkExperience>()
+            .toList();
+      } catch (e) {
+        log('Error parsing work experiences in fromMap: $e');
+        person.workExperiences = [];
+      }
     }
 
     if (map.containsKey('projects') && map['projects'] != null) {
@@ -492,7 +579,7 @@ class Person {
 
   @override
   String toString() {
-    return 'Person(uid: $uid, imageProfile: $imageProfile, email: $email, password: $password, name: $name, age: $age, phoneNo: $phoneNo, city: $city, country: $country, profileHeading: $profileHeading, publishedDateTime: $publishedDateTime, gender: $gender, height: $height, weight: $weight, bodyType: $bodyType, drink: $drink, smoke: $smoke, martialStatus: $martialStatus, haveChildren: $haveChildren, noOfChildren: $noOfChildren, profession: $profession, employmentStatus: $employmentStatus, income: $income, livingSituation: $livingSituation, willingToRelocate: $willingToRelocate, nationality: $nationality, education: $education, languageSpoken: $languageSpoken, religion: $religion, ethnicity: $ethnicity, instagramUrl: $instagramUrl, skills: $skills, workExperiences: $workExperiences, projects: $projects, educationHistory: $educationHistory, careerGoal: $careerGoal, skillGaps: $skillGaps)';
+    return 'Person(uid: $uid, imageProfile: $imageProfile, email: $email, name: $name, age: $age, phoneNo: $phoneNo, city: $city, country: $country, profileHeading: $profileHeading, publishedDateTime: $publishedDateTime, gender: $gender, height: $height, weight: $weight, bodyType: $bodyType, drink: $drink, smoke: $smoke, maritalStatus: $maritalStatus, haveChildren: $haveChildren, noOfChildren: $noOfChildren, profession: $profession, employmentStatus: $employmentStatus, income: $income, livingSituation: $livingSituation, willingToRelocate: $willingToRelocate, nationality: $nationality, education: $education, languageSpoken: $languageSpoken, religion: $religion, ethnicity: $ethnicity, instagramUrl: $instagramUrl, skills: $skills, workExperiences: $workExperiences, projects: $projects, educationHistory: $educationHistory, careerGoal: $careerGoal, skillGaps: $skillGaps)';
   }
 
   @override
@@ -502,7 +589,6 @@ class Person {
     return other.uid == uid &&
         other.imageProfile == imageProfile &&
         other.email == email &&
-        other.password == password &&
         other.name == name &&
         other.age == age &&
         other.phoneNo == phoneNo &&
@@ -516,7 +602,7 @@ class Person {
         other.bodyType == bodyType &&
         other.drink == drink &&
         other.smoke == smoke &&
-        other.martialStatus == martialStatus &&
+        other.maritalStatus == maritalStatus &&
         other.haveChildren == haveChildren &&
         other.noOfChildren == noOfChildren &&
         other.profession == profession &&
@@ -543,7 +629,6 @@ class Person {
     return uid.hashCode ^
         imageProfile.hashCode ^
         email.hashCode ^
-        password.hashCode ^
         name.hashCode ^
         age.hashCode ^
         phoneNo.hashCode ^
@@ -557,7 +642,7 @@ class Person {
         bodyType.hashCode ^
         drink.hashCode ^
         smoke.hashCode ^
-        martialStatus.hashCode ^
+        maritalStatus.hashCode ^
         haveChildren.hashCode ^
         noOfChildren.hashCode ^
         profession.hashCode ^

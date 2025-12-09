@@ -36,7 +36,7 @@ class NotificationDialog extends StatelessWidget {
     );
   }
 
-  Widget contentBox(context) {
+  Widget contentBox(BuildContext context) {
     return Stack(
       children: <Widget>[
         Container(

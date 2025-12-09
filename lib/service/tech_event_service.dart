@@ -3,10 +3,6 @@ import 'package:get/get.dart';
 import 'package:tuncforwork/models/tech_event.dart';
 import 'package:tuncforwork/service/push_notification_system.dart';
 
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'dart:math' hide log;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:developer';
 
 class TechEventService extends GetxController {
@@ -37,7 +33,7 @@ class TechEventService extends GetxController {
       }
     } catch (e) {
       errorMessage.value = 'Etkinlik oluşturulurken hata: $e';
-      throw e;
+      rethrow;
     } finally {
       isLoading.value = false;
     }
@@ -109,7 +105,7 @@ class TechEventService extends GetxController {
       );
     } catch (e) {
       errorMessage.value = 'Etkinliğe katılırken hata: $e';
-      throw e;
+      rethrow;
     } finally {
       isLoading.value = false;
     }
@@ -126,7 +122,7 @@ class TechEventService extends GetxController {
       });
     } catch (e) {
       errorMessage.value = 'Etkinlikten ayrılırken hata: $e';
-      throw e;
+      rethrow;
     } finally {
       isLoading.value = false;
     }
@@ -159,12 +155,6 @@ class TechEventService extends GetxController {
       errorMessage.value = 'Ulaşım bilgileri alınırken hata: $e';
       return {};
     }
-  }
-
-  // İki nokta arası mesafe hesaplama - Google Maps kaldırıldı
-  double _calculateDistance(dynamic point1, dynamic point2) {
-    // Google Maps kaldırıldı - varsayılan değer döndür
-    return 0.0;
   }
 
   // Etkinlik bildirimi gönder

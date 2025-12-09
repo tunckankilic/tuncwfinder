@@ -15,7 +15,7 @@ class VsvrController extends GetxController {
     getViewsListKeys();
   }
 
-  getViewsListKeys() async {
+  Future<void> getViewsListKeys() async {
     if (isViewSentClicked.value) {
       var viewSentDocument = await FirebaseFirestore.instance
           .collection("users")
@@ -38,7 +38,7 @@ class VsvrController extends GetxController {
     }
   }
 
-  getKeysDataFromUsersCollection(List<String> keysList) async {
+  Future<void> getKeysDataFromUsersCollection(List<String> keysList) async {
     var allUsersDocument =
         await FirebaseFirestore.instance.collection("users").get();
 

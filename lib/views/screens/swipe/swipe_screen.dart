@@ -3,6 +3,8 @@ import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 import 'package:tuncforwork/views/screens/swipe/widgets/button_cards.dart';
+import 'package:get/get.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class SwipeScreen extends GetView<SwipeController> {
   const SwipeScreen({super.key});
@@ -15,7 +17,7 @@ class SwipeScreen extends GetView<SwipeController> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Keşfet'),
+        title: const Text(AppStrings.exploreTitle),
         actions: [
           // İstatistik butonu
           Obx(() {
@@ -86,7 +88,7 @@ class SwipeScreen extends GetView<SwipeController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Gösterilecek profil kalmadı',
+            AppStrings.noProfilesLeft,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -95,7 +97,7 @@ class SwipeScreen extends GetView<SwipeController> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Filtreleri değiştirip tekrar deneyin',
+            AppStrings.changeFiltersAndRetry,
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[500],
@@ -105,7 +107,7 @@ class SwipeScreen extends GetView<SwipeController> {
           ElevatedButton.icon(
             onPressed: () => controller.getResults(),
             icon: const Icon(Icons.refresh),
-            label: const Text('Yenile'),
+            label: const Text(AppStrings.refresh),
           ),
         ],
       ),
@@ -117,24 +119,28 @@ class SwipeScreen extends GetView<SwipeController> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Swipe İstatistikleri'),
+          title: const Text(AppStrings.swipeStatistics),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildStatItem(AppStrings.totalProcessed,
+                  stats['totalProcessed'].toString()),
               _buildStatItem(
-                  'Toplam İşlenen', stats['totalProcessed'].toString()),
-              _buildStatItem('Toplam Swipe', stats['totalSwiped'].toString()),
+                  AppStrings.totalSwiped, stats['totalSwiped'].toString()),
+              _buildStatItem(AppStrings.remainingProfiles,
+                  stats['remainingProfiles'].toString()),
               _buildStatItem(
-                  'Kalan Profil', stats['remainingProfiles'].toString()),
-              _buildStatItem('İşlem Durumu',
-                  stats['isBatchProcessing'] ? 'İşleniyor' : 'Hazır'),
+                  AppStrings.processingStatus,
+                  stats['isBatchProcessing']
+                      ? AppStrings.processing
+                      : AppStrings.ready),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Kapat'),
+              child: const Text(AppStrings.close),
             ),
           ],
         );
@@ -166,28 +172,24 @@ class SwipeScreen extends GetView<SwipeController> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('İşlenmiş Kullanıcıları Temizle'),
-          content: const Text(
-            'Bu işlem tüm işlenmiş kullanıcıları temizleyecek. '
-            'Bu sayede aynı profiller tekrar görünebilir. '
-            'Devam etmek istiyor musunuz?',
-          ),
+          title: Text(AppStrings.clearProcessedUsers),
+          content: Text(AppStrings.clearProcessedUsersDescription),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('İptal'),
+              child: Text(AppStrings.dialogCancelButton),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 controller.clearProcessedUsers();
-                controller.getResults(); // Yeni profiller yükle
+                controller.getResults(); // ${AppStrings.loadNewProfiles}
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Temizle'),
+              child: Text(AppStrings.clearButton),
             ),
           ],
         );

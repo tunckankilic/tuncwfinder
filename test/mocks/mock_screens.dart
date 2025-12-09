@@ -47,7 +47,6 @@ class MockHomeController extends GetxController implements HomeController {
   @override
   void navigateToEventList() {}
 
-  @override
   void navigateToMap() {}
 
   @override
@@ -215,16 +214,16 @@ class MockSwipeCards extends StatelessWidget {
   final Function(dynamic) onSwipeUp;
 
   const MockSwipeCards({
-    Key? key,
+    super.key,
     required this.profiles,
     required this.onSwipeLeft,
     required this.onSwipeRight,
     required this.onSwipeUp,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 400,
       child: Column(
         children: [

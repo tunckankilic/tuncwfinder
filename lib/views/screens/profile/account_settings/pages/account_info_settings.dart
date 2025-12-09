@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:tuncforwork/service/global.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/profile/account_settings/account_settings_controller.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 import 'dart:io';
 
 class ProfileInfoScreen extends GetView<AccountSettingsController> {
@@ -76,7 +76,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 10,
                   offset: const Offset(0, 3),
@@ -99,7 +99,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                   borderRadius: BorderRadius.circular(16.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withValues(alpha: 0.1),
                       spreadRadius: 1,
                       blurRadius: 10,
                       offset: const Offset(0, 3),
@@ -282,7 +282,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1),
                     spreadRadius: 1,
                     blurRadius: 10,
                     offset: const Offset(0, 3),
@@ -380,7 +380,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).primaryColor.withOpacity(0.1)
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
               : Colors.transparent,
           border: Border(
             left: BorderSide(
@@ -531,7 +531,6 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
 
   Widget _buildProfileImageSection(BuildContext context, bool isTablet) {
     final double avatarSize = isTablet ? 160.0 : 120.0;
-    final double buttonHeight = isTablet ? 48.0 : 40.0;
 
     return Container(
       width: double.infinity,
@@ -553,7 +552,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
+                        color: Colors.grey.withValues(alpha: 0.2),
                         spreadRadius: 2,
                         blurRadius: 10,
                         offset: const Offset(0, 3),
@@ -583,7 +582,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
+                        color: Colors.grey.withValues(alpha: 0.3),
                         spreadRadius: 1,
                         blurRadius: 5,
                       ),
@@ -687,7 +686,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         width: isTablet ? 120.0 : 100.0,
         padding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
         decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
         ),
         child: Column(
@@ -724,7 +723,6 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
     int maxLines = 1,
     String? helperText,
   }) {
-    final fieldHeight = isTablet ? 60.0 : 48.0;
     final fontSize = isTablet ? 16.0 : 14.0;
     final iconSize = isTablet ? 24.0 : 20.0;
 
@@ -811,7 +809,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
     return Container(
       margin: EdgeInsets.only(bottom: isTablet ? 24.0 : 16.0),
       child: DropdownButtonFormField<String>(
-        value: allItems.contains(value) ? value : allItems.first,
+        initialValue: allItems.contains(value) ? value : allItems.first,
         isExpanded: isDropdownExpanded,
         items: allItems.map((item) {
           return DropdownMenuItem(
@@ -947,7 +945,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                 margin: EdgeInsets.only(bottom: isTablet ? 8.0 : 4.0),
                 decoration: BoxDecoration(
                   color: selection.value == option
-                      ? Theme.of(context).primaryColor.withOpacity(0.1)
+                      ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
                       : Colors.white,
                   borderRadius: BorderRadius.circular(isTablet ? 8.0 : 6.0),
                 ),
@@ -1540,14 +1538,14 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         _buildTextField(
           context: context,
           controller: controller.titleController,
-          label: "İş Ünvanı",
+          label: AppStrings.jobTitle,
           icon: Icons.work_outline,
           isTablet: isTablet,
         ),
         _buildTextField(
           context: context,
           controller: controller.companyController,
-          label: "Şirket",
+          label: AppStrings.companyName,
           icon: Icons.business_outlined,
           isTablet: isTablet,
         ),
@@ -1556,7 +1554,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
             Expanded(
               child: _buildDateField(
                 context: context,
-                label: "Başlangıç Tarihi",
+                label: AppStrings.startDateTurkish,
                 icon: Icons.calendar_today,
                 controller: controller.startDateController,
                 isStartDate: true,
@@ -1567,7 +1565,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
             Expanded(
               child: _buildDateField(
                 context: context,
-                label: "Bitiş Tarihi",
+                label: AppStrings.endDateTurkish,
                 icon: Icons.calendar_today,
                 controller: controller.endDateController,
                 isStartDate: false,
@@ -1579,7 +1577,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         _buildTextField(
           context: context,
           controller: controller.descriptionController,
-          label: "Açıklama",
+          label: AppStrings.descriptionTurkish,
           icon: Icons.description_outlined,
           isTablet: isTablet,
           maxLines: 3,
@@ -1587,7 +1585,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         const SizedBox(height: 16),
         ElevatedButton(
           onPressed: controller.addWorkExperience,
-          child: const Text("İş Deneyimi Ekle"),
+          child: const Text(AppStrings.addWorkExperienceTurkish),
         ),
 
         const SizedBox(height: 24),
@@ -1596,7 +1594,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
 
         // İş Deneyimi Listesi
         Text(
-          "İş Deneyimleri",
+          AppStrings.workExperiences,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 16),
@@ -1615,7 +1613,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                       children: [
                         Text(exp.company),
                         Text(
-                            "${exp.startDate} - ${exp.endDate ?? 'Devam ediyor'}"),
+                            "${exp.startDate} - ${exp.endDate ?? AppStrings.ongoing}"),
                         if (exp.description != null)
                           Text(
                             exp.description!,
@@ -1632,7 +1630,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
 
         // Yetenekler
         Text(
-          "Yetenekler",
+          AppStrings.skillsTitle,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 16),
@@ -1642,7 +1640,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
               child: _buildTextField(
                 context: context,
                 controller: controller.skillController,
-                label: "Yetenek",
+                label: AppStrings.skillLabel,
                 icon: Icons.psychology_outlined,
                 isTablet: isTablet,
               ),
@@ -1655,7 +1653,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                   controller.skillController.clear();
                 }
               },
-              child: const Text("Ekle"),
+              child: const Text(AppStrings.addButton),
             ),
           ],
         ),
@@ -1762,52 +1760,6 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildWorkExperienceForm(BuildContext context, bool isTablet) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildTextField(
-          context: context,
-          controller: controller.titleController,
-          label: "İş Ünvanı",
-          icon: Icons.work_outline,
-          isTablet: isTablet,
-        ),
-        _buildTextField(
-          context: context,
-          controller: controller.companyController,
-          label: "Şirket",
-          icon: Icons.business_outlined,
-          isTablet: isTablet,
-        ),
-        _buildDateField(
-          context: context,
-          label: "Başlangıç Tarihi",
-          icon: Icons.calendar_today,
-          controller: controller.startDateController,
-          isStartDate: true,
-          isTablet: isTablet,
-        ),
-        _buildDateField(
-          context: context,
-          label: "Bitiş Tarihi",
-          icon: Icons.calendar_today,
-          controller: controller.endDateController,
-          isStartDate: false,
-          isTablet: isTablet,
-        ),
-        _buildTextField(
-          context: context,
-          controller: controller.descriptionController,
-          label: "Açıklama",
-          icon: Icons.description_outlined,
-          maxLines: 3,
-          isTablet: isTablet,
-        ),
-      ],
     );
   }
 }

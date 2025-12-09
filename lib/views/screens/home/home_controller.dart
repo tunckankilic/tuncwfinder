@@ -1,16 +1,11 @@
 import 'dart:developer';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/service/push_notification_system.dart';
-import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
 import 'package:tuncforwork/views/screens/likesent/lslr_controller.dart';
 import 'package:tuncforwork/views/screens/profile/controller/profile_controllers.dart';
-import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
-import 'package:tuncforwork/views/screens/profile/account_settings/account_settings_controller.dart';
 import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_bindings.dart';
@@ -21,8 +16,6 @@ import 'package:tuncforwork/models/tech_event.dart';
 class HomeController extends GetxController {
   static HomeController instance = Get.find();
   final RxBool isInitialized = false.obs;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Controllers
   PushNotificationSystem? notificationSystem;

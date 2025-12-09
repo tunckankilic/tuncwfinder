@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
+import 'package:tuncforwork/views/screens/splash/splash_controller.dart';
 
 class SplashScreen extends StatefulWidget {
-  static const routeName = AppStrings.routeSplash;
   const SplashScreen({super.key});
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen>
@@ -20,20 +20,18 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(seconds: 2),
       vsync: this,
     );
+
     _animation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
     );
+
     _controller.forward();
 
-    // 3 saniye sonra ana sayfaya yönlendir
-    Future.delayed(const Duration(seconds: 3), () {
-      Get.offNamed(
-          AppStrings.routeLogin); // Ana sayfa route'unuzu buraya ekleyin
-    });
+    Get.put(SplashController());
   }
 
   @override
@@ -45,8 +43,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          Colors.white, // Arka plan rengini tercihlerinize göre değiştirin
+      backgroundColor: Colors.white, // ${AppStrings.commentBackgroundColor}
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -70,8 +67,7 @@ class _SplashScreenState extends State<SplashScreen>
                 style: TextStyle(
                   fontSize: 32.sp,
                   fontWeight: FontWeight.bold,
-                  color: Colors
-                      .blue, // Yazı rengini tercihlerinize göre değiştirin
+                  color: Colors.blue, // ${AppStrings.commentTextColor}
                 ),
               ),
             ),

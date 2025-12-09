@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 // Firestore instance
 final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -9,11 +9,11 @@ final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 // Dropdown değerlerini almak için metodlar
 Future<List<String>> getDropdownValues(String collectionName) async {
   try {
-    log('$collectionName için getDropdownValues başlatıldı');
+    log(AppStrings.logInitialized.replaceAll('{}', collectionName));
     final snapshot = await _firestore.collection(collectionName).get();
 
     if (snapshot.docs.isEmpty) {
-      log('$collectionName koleksiyonu boş');
+      log(AppStrings.logCollectionEmpty.replaceAll('{}', collectionName));
       return [];
     }
 
@@ -23,18 +23,22 @@ Future<List<String>> getDropdownValues(String collectionName) async {
         .cast<String>()
         .toList();
 
-    log('$collectionName için ${values.length} değer bulundu');
+    log(AppStrings.logValuesFound
+        .replaceAll('{}', collectionName)
+        .replaceAll('{}', values.length.toString()));
     return values;
   } catch (e, stackTrace) {
-    log('$collectionName için getDropdownValues hatası: $e');
-    log('Stack trace: $stackTrace');
+    log(AppStrings.logGeneralError
+        .replaceAll('{}', collectionName)
+        .replaceAll('{}', e.toString()));
+    log(AppStrings.logStackTrace.replaceAll('{}', stackTrace.toString()));
     return [];
   }
 }
 
 Future<Map<String, List<String>>> getAllDropdownValues() async {
   try {
-    log('getAllDropdownValues başlatıldı');
+    log(AppStrings.logInitialized.replaceAll('{}', 'getAllDropdownValues'));
     final collections = [
       'genders',
       'countries',
@@ -57,36 +61,40 @@ Future<Map<String, List<String>>> getAllDropdownValues() async {
 
     for (var collection in collections) {
       try {
-        log('$collection koleksiyonu yükleniyor...');
+        log(AppStrings.logLoadingCollection.replaceAll('{}', collection));
         final collectionValues = await getDropdownValues(collection);
         if (collectionValues.isNotEmpty) {
           values[collection] = collectionValues;
-          log('$collection koleksiyonu yüklendi: ${collectionValues.length} değer');
+          log(AppStrings.logCollectionLoaded
+              .replaceAll('{}', collection)
+              .replaceAll('{}', collectionValues.length.toString()));
         } else {
-          log('$collection koleksiyonu boş');
+          log(AppStrings.logCollectionEmpty.replaceAll('{}', collection));
         }
       } catch (e) {
-        log('$collection koleksiyonu yüklenirken hata: $e');
+        log(AppStrings.logGeneralError
+            .replaceAll('{}', collection)
+            .replaceAll('{}', e.toString()));
       }
     }
 
     if (values.isEmpty) {
-      log('Hiçbir dropdown değeri yüklenemedi!');
+      log(AppStrings.logNoDropdownValues);
     } else {
-      log('Toplam ${values.length} koleksiyon yüklendi');
+      log(AppStrings.logTotalCollections
+          .replaceAll('{}', values.length.toString()));
     }
 
     return values;
   } catch (e, stackTrace) {
-    log('getAllDropdownValues genel hata: $e');
-    log('Stack trace: $stackTrace');
+    log(AppStrings.logAllDropdownValuesError.replaceAll('{}', e.toString()));
+    log(AppStrings.logStackTrace.replaceAll('{}', stackTrace.toString()));
     return {};
   }
 }
 
 // Global Variables
 String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-String fcmServerToken = dotenv.env['FCM_SERVER_TOKEN'] ?? '';
 String? chosenAge;
 String? chosenCountry;
 String? chosenGender;

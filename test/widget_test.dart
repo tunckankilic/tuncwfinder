@@ -7,7 +7,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tuncforwork/main.dart';
 
 void main() {
   testWidgets('Temel widget testi', (WidgetTester tester) async {

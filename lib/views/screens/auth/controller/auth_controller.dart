@@ -6,18 +6,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:http/http.dart' as http;
 import 'package:tuncforwork/models/models.dart';
-import 'package:tuncforwork/models/person.dart' as pM;
+import 'package:tuncforwork/models/person.dart' as p_model;
 import 'package:tuncforwork/service/validation.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
 import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'package:tuncforwork/views/screens/home/home_bindings.dart';
 import 'package:tuncforwork/views/screens/home/home_controller.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
 
 class AuthController extends GetxController {
@@ -57,7 +54,7 @@ class AuthController extends GetxController {
   final TextEditingController bodyTypeController = TextEditingController();
   final TextEditingController drinkController = TextEditingController();
   final TextEditingController smokeController = TextEditingController();
-  final TextEditingController martialStatusController = TextEditingController();
+  final TextEditingController maritalStatusController = TextEditingController();
   final TextEditingController haveChildrenController = TextEditingController();
   final TextEditingController noOfChildrenController = TextEditingController();
   final TextEditingController professionController = TextEditingController();
@@ -350,11 +347,20 @@ By accepting this privacy policy, you declare that you understand and agree to t
       // Sosyal medya URL'lerini temizleyelim
       final instagramUrl = instagramController.text.trim();
 
-      final pM.Person userData = pM.Person(
+      // Kariyer ve beceri verilerini hazırla
+      List<Skill> skillsList = [];
+      for (String skillName in selectedSkills) {
+        skillsList.add(Skill(
+          name: skillName,
+          proficiency: 0.5, // Varsayılan değer
+          yearsOfExperience: 1, // Varsayılan değer
+        ));
+      }
+
+      final p_model.Person userData = p_model.Person(
         uid: user.uid,
         imageProfile: profileImageUrl,
         email: emailController.text.trim(),
-        password: passwordController.text,
         name: nameController.text.trim(),
         age: int.tryParse(ageController.text.trim()),
         phoneNo: phoneNoController.text.trim(),
@@ -376,9 +382,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         smoke: selectedSmoke.value.isNotEmpty
             ? selectedSmoke.value
             : smokeController.text.trim(),
-        martialStatus: selectedMaritalStatus.value.isNotEmpty
-            ? selectedMaritalStatus.value
-            : martialStatusController.text.trim(),
+
         haveChildren: childrenSelection.value,
         noOfChildren: noOfChildrenController.text.trim(),
         profession: selectedProfession.value.isNotEmpty
@@ -393,12 +397,25 @@ By accepting this privacy policy, you declare that you understand and agree to t
             : livingSituationController.text.trim(),
         willingToRelocate: willingToRelocateController.text.trim(),
         nationality: nationalityController.text.trim(),
-        education: educationController.text.trim(),
-        languageSpoken: languageSpokenController.text.trim(),
-        religion: religionController.text.trim(),
-        ethnicity: ethnicityController.text.trim(),
+        education: selectedEducation.value.isNotEmpty
+            ? selectedEducation.value
+            : educationController.text.trim(),
+        languageSpoken: selectedLanguage.value.isNotEmpty
+            ? selectedLanguage.value
+            : languageSpokenController.text.trim(),
+        religion: selectedReligion.value.isNotEmpty
+            ? selectedReligion.value
+            : religionController.text.trim(),
+        ethnicity: selectedEthnicity.value.isNotEmpty
+            ? selectedEthnicity.value
+            : ethnicityController.text.trim(),
         // Sosyal medya URL'lerini boş string yerine null olarak ayarlayalım
         instagramUrl: instagramUrl.isNotEmpty ? instagramUrl : null,
+        // Kariyer ve beceri alanları
+        skills: skillsList.isNotEmpty ? skillsList : null,
+        workExperiences: workExperiences.isNotEmpty ? workExperiences : null,
+        projects: projects.isNotEmpty ? projects : null,
+        careerGoal: careerGoal.value,
       );
 
       await _firestore.collection('users').doc(user.uid).set(userData.toJson());
@@ -454,7 +471,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         duration: const Duration(milliseconds: 500),
       );
     } on FirebaseAuthException catch (e) {
-      handleAuthError(e);
+      _handleLoginError(e);
     } catch (e) {
       _showError('${AppStrings.errorRegistrationFailed}${e.toString()}');
       log('Registration error: $e');
@@ -475,7 +492,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
   void validateConfirmPassword(String value) {
     if (value != passwordController.text) {
-      confirmPasswordError.value = 'Şifreler eşleşmiyor';
+      confirmPasswordError.value = AppStrings.passwordsDoNotMatch;
     } else {
       confirmPasswordError.value = '';
     }
@@ -597,15 +614,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
     try {
       isLoading.value = true;
 
-      // Email kontrolü
-      final methods =
-          await _auth.fetchSignInMethodsForEmail(emailController.text.trim());
-
-      if (methods.isEmpty) {
-        _showError(AppStrings.errorNoAccount);
-        return;
-      }
-
       // 1. Auth işlemi
       final userCredential = await _auth.signInWithEmailAndPassword(
         email: emailController.text.trim(),
@@ -656,6 +664,9 @@ By accepting this privacy policy, you declare that you understand and agree to t
     switch (e.code) {
       case 'email-already-in-use':
         message = 'This email is already registered';
+        break;
+      case 'user-not-found':
+        message = AppStrings.errorNoAccount;
         break;
       case 'invalid-email':
         message = 'Invalid email address';
@@ -776,7 +787,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     bodyTypeController.clear();
     drinkController.clear();
     smokeController.clear();
-    martialStatusController.clear();
+    maritalStatusController.clear();
     haveChildrenController.clear();
     noOfChildrenController.clear();
     professionController.clear();
@@ -817,6 +828,12 @@ By accepting this privacy policy, you declare that you understand and agree to t
     selectedLanguage.value = '';
     selectedReligion.value = '';
     selectedEthnicity.value = '';
+
+    // Kariyer ve beceri alanlarını temizle
+    selectedSkills.clear();
+    workExperiences.clear();
+    projects.clear();
+    careerGoal.value = null;
 
     currentPage.value = 0;
     pageController.jumpToPage(0);
@@ -912,7 +929,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         validationResult = RegistrationValidator.validateLifestyle(
           drink: drinkController.text,
           smoke: smokeController.text,
-          maritalStatus: martialStatusController.text,
+          maritalStatus: maritalStatusController.text,
           haveChildren: childrenSelection.value,
           numberOfChildren: noOfChildrenController.text,
           profession: professionController.text,
@@ -970,7 +987,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       children: [
         PasswordInputField(
           controller: passwordController,
-          label: 'Şifre',
+          label: AppStrings.password,
           authController: this,
           onChanged: (value) {
             validatePassword(value);
@@ -979,7 +996,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
         const SizedBox(height: 16),
         PasswordInputField(
           controller: confirmPasswordController,
-          label: 'Şifre Tekrar',
+          label: AppStrings.confirmPassword,
           isConfirmField: true,
           authController: this,
           onChanged: (value) {
@@ -988,77 +1005,6 @@ By accepting this privacy policy, you declare that you understand and agree to t
         ),
       ],
     );
-  }
-
-  // Validate Lifestyle Page (Page 2)
-  bool _validateLifestyle() {
-    if (drinkController.text.trim().isEmpty) {
-      _showError('Please select your drinking habits');
-      return false;
-    }
-    if (smokeController.text.trim().isEmpty) {
-      _showError('Please select your smoking habits');
-      return false;
-    }
-    if (martialStatusController.text.trim().isEmpty) {
-      _showError('Please select your marital status');
-      return false;
-    }
-    if (childrenSelection.value.isEmpty) {
-      _showError('Please specify if you have children');
-      return false;
-    }
-    if (childrenSelection.value == 'Yes' &&
-        noOfChildrenController.text.trim().isEmpty) {
-      _showError('Please specify number of children');
-      return false;
-    }
-    if (professionController.text.trim().isEmpty) {
-      _showError('Please select your profession');
-      return false;
-    }
-    if (employmentStatusController.text.trim().isEmpty) {
-      _showError('Please select your employment status');
-      return false;
-    }
-    if (incomeController.text.trim().isEmpty) {
-      _showError('Please enter your income');
-      return false;
-    }
-    if (livingSituationController.text.trim().isEmpty) {
-      _showError('Please select your living situation');
-      return false;
-    }
-    if (relationshipSelection.value.isEmpty) {
-      _showError('Please select your relationship status');
-      return false;
-    }
-    return true;
-  }
-
-  // Validate Background Page (Page 3)
-  bool _validateBackground() {
-    if (nationalityController.text.trim().isEmpty) {
-      _showError('Please select your nationality');
-      return false;
-    }
-    if (educationController.text.trim().isEmpty) {
-      _showError('Please select your education level');
-      return false;
-    }
-    if (languageSpokenController.text.trim().isEmpty) {
-      _showError('Please select languages spoken');
-      return false;
-    }
-    if (religionController.text.trim().isEmpty) {
-      _showError('Please select your religion');
-      return false;
-    }
-    if (ethnicityController.text.trim().isEmpty) {
-      _showError('Please select your ethnicity');
-      return false;
-    }
-    return true;
   }
 
   // Beceri İşlemleri
@@ -1105,7 +1051,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'İş Deneyimi Ekle',
+                AppStrings.addWorkExperience,
                 style: TextStyle(
                   fontSize: isTablet ? 20.0 : 18.0,
                   fontWeight: FontWeight.bold,
@@ -1115,7 +1061,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
               TextField(
                 controller: titleController,
                 decoration: InputDecoration(
-                  labelText: 'Pozisyon',
+                  labelText: AppStrings.position,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -1125,7 +1071,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
               TextField(
                 controller: companyController,
                 decoration: InputDecoration(
-                  labelText: 'Şirket',
+                  labelText: AppStrings.company,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -1136,7 +1082,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
                 controller: descriptionController,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  labelText: 'Açıklama',
+                  labelText: AppStrings.description,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -1173,7 +1119,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
                           Expanded(
                             child: Obx(() => Text(
                                   startDateText.value.isEmpty
-                                      ? 'Başlangıç Tarihi'
+                                      ? 'Start Date'
                                       : startDateText.value,
                                   style: TextStyle(
                                     color: startDateText.value.isEmpty
@@ -1216,7 +1162,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
                           Expanded(
                             child: Obx(() => Text(
                                   endDateText.value.isEmpty
-                                      ? 'Bitiş Tarihi'
+                                      ? 'End Date'
                                       : endDateText.value,
                                   style: TextStyle(
                                     color: endDateText.value.isEmpty
@@ -1236,7 +1182,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
               TextField(
                 controller: technologiesController,
                 decoration: InputDecoration(
-                  labelText: 'Teknolojiler (virgülle ayırın)',
+                  labelText: 'Techs (seperate with coma)',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -1248,7 +1194,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
                 children: [
                   TextButton(
                     onPressed: () => Get.back(),
-                    child: Text('İptal'),
+                    child: Text(AppStrings.decline),
                   ),
                   SizedBox(width: isTablet ? 16.0 : 12.0),
                   ElevatedButton(
@@ -1277,8 +1223,8 @@ By accepting this privacy policy, you declare that you understand and agree to t
                         Get.back();
                       } else {
                         Get.snackbar(
-                          'Hata',
-                          'Lütfen tüm zorunlu alanları doldurun.',
+                          AppStrings.errorTurkish,
+                          AppStrings.pleaseFillAllRequiredFieldsTurkish,
                           snackPosition: SnackPosition.BOTTOM,
                         );
                       }
@@ -1324,7 +1270,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Proje Ekle',
+                'Add Project',
                 style: TextStyle(
                   fontSize: isTablet ? 20.0 : 18.0,
                   fontWeight: FontWeight.bold,
@@ -1334,7 +1280,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
               TextField(
                 controller: titleController,
                 decoration: InputDecoration(
-                  labelText: 'Proje Başlığı',
+                  labelText: AppStrings.projectTitle,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -1345,7 +1291,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
                 controller: descriptionController,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  labelText: 'Açıklama',
+                  labelText: AppStrings.description,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -1355,7 +1301,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
               TextField(
                 controller: technologiesController,
                 decoration: InputDecoration(
-                  labelText: 'Teknolojiler (virgülle ayırın)',
+                  labelText: AppStrings.technologiesTurkish,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -1389,7 +1335,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
                       SizedBox(width: 8),
                       Obx(() => Text(
                             dateText.value.isEmpty
-                                ? 'Proje Tarihi'
+                                ? AppStrings.projectDateTurkishLabel
                                 : dateText.value,
                             style: TextStyle(
                               color: dateText.value.isEmpty
@@ -1407,7 +1353,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
                 children: [
                   TextButton(
                     onPressed: () => Get.back(),
-                    child: Text('İptal'),
+                    child: Text(AppStrings.cancelButtonTurkish),
                   ),
                   SizedBox(width: isTablet ? 16.0 : 12.0),
                   ElevatedButton(
@@ -1436,7 +1382,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
                         );
                       }
                     },
-                    child: Text('Ekle'),
+                    child: Text(AppStrings.addButtonTurkish),
                   ),
                 ],
               ),
@@ -1465,7 +1411,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     bodyTypeController.dispose();
     drinkController.dispose();
     smokeController.dispose();
-    martialStatusController.dispose();
+    maritalStatusController.dispose();
     haveChildrenController.dispose();
     noOfChildrenController.dispose();
     professionController.dispose();

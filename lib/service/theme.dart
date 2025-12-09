@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ElegantTheme {
-  // Ana Renkler
+  // ${AppStrings.colorPrimary}
   static const Color primaryColor = Color(0xFF1A237E);
   static const Color secondaryColor = Color(0xFFCFB53B);
   static const Color backgroundColor = Color(0xFFF8F5E6);
   static const Color textColor = Color(0xFF333333);
 
-  // Vurgu Renkleri
+  // ${AppStrings.colorAccent}
   static const Color accentBordeaux = Color(0xFF800020);
   static const Color accentEmerald = Color(0xFF0F574A);
 
-  // Nötr Tonlar
+  // ${AppStrings.colorNeutral}
   static const Color lightGrey = Color(0xFFE0E0E0);
   static const Color mediumGrey = Color(0xFF9E9E9E);
 

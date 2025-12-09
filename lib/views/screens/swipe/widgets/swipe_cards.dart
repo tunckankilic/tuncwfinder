@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class SwipeCards extends StatefulWidget {
   final List<Person> profiles;
@@ -20,10 +21,10 @@ class SwipeCards extends StatefulWidget {
   });
 
   @override
-  _SwipeCardsState createState() => _SwipeCardsState();
+  SwipeCardsState createState() => SwipeCardsState();
 }
 
-class _SwipeCardsState extends State<SwipeCards>
+class SwipeCardsState extends State<SwipeCards>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   Alignment _dragAlignment = Alignment.center;
@@ -154,7 +155,7 @@ class _SwipeCardsState extends State<SwipeCards>
                   children: [
                     CircularProgressIndicator(),
                     SizedBox(height: 16),
-                    Text('İşlemler işleniyor...'),
+                    Text(AppStrings.processingOperations),
                   ],
                 ),
               );
@@ -170,12 +171,12 @@ class _SwipeCardsState extends State<SwipeCards>
                         size: 64, color: Colors.grey),
                     SizedBox(height: 16),
                     Text(
-                      'Gösterilecek profil kalmadı',
+                      AppStrings.noProfilesToShow,
                       style: TextStyle(fontSize: 18, color: Colors.grey),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Filtreleri değiştirip tekrar deneyin',
+                      AppStrings.changeFiltersAndTryAgain,
                       style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
@@ -314,31 +315,31 @@ class SwipeCardContent extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
+        color: Colors.black.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.thumb_down, color: Colors.red, size: 16),
-          SizedBox(width: 4),
+          const Icon(Icons.thumb_down, color: Colors.red, size: 16),
+          const SizedBox(width: 4),
           Text(
-            'Sola',
-            style: TextStyle(color: Colors.white, fontSize: 12),
+            AppStrings.swipeLeft,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
           ),
-          SizedBox(width: 8),
-          Icon(Icons.thumb_up, color: Colors.green, size: 16),
-          SizedBox(width: 4),
+          const SizedBox(width: 8),
+          const Icon(Icons.thumb_up, color: Colors.green, size: 16),
+          const SizedBox(width: 4),
           Text(
-            'Sağa',
-            style: TextStyle(color: Colors.white, fontSize: 12),
+            AppStrings.swipeRight,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
           ),
-          SizedBox(width: 8),
-          Icon(Icons.favorite, color: Colors.pink, size: 16),
-          SizedBox(width: 4),
+          const SizedBox(width: 8),
+          const Icon(Icons.favorite, color: Colors.pink, size: 16),
+          const SizedBox(width: 4),
           Text(
-            'Yukarı',
-            style: TextStyle(color: Colors.white, fontSize: 12),
+            AppStrings.swipeUp,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
           ),
         ],
       ),
@@ -382,9 +383,9 @@ class SwipeCardContent extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: Colors.blue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -449,7 +450,7 @@ class ResponsiveSocialButtons extends GetView<SwipeController> {
     return Container(
       padding: EdgeInsets.all(isTablet ? 12.0 : 8.0),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(isTablet ? 30 : 20),
       ),
       child: Row(
@@ -497,7 +498,7 @@ class ResponsiveSocialButtons extends GetView<SwipeController> {
           padding: EdgeInsets.all(iconPadding),
           child: SvgPicture.asset(
             asset,
-            color: Colors.black,
+            colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
           ),
         ),
       ),

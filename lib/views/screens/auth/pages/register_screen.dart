@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -231,15 +229,16 @@ class RegistrationScreen extends GetView<AuthController> {
                   : null,
             )),
         SizedBox(height: 16.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 16.w,
+          runSpacing: 8.h,
           children: [
             ModernButton(
               text: AppStrings.buttonTakePhoto,
               onPressed: controller.captureImage,
               isOutlined: true,
             ),
-            SizedBox(width: 16.w),
             ModernButton(
               text: AppStrings.buttonChoosePhoto,
               onPressed: controller.pickImage,
@@ -256,24 +255,29 @@ class RegistrationScreen extends GetView<AuthController> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         if (controller.currentPage.value > 0)
-          ModernButton(
-            text: AppStrings.buttonPrevious,
-            onPressed: controller.previousPage,
-            isOutlined: true,
+          Expanded(
+            child: ModernButton(
+              text: AppStrings.buttonPrevious,
+              onPressed: controller.previousPage,
+              isOutlined: true,
+            ),
           )
         else
-          const SizedBox(),
-        ModernButton(
-          text: controller.currentPage.value == 4
-              ? AppStrings.buttonFinish
-              : AppStrings.buttonNext,
-          onPressed: () {
-            if (controller.currentPage.value == 4) {
-              controller.register();
-            } else {
-              controller.nextPage();
-            }
-          },
+          const Spacer(),
+        SizedBox(width: 16.w),
+        Expanded(
+          child: ModernButton(
+            text: controller.currentPage.value == 4
+                ? AppStrings.buttonFinish
+                : AppStrings.buttonNext,
+            onPressed: () {
+              if (controller.currentPage.value == 4) {
+                controller.register();
+              } else {
+                controller.nextPage();
+              }
+            },
+          ),
         ),
       ],
     );
@@ -450,7 +454,7 @@ class RegistrationScreen extends GetView<AuthController> {
                 Icons.people_outline,
                 maritalStatuses,
                 (value) {
-                  controller.martialStatusController.text = value;
+                  controller.maritalStatusController.text = value;
                   controller.selectedMaritalStatus.value = value;
                 },
                 isTablet,
@@ -800,7 +804,7 @@ class RegistrationScreen extends GetView<AuthController> {
     return Padding(
       padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 13.0),
       child: Obx(() => DropdownButtonFormField<String>(
-            value: controller.selectedGender.value.isNotEmpty
+            initialValue: controller.selectedGender.value.isNotEmpty
                 ? controller.selectedGender.value
                 : gender.first,
             onChanged: (value) {
@@ -838,7 +842,7 @@ class RegistrationScreen extends GetView<AuthController> {
     return Padding(
       padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 13.0),
       child: Obx(() => DropdownButtonFormField<String>(
-            value: controller.selectedBodyType.value.isNotEmpty
+            initialValue: controller.selectedBodyType.value.isNotEmpty
                 ? controller.selectedBodyType.value
                 : bodyTypes.first,
             onChanged: (value) {
@@ -952,7 +956,7 @@ class RegistrationScreen extends GetView<AuthController> {
         }
 
         return DropdownButtonFormField<String>(
-          value: currentValue,
+          initialValue: currentValue,
           onChanged: (value) {
             if (value != null) {
               onChanged(value);
@@ -1150,7 +1154,7 @@ class PasswordInputField extends StatelessWidget {
         Row(
           children: [
             Text(
-              'Şifre Gücü: ',
+              AppStrings.passwordStrength,
               style: TextStyle(
                 fontSize: isTablet ? 14.0 : 12.0,
                 fontWeight: FontWeight.w500,
@@ -1191,7 +1195,7 @@ class PasswordInputField extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Şifre Gereksinimleri:',
+            AppStrings.validatePasswordRequirements,
             style: TextStyle(
               fontSize: isTablet ? 14.0 : 12.0,
               fontWeight: FontWeight.w600,
@@ -1289,50 +1293,6 @@ class CustomProgressBar extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildIndicator(bool value) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: value ? Colors.green : Colors.grey,
-      ),
-    );
-  }
-}
-
-class CheckList extends StatelessWidget {
-  final bool isTablet;
-  final int index;
-  CheckList({
-    super.key,
-    required this.isTablet,
-    required this.index,
-  });
-
-  AuthController controller = Get.put(AuthController());
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(
-          controller.checks[index].value ? Icons.done : Icons.close,
-          color: controller.checks[index].value ? Colors.green : Colors.red,
-          size: isTablet ? 18 : 14,
-        ),
-        SizedBox(
-          width: isTablet ? 12 : 5,
-        ),
-        Text(controller.textler[index],
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: isTablet ? 18 : 14,
-              color: controller.checks[index].value ? Colors.green : Colors.red,
-            ))
-      ],
-    );
-  }
 }
 
 class SocialLinksSection extends StatelessWidget {
@@ -1353,7 +1313,7 @@ class SocialLinksSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             spreadRadius: 0,
           ),

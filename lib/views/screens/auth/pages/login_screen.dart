@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,8 +14,6 @@ class LoginScreen extends GetView<AuthController> {
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
-
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
@@ -239,7 +236,7 @@ class LoginScreen extends GetView<AuthController> {
                       ..onTap = () => _showTermsAndConditions(),
                   ),
                   TextSpan(
-                    text: ' ' + AppStrings.and + ' ',
+                    text: ' ${AppStrings.and} ',
                     style: AppTheme.textTheme.bodyMedium,
                   ),
                   TextSpan(
@@ -270,7 +267,6 @@ class LoginScreen extends GetView<AuthController> {
   }
 
   void _showTermsAndConditions() {
-    final isTablet = Get.width >= 600;
     Get.dialog(
       Dialog(
         shape: RoundedRectangleBorder(
@@ -328,7 +324,6 @@ class LoginScreen extends GetView<AuthController> {
   }
 
   void _showPrivacyPolicy() {
-    final isTablet = Get.width >= 600;
     Get.dialog(
       Dialog(
         shape: RoundedRectangleBorder(

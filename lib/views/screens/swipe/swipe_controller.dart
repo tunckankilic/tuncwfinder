@@ -9,10 +9,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/service/global.dart';
-import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 enum ReportReason { inappropriate, harassment, fakeProfile, spamming, others }
 
@@ -304,102 +304,107 @@ class SwipeController extends GetxController {
           bool isProcessed = _processedUserIds.contains(userId);
 
           if (!isBlocked && !hasBlockedMe && !isProcessed) {
-            Person person = Person.fromDataSnapshot(doc);
+            try {
+              Person person = Person.fromDataSnapshot(doc);
 
-            // Filtreleri uygula
-            bool matchesFilters = true;
+              // Filtreleri uygula
+              bool matchesFilters = true;
 
-            if (_isValidInput(chosenGender.value)) {
-              matchesFilters = matchesFilters &&
-                  person.gender?.toLowerCase() ==
-                      chosenGender.value.toLowerCase();
-            }
+              if (_isValidInput(chosenGender.value)) {
+                matchesFilters = matchesFilters &&
+                    person.gender?.toLowerCase() ==
+                        chosenGender.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenCountry.value)) {
-              matchesFilters = matchesFilters &&
-                  person.country?.toLowerCase() ==
-                      chosenCountry.value.toLowerCase();
-            }
+              if (_isValidInput(chosenCountry.value)) {
+                matchesFilters = matchesFilters &&
+                    person.country?.toLowerCase() ==
+                        chosenCountry.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenBodyType.value)) {
-              matchesFilters = matchesFilters &&
-                  person.bodyType?.toLowerCase() ==
-                      chosenBodyType.value.toLowerCase();
-            }
+              if (_isValidInput(chosenBodyType.value)) {
+                matchesFilters = matchesFilters &&
+                    person.bodyType?.toLowerCase() ==
+                        chosenBodyType.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenLanguage.value)) {
-              matchesFilters = matchesFilters &&
-                  person.languageSpoken?.contains(chosenLanguage.value) == true;
-            }
+              if (_isValidInput(chosenLanguage.value)) {
+                matchesFilters = matchesFilters &&
+                    person.languageSpoken?.contains(chosenLanguage.value) ==
+                        true;
+              }
 
-            if (_isValidInput(chosenEducation.value)) {
-              matchesFilters = matchesFilters &&
-                  person.education?.toLowerCase() ==
-                      chosenEducation.value.toLowerCase();
-            }
+              if (_isValidInput(chosenEducation.value)) {
+                matchesFilters = matchesFilters &&
+                    person.education?.toLowerCase() ==
+                        chosenEducation.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenEmploymentStatus.value)) {
-              matchesFilters = matchesFilters &&
-                  person.employmentStatus?.toLowerCase() ==
-                      chosenEmploymentStatus.value.toLowerCase();
-            }
+              if (_isValidInput(chosenEmploymentStatus.value)) {
+                matchesFilters = matchesFilters &&
+                    person.employmentStatus?.toLowerCase() ==
+                        chosenEmploymentStatus.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenLivingSituation.value)) {
-              matchesFilters = matchesFilters &&
-                  person.livingSituation?.toLowerCase() ==
-                      chosenLivingSituation.value.toLowerCase();
-            }
+              if (_isValidInput(chosenLivingSituation.value)) {
+                matchesFilters = matchesFilters &&
+                    person.livingSituation?.toLowerCase() ==
+                        chosenLivingSituation.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenMaritalStatus.value)) {
-              matchesFilters = matchesFilters &&
-                  person.martialStatus?.toLowerCase() ==
-                      chosenMaritalStatus.value.toLowerCase();
-            }
+              if (_isValidInput(chosenMaritalStatus.value)) {
+                matchesFilters = matchesFilters &&
+                    person.maritalStatus?.toLowerCase() ==
+                        chosenMaritalStatus.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenDrinkingHabit.value)) {
-              matchesFilters = matchesFilters &&
-                  person.drink?.toLowerCase() ==
-                      chosenDrinkingHabit.value.toLowerCase();
-            }
+              if (_isValidInput(chosenDrinkingHabit.value)) {
+                matchesFilters = matchesFilters &&
+                    person.drink?.toLowerCase() ==
+                        chosenDrinkingHabit.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenSmokingHabit.value)) {
-              matchesFilters = matchesFilters &&
-                  person.smoke?.toLowerCase() ==
-                      chosenSmokingHabit.value.toLowerCase();
-            }
+              if (_isValidInput(chosenSmokingHabit.value)) {
+                matchesFilters = matchesFilters &&
+                    person.smoke?.toLowerCase() ==
+                        chosenSmokingHabit.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenNationality.value)) {
-              matchesFilters = matchesFilters &&
-                  person.nationality?.toLowerCase() ==
-                      chosenNationality.value.toLowerCase();
-            }
+              if (_isValidInput(chosenNationality.value)) {
+                matchesFilters = matchesFilters &&
+                    person.nationality?.toLowerCase() ==
+                        chosenNationality.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenEthnicity.value)) {
-              matchesFilters = matchesFilters &&
-                  person.ethnicity?.toLowerCase() ==
-                      chosenEthnicity.value.toLowerCase();
-            }
+              if (_isValidInput(chosenEthnicity.value)) {
+                matchesFilters = matchesFilters &&
+                    person.ethnicity?.toLowerCase() ==
+                        chosenEthnicity.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenReligion.value)) {
-              matchesFilters = matchesFilters &&
-                  person.religion?.toLowerCase() ==
-                      chosenReligion.value.toLowerCase();
-            }
+              if (_isValidInput(chosenReligion.value)) {
+                matchesFilters = matchesFilters &&
+                    person.religion?.toLowerCase() ==
+                        chosenReligion.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenProfession.value)) {
-              matchesFilters = matchesFilters &&
-                  person.profession?.toLowerCase() ==
-                      chosenProfession.value.toLowerCase();
-            }
+              if (_isValidInput(chosenProfession.value)) {
+                matchesFilters = matchesFilters &&
+                    person.profession?.toLowerCase() ==
+                        chosenProfession.value.toLowerCase();
+              }
 
-            if (_isValidInput(chosenAge.value)) {
-              int minAge = int.tryParse(chosenAge.value) ?? 0;
-              int userAge = int.tryParse(person.age?.toString() ?? "0") ?? 0;
-              matchesFilters = matchesFilters && userAge >= minAge;
-            }
+              if (_isValidInput(chosenAge.value)) {
+                int minAge = int.tryParse(chosenAge.value) ?? 0;
+                int userAge = int.tryParse(person.age?.toString() ?? "0") ?? 0;
+                matchesFilters = matchesFilters && userAge >= minAge;
+              }
 
-            if (matchesFilters) {
-              filteredUsers.add(person);
+              if (matchesFilters) {
+                filteredUsers.add(person);
+              }
+            } catch (e) {
+              log('Error parsing user document ${doc.id}: $e');
             }
           }
         }
@@ -409,15 +414,15 @@ class SwipeController extends GetxController {
 
       if (allUsersProfileList.isEmpty) {
         Get.snackbar(
-          'Sonuç Bulunamadı',
-          'Filtrelerinize uygun kullanıcı bulunamadı.',
+          AppStrings.noResultsFound,
+          AppStrings.noMatchingUsers,
           snackPosition: SnackPosition.BOTTOM,
         );
       } else {
         log("Loaded ${filteredUsers.length} filtered profiles");
         Get.snackbar(
-          'Başarılı',
-          '${filteredUsers.length} profil bulundu.',
+          AppStrings.success,
+          '${filteredUsers.length} ${AppStrings.profilesFound}',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
           colorText: Colors.white,
@@ -425,8 +430,8 @@ class SwipeController extends GetxController {
       }
     } catch (e) {
       Get.snackbar(
-        'Hata',
-        'Sonuçlar alınırken hata oluştu. Lütfen tekrar deneyin.',
+        AppStrings.error,
+        AppStrings.errorOccurredWhileFetchingResults,
         snackPosition: SnackPosition.BOTTOM,
       );
       log("Error in getResults: $e");
@@ -470,13 +475,21 @@ class SwipeController extends GetxController {
   }
 
   void readCurrentUserData() async {
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(currentUserId)
-        .get()
-        .then((dataSnapshot) {
-      senderName.value = dataSnapshot.data()!["name"].toString();
-    });
+    try {
+      final dataSnapshot = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(currentUserId)
+          .get();
+
+      if (dataSnapshot.exists && dataSnapshot.data() != null) {
+        final data = dataSnapshot.data()!;
+        if (data.containsKey("name") && data["name"] != null) {
+          senderName.value = data["name"].toString();
+        }
+      }
+    } catch (e) {
+      log("Error reading current user data: $e");
+    }
   }
 
   void ageRange() {
@@ -485,21 +498,12 @@ class SwipeController extends GetxController {
     }
   }
 
-  bool _isValidAge(String input) {
-    int? age = int.tryParse(input);
-    return age != null && age >= 18 && age <= 120;
-  }
-
-  bool _isValidEmail(String input) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(input);
-  }
-
   // Input validation
   bool _isValidInput(String input) {
     // Implement proper input validation based on your requirements
     return input.isNotEmpty &&
         input.length <= 100 &&
-        !input.contains(RegExp(r'[<>&\]'));
+        !input.contains(RegExp(r'[<>&\[\]]'));
   }
 
   // Rate limiting
@@ -508,8 +512,8 @@ class SwipeController extends GetxController {
       _queryCount.value++;
       if (_queryCount.value > 5) {
         Get.snackbar(
-          'Too Many Requests',
-          'Please wait before trying again.',
+          AppStrings.tooManyRequests,
+          AppStrings.pleaseWaitBeforeTryingAgain,
           snackPosition: SnackPosition.BOTTOM,
         );
         return true;
@@ -539,15 +543,15 @@ class SwipeController extends GetxController {
       await blockUser(reportedUserId);
 
       Get.snackbar(
-        'Report Submitted',
-        'Thank you for reporting. We will review this within 24 hours.',
+        AppStrings.reportSubmitted,
+        AppStrings.thankYouForReporting,
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
     } catch (e) {
       Get.snackbar(
-        'Error',
-        'Failed to submit report. Please try again.',
+        AppStrings.error,
+        AppStrings.failedToSubmitReport,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -565,7 +569,7 @@ class SwipeController extends GetxController {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                'Report User',
+                AppStrings.reportUser,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -574,32 +578,32 @@ class SwipeController extends GetxController {
             ),
             Divider(),
             _buildReportOption(
-              'Inappropriate Content',
-              'Content that violates our guidelines',
+              AppStrings.inappropriateContent,
+              AppStrings.contentViolatingGuidelines,
               Icons.warning,
               () => _submitReport(person.uid!, ReportReason.inappropriate),
             ),
             _buildReportOption(
-              'Harassment',
-              'Bullying or aggressive behavior',
+              AppStrings.harassment,
+              AppStrings.bullyingOrAggressiveBehavior,
               Icons.person_off,
               () => _submitReport(person.uid!, ReportReason.harassment),
             ),
             _buildReportOption(
-              'Fake Profile',
-              'Suspicious or misleading profile',
+              AppStrings.fakeProfile,
+              AppStrings.suspiciousOrMisleadingProfile,
               Icons.face,
               () => _submitReport(person.uid!, ReportReason.fakeProfile),
             ),
             _buildReportOption(
-              'Spam',
-              'Unwanted commercial content',
+              AppStrings.spam,
+              AppStrings.unwantedCommercialContent,
               Icons.error,
               () => _submitReport(person.uid!, ReportReason.spamming),
             ),
             _buildReportOption(
-              'Other',
-              'Other concerns',
+              AppStrings.other,
+              AppStrings.otherConcerns,
               Icons.more_horiz,
               () => _showDetailedReportDialog(person.uid!),
             ),
@@ -638,7 +642,7 @@ class SwipeController extends GetxController {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Provide Details',
+                AppStrings.provideDetails,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 16),
@@ -646,7 +650,7 @@ class SwipeController extends GetxController {
                 controller: detailsController,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  hintText: 'Please describe your concern...',
+                  hintText: AppStrings.pleaseDescribeYourConcern,
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -656,7 +660,7 @@ class SwipeController extends GetxController {
                 children: [
                   TextButton(
                     onPressed: () => Get.back(),
-                    child: Text('Cancel'),
+                    child: Text(AppStrings.cancel),
                   ),
                   ElevatedButton(
                     onPressed: () {
@@ -670,7 +674,7 @@ class SwipeController extends GetxController {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                     ),
-                    child: Text('Submit'),
+                    child: Text(AppStrings.submitButton),
                   ),
                 ],
               ),
@@ -710,7 +714,7 @@ class SwipeController extends GetxController {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Filtreler',
+                    AppStrings.filters,
                     style: TextStyle(
                       fontSize: isTablet ? 28 : 24,
                       fontWeight: FontWeight.bold,
@@ -737,7 +741,7 @@ class SwipeController extends GetxController {
                       chosenProfession.value = '';
                     },
                     child: Text(
-                      'Sıfırla',
+                      AppStrings.resetFilters,
                       style: TextStyle(
                         color: Colors.red[600],
                         fontWeight: FontWeight.w600,
@@ -754,25 +758,25 @@ class SwipeController extends GetxController {
                 child: Column(
                   children: [
                     _buildModernFilterSection(
-                      title: 'Temel Bilgiler',
+                      title: AppStrings.basicInformation,
                       filters: [
                         _buildModernFilterTile(
                           icon: Icons.person,
-                          title: 'Cinsiyet',
+                          title: AppStrings.gender,
                           value: chosenGender,
                           items: gender,
                           isTablet: isTablet,
                         ),
                         _buildModernFilterTile(
                           icon: Icons.cake,
-                          title: 'Minimum Yaş',
+                          title: AppStrings.minimumAge,
                           value: chosenAge,
                           items: ageRangeList,
                           isTablet: isTablet,
                         ),
                         _buildModernFilterTile(
                           icon: Icons.person_outline,
-                          title: 'Vücut Tipi',
+                          title: AppStrings.bodyType,
                           value: chosenBodyType,
                           items: bodyTypes,
                           isTablet: isTablet,
@@ -780,25 +784,25 @@ class SwipeController extends GetxController {
                       ],
                     ),
                     _buildModernFilterSection(
-                      title: 'Konum & Demografi',
+                      title: AppStrings.locationAndDemography,
                       filters: [
                         _buildModernFilterTile(
                           icon: Icons.location_city,
-                          title: 'Ülke',
+                          title: AppStrings.country,
                           value: chosenCountry,
                           items: countries,
                           isTablet: isTablet,
                         ),
                         _buildModernFilterTile(
                           icon: Icons.place,
-                          title: 'Milliyet',
+                          title: AppStrings.nationality,
                           value: chosenNationality,
                           items: nationalities,
                           isTablet: isTablet,
                         ),
                         _buildModernFilterTile(
                           icon: Icons.people,
-                          title: 'Etnik Köken',
+                          title: AppStrings.ethnicOrigin,
                           value: chosenEthnicity,
                           items: ethnicities,
                           isTablet: isTablet,
@@ -806,25 +810,25 @@ class SwipeController extends GetxController {
                       ],
                     ),
                     _buildModernFilterSection(
-                      title: 'Eğitim & Kariyer',
+                      title: AppStrings.educationAndCareer,
                       filters: [
                         _buildModernFilterTile(
                           icon: Icons.school,
-                          title: 'Eğitim',
+                          title: AppStrings.education,
                           value: chosenEducation,
                           items: educationLevels,
                           isTablet: isTablet,
                         ),
                         _buildModernFilterTile(
                           icon: Icons.work,
-                          title: 'İstihdam',
+                          title: AppStrings.employmentStatus,
                           value: chosenEmploymentStatus,
                           items: employmentStatuses,
                           isTablet: isTablet,
                         ),
                         _buildModernFilterTile(
                           icon: Icons.work,
-                          title: 'Meslek',
+                          title: AppStrings.profession,
                           value: chosenProfession,
                           items: itJobs,
                           isTablet: isTablet,
@@ -832,32 +836,32 @@ class SwipeController extends GetxController {
                       ],
                     ),
                     _buildModernFilterSection(
-                      title: 'Yaşam Tarzı',
+                      title: AppStrings.lifestyle,
                       filters: [
                         _buildModernFilterTile(
                           icon: Icons.home,
-                          title: 'Yaşam Durumu',
+                          title: AppStrings.livingSituation,
                           value: chosenLivingSituation,
                           items: livingSituations,
                           isTablet: isTablet,
                         ),
                         _buildModernFilterTile(
                           icon: Icons.favorite,
-                          title: 'Medeni Durum',
+                          title: AppStrings.maritalStatus,
                           value: chosenMaritalStatus,
                           items: maritalStatuses,
                           isTablet: isTablet,
                         ),
                         _buildModernFilterTile(
                           icon: Icons.local_drink,
-                          title: 'İçki Alışkanlığı',
+                          title: AppStrings.drinkingHabit,
                           value: chosenDrinkingHabit,
                           items: drinkingHabits,
                           isTablet: isTablet,
                         ),
                         _buildModernFilterTile(
                           icon: Icons.smoking_rooms,
-                          title: 'Sigara Alışkanlığı',
+                          title: AppStrings.smokingHabit,
                           value: chosenSmokingHabit,
                           items: smokingHabits,
                           isTablet: isTablet,
@@ -865,18 +869,18 @@ class SwipeController extends GetxController {
                       ],
                     ),
                     _buildModernFilterSection(
-                      title: 'Diğer',
+                      title: AppStrings.other,
                       filters: [
                         _buildModernFilterTile(
                           icon: Icons.language,
-                          title: 'Dil',
+                          title: AppStrings.language,
                           value: chosenLanguage,
                           items: languages,
                           isTablet: isTablet,
                         ),
                         _buildModernFilterTile(
                           icon: Icons.church,
-                          title: 'Din',
+                          title: AppStrings.religion,
                           value: chosenReligion,
                           items: religion,
                           isTablet: isTablet,
@@ -895,7 +899,7 @@ class SwipeController extends GetxController {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: Offset(0, -2),
                   ),
@@ -918,7 +922,7 @@ class SwipeController extends GetxController {
                     getResults();
                   },
                   child: Text(
-                    'Filtreleri Uygula',
+                    AppStrings.applyFilters,
                     style: TextStyle(
                       fontSize: isTablet ? 18 : 16,
                       fontWeight: FontWeight.w600,
@@ -958,8 +962,8 @@ class SwipeController extends GetxController {
     // Null check
     if (blockedUserId.isEmpty || currentUserId.isEmpty) {
       Get.snackbar(
-        'Error',
-        'Invalid user information',
+        AppStrings.error,
+        AppStrings.invalidUserInformation,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -969,8 +973,8 @@ class SwipeController extends GetxController {
     // Rate limiting kontrolü
     if (_isBlockRateLimited(blockedUserId)) {
       Get.snackbar(
-        'Warning',
-        'Please wait before blocking another user',
+        AppStrings.warning,
+        AppStrings.pleaseWaitBeforeBlockingAnotherUser,
         backgroundColor: Colors.orange,
         colorText: Colors.white,
       );
@@ -1031,8 +1035,8 @@ class SwipeController extends GetxController {
       _lastBlockTimes[blockedUserId] = DateTime.now();
 
       Get.snackbar(
-        'Success',
-        'User blocked successfully',
+        AppStrings.success,
+        AppStrings.userBlockedSuccessfully,
         backgroundColor: Colors.green,
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
@@ -1043,8 +1047,8 @@ class SwipeController extends GetxController {
     } catch (e) {
       log("Error in blockUser: $e");
       Get.snackbar(
-        'Error',
-        'Failed to block user. Please try again.',
+        AppStrings.error,
+        AppStrings.failedToBlockUser,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -1078,52 +1082,7 @@ class SwipeController extends GetxController {
     }
   }
 
-  Widget _buildDropdownListTile({
-    required IconData icon,
-    required String title,
-    required RxString value,
-    required List<String> items,
-    required bool isTablet,
-  }) {
-    return Obx(() => Column(
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                  fontSize: isTablet ? 22 : 14, fontWeight: FontWeight.bold),
-            ),
-            ListTile(
-              leading: Icon(icon),
-              trailing: SizedBox(
-                width: 150, // Dropdown genişliğini sınırla
-                child: DropdownButton<String>(
-                  value: value.value.isEmpty ? null : value.value,
-                  hint: Text('Select $title'),
-                  isExpanded:
-                      true, // Dropdown'ın mevcut alanı kaplamasını sağla
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      value.value = newValue;
-                    }
-                  },
-                  items: items.map<DropdownMenuItem<String>>((String item) {
-                    return DropdownMenuItem<String>(
-                      value: item,
-                      child: Text(
-                        item,
-                        overflow:
-                            TextOverflow.ellipsis, // Uzun metinleri kısalt
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-          ],
-        ));
-  }
-
-  startChattingInWhatsApp(
+  Future<void> startChattingInWhatsApp(
       {required String receiverPhoneNumber,
       required BuildContext context}) async {
     var androidUrl =
@@ -1142,14 +1101,14 @@ class SwipeController extends GetxController {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text("Whatsapp Not Found"),
-              content: const Text("WhatsApp is not installed."),
+              title: const Text(AppStrings.whatsappNotFound),
+              content: const Text(AppStrings.whatsAppNotInstalled),
               actions: [
                 TextButton(
                   onPressed: () {
                     Get.back();
                   },
-                  child: const Text("Ok"),
+                  child: const Text(AppStrings.ok),
                 ),
               ],
             );
@@ -1172,14 +1131,14 @@ class SwipeController extends GetxController {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text("LinkedIn Error"),
-              content: const Text("Could not open LinkedIn profile."),
+              title: const Text(AppStrings.linkedInError),
+              content: const Text(AppStrings.couldNotOpenLinkedInProfile),
               actions: [
                 TextButton(
                   onPressed: () {
                     Get.back();
                   },
-                  child: const Text("Ok"),
+                  child: const Text(AppStrings.ok),
                 ),
               ],
             );
@@ -1204,14 +1163,14 @@ class SwipeController extends GetxController {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text("Instagram Error"),
-              content: const Text("Could not open Instagram profile."),
+              title: const Text(AppStrings.instagramError),
+              content: const Text(AppStrings.couldNotOpenInstagramProfile),
               actions: [
                 TextButton(
                   onPressed: () {
                     Get.back();
                   },
-                  child: const Text("Ok"),
+                  child: const Text(AppStrings.ok),
                 ),
               ],
             );
@@ -1298,12 +1257,12 @@ class SwipeController extends GetxController {
                     ),
                   )
                 : null,
-            trailing: Container(
+            trailing: SizedBox(
               width: 120,
               child: DropdownButton<String>(
                 value: value.value.isEmpty ? null : value.value,
                 hint: Text(
-                  'Seç',
+                  AppStrings.select,
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
                 isExpanded: true,

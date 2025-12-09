@@ -26,13 +26,13 @@ class ForgotPasswordScreen extends GetView<AuthController> {
               children: [
                 SizedBox(height: isTablet ? 40.0 : 24.0),
                 Text(
-                  'Şifrenizi mi unuttunuz?',
+                  AppStrings.forgotPasswordTitle,
                   style: AppTheme.textTheme.headlineMedium,
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: isTablet ? 24.0 : 16.0),
                 Text(
-                  'Email adresinizi girin ve size şifre sıfırlama bağlantısı gönderelim.',
+                  AppStrings.forgotPasswordDescription,
                   style: AppTheme.textTheme.bodyLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -47,7 +47,7 @@ class ForgotPasswordScreen extends GetView<AuthController> {
                 ),
                 SizedBox(height: isTablet ? 32.0 : 24.0),
                 Obx(() => ModernButton(
-                      text: 'Şifre Sıfırlama Bağlantısı Gönder',
+                      text: AppStrings.sendPasswordResetLink,
                       onPressed: () => controller.resetPassword(
                         controller.emailController.text.trim(),
                       ),
@@ -57,7 +57,7 @@ class ForgotPasswordScreen extends GetView<AuthController> {
                 TextButton(
                   onPressed: () => Get.back(),
                   child: Text(
-                    'Giriş Ekranına Dön',
+                    AppStrings.backToLogin,
                     style: AppTheme.textTheme.labelLarge?.copyWith(
                       color: AppTheme.primarySwatch,
                     ),

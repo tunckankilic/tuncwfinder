@@ -380,6 +380,8 @@ class RegistrationValidator {
   // Social Links validasyonu
   static ValidationResult validateSocialLinks({
     required String instagram,
+    String githubUrl = '',
+    String linkedInUrl = '',
     required bool termsAccepted,
   }) {
     // Instagram Validation (Optional)
@@ -390,6 +392,32 @@ class RegistrationValidator {
           isValid: false,
           errorMessage:
               'Please enter a valid Instagram handle (3-30 characters)',
+        );
+      }
+    }
+
+    // LinkedIn URL Validation (Optional)
+    if (linkedInUrl.isNotEmpty) {
+      final linkedInPattern = RegExp(
+        r'^https?:\/\/(www\.)?linkedin\.com\/in\/[A-Za-z0-9-]{3,100}\/?$',
+      );
+      if (!linkedInPattern.hasMatch(linkedInUrl.trim())) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Please enter a valid LinkedIn profile URL',
+        );
+      }
+    }
+
+    // GitHub URL Validation (Optional)
+    if (githubUrl.isNotEmpty) {
+      final githubPattern = RegExp(
+        r'^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9-]{1,39}\/?$',
+      );
+      if (!githubPattern.hasMatch(githubUrl.trim())) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Please enter a valid GitHub profile URL',
         );
       }
     }
@@ -574,7 +602,7 @@ extension ValidationHandling on AuthController {
         validationResult = RegistrationValidator.validateLifestyle(
           drink: drinkController.text,
           smoke: smokeController.text,
-          maritalStatus: martialStatusController.text,
+          maritalStatus: maritalStatusController.text,
           haveChildren: childrenSelection.value,
           numberOfChildren: noOfChildrenController.text,
           profession: professionController.text,

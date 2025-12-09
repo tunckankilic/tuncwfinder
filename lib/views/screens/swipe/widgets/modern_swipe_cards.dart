@@ -4,6 +4,7 @@ import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/widgets/modern_widgets.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 
 class ModernSwipeCards extends StatefulWidget {
   final List<Person> profiles;
@@ -13,13 +14,13 @@ class ModernSwipeCards extends StatefulWidget {
   final Function(Person)? onTap;
 
   const ModernSwipeCards({
-    Key? key,
+    super.key,
     required this.profiles,
     required this.onSwipeLeft,
     required this.onSwipeRight,
     required this.onSwipeUp,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<ModernSwipeCards> createState() => _ModernSwipeCardsState();
@@ -104,9 +105,9 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
     if (widget.profiles.isEmpty || _currentIndex >= widget.profiles.length) {
       return ModernEmptyState(
         icon: Icons.sentiment_dissatisfied,
-        title: 'Gösterilecek profil kalmadı',
-        subtitle: 'Filtreleri değiştirip tekrar deneyin',
-        actionText: 'Yenile',
+        title: AppStrings.noProfilesToShow,
+        subtitle: AppStrings.changeFiltersAndTryAgain,
+        actionText: AppStrings.refresh,
         onActionPressed: () {
           setState(() {
             _currentIndex = 0;
@@ -144,7 +145,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
   }
 
   Widget _buildProfileCard(Person person, ThemeData theme) {
-    return Container(
+    return SizedBox(
       width: 0.9.sw,
       height: 0.7.sh,
       child: ModernCard(
@@ -180,7 +181,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withOpacity(0.7),
+                        Colors.black.withValues(alpha: 0.7),
                       ],
                     ),
                   ),
@@ -193,7 +194,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            person.name ?? 'İsimsiz',
+                            person.name ?? AppStrings.nameless,
                             style: theme.textTheme.headlineSmall?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -204,7 +205,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
                             Text(
                               person.profession!,
                               style: theme.textTheme.bodyMedium?.copyWith(
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                               ),
                             ),
                           ],
@@ -225,7 +226,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
                   children: [
                     if (person.profileHeading != null) ...[
                       Text(
-                        'Hakkında',
+                        AppStrings.about,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -241,7 +242,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
                     ],
                     if (person.skills != null && person.skills!.isNotEmpty) ...[
                       Text(
-                        'Yetenekler',
+                        AppStrings.skillsLabel,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -261,7 +262,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Text(
-                              skill.name ?? 'Bilinmeyen',
+                              skill.name,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.onPrimaryContainer,
                                 fontWeight: FontWeight.w500,
@@ -320,7 +321,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),

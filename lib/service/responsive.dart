@@ -15,11 +15,11 @@ class DeviceHelper {
 }
 
 class DeviceBreakpoints {
-  // Tablet ve büyük ekranlar için
+  // ${AppStrings.tabletAndLargeScreens}
   static const double tablet = 600.0;
   static const double largeTablet = 900.0;
 
-  // Telefonlar için farklı genişlikler
+  // ${AppStrings.phonesDifferentWidths}
   static const double smallPhone = 320.0;
   static const double mediumPhone = 375.0;
   static const double largePhone = 414.0;

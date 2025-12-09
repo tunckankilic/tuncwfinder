@@ -7,7 +7,8 @@ class JobMatchingScreen extends StatelessWidget {
   final Person userProfile;
   final List<JobPosting> jobs;
 
-  JobMatchingScreen({required this.userProfile, required this.jobs});
+  const JobMatchingScreen(
+      {super.key, required this.userProfile, required this.jobs});
 
   @override
   Widget build(BuildContext context) {

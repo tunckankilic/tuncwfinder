@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 
@@ -19,10 +20,10 @@ class ButtonCards extends StatefulWidget {
   });
 
   @override
-  _ButtonCardsState createState() => _ButtonCardsState();
+  ButtonCardsState createState() => ButtonCardsState();
 }
 
-class _ButtonCardsState extends State<ButtonCards> {
+class ButtonCardsState extends State<ButtonCards> {
   Person? _currentProfile;
   final SwipeController _swipeController = Get.find<SwipeController>();
 
@@ -76,7 +77,7 @@ class _ButtonCardsState extends State<ButtonCards> {
                   children: [
                     CircularProgressIndicator(),
                     SizedBox(height: 16),
-                    Text('İşlemler işleniyor...'),
+                    Text(AppStrings.processingProfiles),
                   ],
                 ),
               );
@@ -92,12 +93,12 @@ class _ButtonCardsState extends State<ButtonCards> {
                         size: 64, color: Colors.grey),
                     SizedBox(height: 16),
                     Text(
-                      'Gösterilecek profil kalmadı',
+                      AppStrings.noProfilesLeft,
                       style: TextStyle(fontSize: 18, color: Colors.grey),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Filtreleri değiştirip tekrar deneyin',
+                      AppStrings.changeFiltersAndTryAgain,
                       style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
@@ -133,7 +134,7 @@ class _ButtonCardsState extends State<ButtonCards> {
                         icon: Icons.close,
                         color: Colors.red,
                         onPressed: () => _handleAction(widget.onDislike),
-                        label: 'Beğenme',
+                        label: AppStrings.dislike,
                         isTablet: isTablet,
                       ),
                       // Like butonu
@@ -141,7 +142,7 @@ class _ButtonCardsState extends State<ButtonCards> {
                         icon: Icons.favorite,
                         color: Colors.green,
                         onPressed: () => _handleAction(widget.onLike),
-                        label: 'Beğen',
+                        label: AppStrings.like,
                         isTablet: isTablet,
                       ),
                       // Favorite butonu
@@ -149,7 +150,7 @@ class _ButtonCardsState extends State<ButtonCards> {
                         icon: Icons.star,
                         color: Colors.orange,
                         onPressed: () => _handleAction(widget.onFavorite),
-                        label: 'Favori',
+                        label: AppStrings.favorite,
                         isTablet: isTablet,
                       ),
                     ],
@@ -183,7 +184,7 @@ class _ButtonCardsState extends State<ButtonCards> {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.3),
+                color: color.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -329,9 +330,9 @@ class CardContent extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: Colors.blue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -396,7 +397,7 @@ class ResponsiveSocialButtons extends GetView<SwipeController> {
     return Container(
       padding: EdgeInsets.all(isTablet ? 12.0 : 8.0),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(isTablet ? 30 : 20),
       ),
       child: Row(
@@ -444,7 +445,7 @@ class ResponsiveSocialButtons extends GetView<SwipeController> {
           padding: EdgeInsets.all(iconPadding),
           child: SvgPicture.asset(
             asset,
-            color: Colors.black,
+            colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
           ),
         ),
       ),

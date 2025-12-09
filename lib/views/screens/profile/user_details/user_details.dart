@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:tuncforwork/constants/app_strings.dart';
 import 'package:tuncforwork/models/models.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/theme/app_theme.dart';
@@ -69,7 +70,7 @@ class UserDetails extends GetView<UserDetailsController> {
                       child: ListTile(
                         leading:
                             Icon(Icons.edit, color: AppTheme.primarySwatch),
-                        title: const Text('Profili Düzenle'),
+                        title: Text(AppStrings.editProfile),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
@@ -78,7 +79,7 @@ class UserDetails extends GetView<UserDetailsController> {
                       child: ListTile(
                         leading:
                             Icon(Icons.logout, color: AppTheme.primarySwatch),
-                        title: const Text('Oturumu Kapat'),
+                        title: Text(AppStrings.logout),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
@@ -87,7 +88,7 @@ class UserDetails extends GetView<UserDetailsController> {
                       child: ListTile(
                         leading:
                             const Icon(Icons.delete_forever, color: Colors.red),
-                        title: const Text('Hesabı Sil'),
+                        title: Text(AppStrings.deleteAccount),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
@@ -114,16 +115,16 @@ class UserDetails extends GetView<UserDetailsController> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Oturumu Kapat'),
-          content: const Text('Oturumu kapatmak istediğinizden emin misiniz?'),
+          title: Text(AppStrings.logout),
+          content: Text(AppStrings.logoutConfirmation),
           actions: [
             TextButton(
-              child: const Text('İptal'),
+              child: Text(AppStrings.cancel),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
               child: Text(
-                'Oturumu Kapat',
+                AppStrings.logout,
                 style: TextStyle(color: AppTheme.primarySwatch),
               ),
               onPressed: () {
@@ -142,18 +143,16 @@ class UserDetails extends GetView<UserDetailsController> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Hesabı Sil'),
-          content: const Text(
-            'Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz silinecektir.',
-          ),
+          title: Text(AppStrings.deleteAccount),
+          content: Text(AppStrings.deleteAccountConfirmation),
           actions: [
             TextButton(
-              child: const Text('İptal'),
+              child: Text(AppStrings.cancel),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: const Text(
-                'Hesabı Sil',
+              child: Text(
+                AppStrings.deleteAccount,
                 style: TextStyle(color: Colors.red),
               ),
               onPressed: () {
@@ -217,16 +216,16 @@ class UserDetails extends GetView<UserDetailsController> {
                 backgroundImage: controller.imageUrl.value.isNotEmpty
                     ? NetworkImage(controller.imageUrl.value)
                     : null,
+                backgroundColor: Colors.grey[200],
                 child: controller.imageUrl.value.isEmpty
                     ? const Icon(Icons.person, size: 50)
                     : null,
-                backgroundColor: Colors.grey[200],
               ),
               const SizedBox(height: 16),
               Text(
                 controller.name.value.isNotEmpty
                     ? controller.name.value
-                    : 'İsimsiz Kullanıcı',
+                    : AppStrings.anonymousUser,
                 style: AppTheme.textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
@@ -234,7 +233,7 @@ class UserDetails extends GetView<UserDetailsController> {
               Text(
                 controller.profession.value.isNotEmpty
                     ? controller.profession.value
-                    : 'Meslek belirtilmemiş',
+                    : AppStrings.noProfessionSpecified,
                 style: AppTheme.textTheme.titleMedium,
                 textAlign: TextAlign.center,
               ),
@@ -260,7 +259,7 @@ class UserDetails extends GetView<UserDetailsController> {
               if (controller.isCurrentUser.value) ...[
                 const SizedBox(height: 24),
                 ModernButton(
-                  text: 'Profili Düzenle',
+                  text: AppStrings.editProfile,
                   onPressed: controller.navigateToAccountSettings,
                   isOutlined: true,
                 ),
@@ -281,7 +280,7 @@ class UserDetails extends GetView<UserDetailsController> {
                                 color: Colors.orange.shade700),
                             const SizedBox(width: 8),
                             Text(
-                              'Eksik Bilgiler',
+                              AppStrings.missingInformation,
                               style: AppTheme.textTheme.titleMedium?.copyWith(
                                 color: Colors.orange.shade900,
                               ),
@@ -290,7 +289,7 @@ class UserDetails extends GetView<UserDetailsController> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Profilinizi daha etkili hale getirmek için aşağıdaki bilgileri ekleyebilirsiniz:',
+                          AppStrings.missingInfoDescription,
                           style: AppTheme.textTheme.bodyMedium?.copyWith(
                             color: Colors.orange.shade900,
                           ),
@@ -326,17 +325,17 @@ class UserDetails extends GetView<UserDetailsController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Temel Bilgiler',
+                AppStrings.basicInformationTitle,
                 style: AppTheme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
-              _buildInfoRow('Yaş', controller.age.value),
-              _buildInfoRow('Cinsiyet', controller.gender.value),
-              _buildInfoRow('E-posta', controller.email.value),
-              _buildInfoRow('Telefon', controller.phoneNo.value),
-              _buildInfoRow('Şehir', controller.city.value),
-              _buildInfoRow('Ülke', controller.country.value),
-              _buildInfoRow('Eğitim', controller.education.value),
+              _buildInfoRow(AppStrings.ageLabel, controller.age.value),
+              _buildInfoRow(AppStrings.gender, controller.gender.value),
+              _buildInfoRow(AppStrings.emailLabel, controller.email.value),
+              _buildInfoRow(AppStrings.phoneLabel, controller.phoneNo.value),
+              _buildInfoRow(AppStrings.cityLabel, controller.city.value),
+              _buildInfoRow(AppStrings.country, controller.country.value),
+              _buildInfoRow(AppStrings.education, controller.education.value),
             ],
           ),
         ));
@@ -349,24 +348,47 @@ class UserDetails extends GetView<UserDetailsController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Ek Bilgiler',
+                AppStrings.additionalInformation,
                 style: AppTheme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
-              _buildInfoRow('Boy', controller.height.value),
-              _buildInfoRow('Kilo', controller.weight.value),
-              _buildInfoRow('Vücut Tipi', controller.bodyType.value),
-              _buildInfoRow('İçki', controller.drink.value),
-              _buildInfoRow('Sigara', controller.smoke.value),
-              _buildInfoRow('Medeni Durum', controller.martialStatus.value),
-              _buildInfoRow('Çocuk', controller.haveChildren.value),
+              _buildInfoRow(AppStrings.height, controller.height.value),
+              _buildInfoRow(AppStrings.weight, controller.weight.value),
+              _buildInfoRow(
+                  AppStrings.bodyTypeField, controller.bodyType.value),
+              _buildInfoRow(AppStrings.drinkingField, controller.drink.value),
+              _buildInfoRow(AppStrings.smokingField, controller.smoke.value),
+              _buildInfoRow(
+                  AppStrings.maritalStatusField,
+                  controller.maritalStatus.value.isEmpty
+                      ? 'Not specified'
+                      : controller.maritalStatus.value),
+              _buildInfoRow(
+                  AppStrings.childrenField, controller.haveChildren.value),
               if (controller.haveChildren.value == 'Yes')
-                _buildInfoRow('Çocuk Sayısı', controller.noOfChildren.value),
-              _buildInfoRow('İş Durumu', controller.employmentStatus.value),
-              _buildInfoRow('Gelir', controller.income.value),
-              _buildInfoRow('Yaşam Durumu', controller.livingSituation.value),
-              _buildInfoRow('Uyruk', controller.nationality.value),
-              _buildInfoRow('Konuşulan Dil', controller.languageSpoken.value),
+                _buildInfoRow(
+                    AppStrings.numberOfChildren, controller.noOfChildren.value),
+              _buildInfoRow(
+                  AppStrings.employmentField,
+                  controller.employmentStatus.value.isEmpty
+                      ? 'Not specified'
+                      : controller.employmentStatus.value),
+              _buildInfoRow(AppStrings.incomeField, controller.income.value),
+              _buildInfoRow(
+                  AppStrings.livingSituationField,
+                  controller.livingSituation.value.isEmpty
+                      ? 'Not specified'
+                      : controller.livingSituation.value),
+              _buildInfoRow(
+                  AppStrings.nationalityField,
+                  controller.nationality.value.isEmpty
+                      ? 'Not specified'
+                      : controller.nationality.value),
+              _buildInfoRow(
+                  AppStrings.spokenLanguageField,
+                  controller.languageSpoken.value.isEmpty
+                      ? 'Not specified'
+                      : controller.languageSpoken.value),
             ],
           ),
         ));
@@ -379,31 +401,30 @@ class UserDetails extends GetView<UserDetailsController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Kariyer Bilgileri',
+                AppStrings.careerInformation,
                 style: AppTheme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
-              _buildInfoRow('Meslek', controller.profession.value),
+              _buildInfoRow(AppStrings.profession, controller.profession.value),
               if (controller.workExperiences.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 Text(
-                  'İş Deneyimleri',
+                  AppStrings.workExperiences,
                   style: AppTheme.textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
                 ...controller.workExperiences
                     .map((exp) => _buildExperienceItem(exp, isTablet))
-                    .toList(),
               ],
               const SizedBox(height: 16),
               Text(
-                'Yetenekler',
+                AppStrings.skillsLabel,
                 style: AppTheme.textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
               if (controller.skills.isEmpty)
                 Text(
-                  'Henüz yetenek eklenmemiş',
+                  AppStrings.noSkillsAdded,
                   style: AppTheme.textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[600],
                     fontStyle: FontStyle.italic,
@@ -455,7 +476,7 @@ class UserDetails extends GetView<UserDetailsController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Sosyal Medya',
+                AppStrings.socialMedia,
                 style: AppTheme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
@@ -561,7 +582,7 @@ class ProfileActionButtons extends GetView<SwipeController> {
             _buildConnectionButton(
               context: context,
               icon: 'assets/instagram.svg',
-              title: "Instagram",
+              title: AppStrings.instagramLabel,
               value: instagramUsername,
               onTap: () => controller.openInstagramProfile(
                 instagramUsername: instagramUsername,
@@ -571,7 +592,7 @@ class ProfileActionButtons extends GetView<SwipeController> {
             _buildConnectionButton(
               context: context,
               icon: 'assets/whatsapp.svg',
-              title: "WhatsApp",
+              title: AppStrings.whatsappLabel,
               value: phoneNo,
               onTap: () => controller.startChattingInWhatsApp(
                 receiverPhoneNumber: phoneNo,
@@ -591,7 +612,8 @@ class ProfileActionButtons extends GetView<SwipeController> {
     required String value,
     required VoidCallback onTap,
   }) {
-    final bool hasValue = value.isNotEmpty && value != 'Not Provided';
+    final bool hasValue =
+        value.isNotEmpty && value != AppStrings.notProvidedLabel;
 
     return Padding(
       padding: EdgeInsets.only(bottom: isTablet ? 16.0 : 12.0),
@@ -615,7 +637,8 @@ class ProfileActionButtons extends GetView<SwipeController> {
                   padding: EdgeInsets.all(isTablet ? 12.0 : 10.0),
                   child: SvgPicture.asset(
                     icon,
-                    color: Colors.white,
+                    colorFilter:
+                        const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                   ),
                 ),
               ),
@@ -633,7 +656,7 @@ class ProfileActionButtons extends GetView<SwipeController> {
                   ),
                 ),
                 Text(
-                  value.isNotEmpty ? value : 'Not Provided',
+                  value.isNotEmpty ? value : AppStrings.notProvidedLabel,
                   style: AppTheme.textTheme.bodyMedium?.copyWith(
                     fontSize: isTablet ? 14.0 : 12.0,
                     color: hasValue ? null : Colors.grey[500],
