@@ -4,9 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
 import 'package:tuncforwork/service/global.dart';
-import 'package:tuncforwork/theme/app_theme.dart';
 import 'package:tuncforwork/models/models.dart';
 import 'package:tuncforwork/service/validation.dart';
+import 'package:tuncforwork/theme/modern_theme.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 import 'package:tuncforwork/widgets/modern_widgets.dart';
 
@@ -17,7 +17,26 @@ class RegistrationScreen extends GetView<AuthController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: ModernTheme.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: ModernTheme.backgroundColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (controller.currentPage.value > 0) {
+              controller.previousPage();
+            } else {
+              Get.back();
+            }
+          },
+        ),
+        title: Obx(() => Text(
+              'Step ${controller.currentPage.value + 1} of 5',
+              style: ModernTheme.textTheme.titleMedium,
+            )),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -52,7 +71,7 @@ class RegistrationScreen extends GetView<AuthController> {
         Expanded(
           flex: 2,
           child: Container(
-            color: AppTheme.primarySwatch.shade50,
+            color: ModernTheme.primaryColor,
             padding: const EdgeInsets.all(48.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,13 +114,13 @@ class RegistrationScreen extends GetView<AuthController> {
       children: [
         Text(
           'Step ${controller.currentPage.value + 1} of 5',
-          style: AppTheme.textTheme.titleMedium,
+          style: ModernTheme.textTheme.titleMedium,
         ),
         const SizedBox(height: 16),
         LinearProgressIndicator(
           value: (controller.currentPage.value + 1) / 5,
           backgroundColor: Colors.grey.shade200,
-          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primarySwatch),
+          valueColor: AlwaysStoppedAnimation<Color>(ModernTheme.primaryColor),
           minHeight: 8,
           borderRadius: BorderRadius.circular(4),
         ),
@@ -130,12 +149,12 @@ class RegistrationScreen extends GetView<AuthController> {
       children: [
         Text(
           titles[controller.currentPage.value],
-          style: AppTheme.textTheme.headlineMedium,
+          style: ModernTheme.textTheme.headlineMedium,
         ),
         const SizedBox(height: 16),
         Text(
           descriptions[controller.currentPage.value],
-          style: AppTheme.textTheme.titleMedium,
+          style: ModernTheme.textTheme.titleMedium,
         ),
       ],
     );
@@ -165,7 +184,7 @@ class RegistrationScreen extends GetView<AuthController> {
                 SizedBox(height: 24.h),
                 TextField(
                   controller: controller.nameController,
-                  decoration: AppTheme.inputDecoration.copyWith(
+                  decoration: ModernTheme.inputDecoration.copyWith(
                     labelText: 'Full Name',
                     prefixIcon: const Icon(Icons.person),
                   ),
@@ -173,7 +192,7 @@ class RegistrationScreen extends GetView<AuthController> {
                 SizedBox(height: 16.h),
                 TextField(
                   controller: controller.emailController,
-                  decoration: AppTheme.inputDecoration.copyWith(
+                  decoration: ModernTheme.inputDecoration.copyWith(
                     labelText: 'Email',
                     prefixIcon: const Icon(Icons.email),
                   ),
@@ -212,41 +231,43 @@ class RegistrationScreen extends GetView<AuthController> {
   }
 
   Widget _buildProfileImagePicker(bool isTablet) {
-    return Column(
-      children: [
-        Obx(() => CircleAvatar(
-              radius: isTablet ? 80.r : 60.r,
-              backgroundColor: AppTheme.primarySwatch.shade100,
-              backgroundImage: controller.pickedImage.value != null
-                  ? FileImage(controller.pickedImage.value!)
-                  : null,
-              child: controller.pickedImage.value == null
-                  ? Icon(
-                      Icons.add_a_photo,
-                      size: isTablet ? 40.r : 30.r,
-                      color: AppTheme.primarySwatch,
-                    )
-                  : null,
-            )),
-        SizedBox(height: 16.h),
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 16.w,
-          runSpacing: 8.h,
-          children: [
-            ModernButton(
-              text: AppStrings.buttonTakePhoto,
-              onPressed: controller.captureImage,
-              isOutlined: true,
-            ),
-            ModernButton(
-              text: AppStrings.buttonChoosePhoto,
-              onPressed: controller.pickImage,
-              isOutlined: true,
-            ),
-          ],
-        ),
-      ],
+    return Builder(
+      builder: (context) => Column(
+        children: [
+          Obx(() => CircleAvatar(
+                radius: isTablet ? 80.r : 60.r,
+                backgroundColor: ModernTheme.primaryColor,
+                backgroundImage: controller.pickedImage.value != null
+                    ? FileImage(controller.pickedImage.value!)
+                    : null,
+                child: controller.pickedImage.value == null
+                    ? Icon(
+                        Icons.add_a_photo,
+                        size: isTablet ? 40.r : 30.r,
+                        color: ModernTheme.primaryColor,
+                      )
+                    : null,
+              )),
+          SizedBox(height: 16.h),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 16.w,
+            runSpacing: 8.h,
+            children: [
+              ModernButton(
+                text: AppStrings.buttonTakePhoto,
+                onPressed: () => controller.captureImage(context: context),
+                isOutlined: true,
+              ),
+              ModernButton(
+                text: AppStrings.buttonChoosePhoto,
+                onPressed: () => controller.pickImage(context: context),
+                isOutlined: true,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -266,18 +287,22 @@ class RegistrationScreen extends GetView<AuthController> {
           const Spacer(),
         SizedBox(width: 16.w),
         Expanded(
-          child: ModernButton(
-            text: controller.currentPage.value == 4
-                ? AppStrings.buttonFinish
-                : AppStrings.buttonNext,
-            onPressed: () {
-              if (controller.currentPage.value == 4) {
-                controller.register();
-              } else {
-                controller.nextPage();
-              }
-            },
-          ),
+          child: Obx(() => ModernButton(
+                text: controller.currentPage.value == 4
+                    ? AppStrings.buttonFinish
+                    : AppStrings.buttonNext,
+                onPressed: controller.showProgressBar.value
+                    ? null
+                    : () {
+                        if (controller.currentPage.value == 4) {
+                          print('Finish button pressed, calling register');
+                          controller.register();
+                        } else {
+                          controller.nextPage();
+                        }
+                      },
+                isLoading: controller.showProgressBar.value,
+              )),
         ),
       ],
     );
@@ -542,7 +567,7 @@ class RegistrationScreen extends GetView<AuthController> {
                 style: TextStyle(
                   fontSize: isTablet ? 24.0 : 20.0,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.primarySwatch,
+                  color: ModernTheme.primaryColor,
                 ),
               ),
               SizedBox(height: isTablet ? 30.0 : 20.0),
@@ -568,12 +593,12 @@ class RegistrationScreen extends GetView<AuthController> {
       children: [
         Text(
           'Career Goals',
-          style: AppTheme.textTheme.titleLarge,
+          style: ModernTheme.textTheme.titleLarge,
         ),
         const SizedBox(height: 16),
         TextField(
           controller: controller.careerGoalController,
-          decoration: AppTheme.inputDecoration.copyWith(
+          decoration: ModernTheme.inputDecoration.copyWith(
             labelText: 'What are your career goals?',
             prefixIcon: const Icon(Icons.flag),
           ),
@@ -582,7 +607,7 @@ class RegistrationScreen extends GetView<AuthController> {
         const SizedBox(height: 16),
         TextField(
           controller: controller.targetPositionController,
-          decoration: AppTheme.inputDecoration.copyWith(
+          decoration: ModernTheme.inputDecoration.copyWith(
             labelText: 'Target Position',
             prefixIcon: const Icon(Icons.work),
           ),
@@ -597,7 +622,7 @@ class RegistrationScreen extends GetView<AuthController> {
       children: [
         Text(
           'Skills',
-          style: AppTheme.textTheme.titleLarge,
+          style: ModernTheme.textTheme.titleLarge,
         ),
         const SizedBox(height: 16),
         Row(
@@ -605,7 +630,7 @@ class RegistrationScreen extends GetView<AuthController> {
             Expanded(
               child: TextField(
                 controller: controller.skillController,
-                decoration: AppTheme.inputDecoration.copyWith(
+                decoration: ModernTheme.inputDecoration.copyWith(
                   labelText: 'Add a skill',
                   prefixIcon: const Icon(Icons.code),
                 ),
@@ -634,8 +659,8 @@ class RegistrationScreen extends GetView<AuthController> {
                         label: Text(skill),
                         onDeleted: () =>
                             controller.selectedSkills.remove(skill),
-                        backgroundColor: AppTheme.primarySwatch.shade50,
-                        labelStyle: TextStyle(color: AppTheme.primarySwatch),
+                        backgroundColor: ModernTheme.primaryColor,
+                        labelStyle: TextStyle(color: ModernTheme.primaryColor),
                       ))
                   .toList(),
             )),
@@ -652,7 +677,7 @@ class RegistrationScreen extends GetView<AuthController> {
           children: [
             Text(
               'Work Experience',
-              style: AppTheme.textTheme.titleLarge,
+              style: ModernTheme.textTheme.titleLarge,
             ),
             ModernButton(
               text: 'Add Experience',
@@ -678,15 +703,15 @@ class RegistrationScreen extends GetView<AuthController> {
         children: [
           Text(
             exp.title,
-            style: AppTheme.textTheme.titleMedium,
+            style: ModernTheme.textTheme.titleMedium,
           ),
           Text(
             exp.company,
-            style: AppTheme.textTheme.bodyLarge,
+            style: ModernTheme.textTheme.bodyLarge,
           ),
           Text(
             '${exp.startDate} - ${exp.endDate ?? 'Present'}',
-            style: AppTheme.textTheme.bodyMedium?.copyWith(
+            style: ModernTheme.textTheme.bodyMedium?.copyWith(
               color: Colors.grey,
             ),
           ),
@@ -694,7 +719,7 @@ class RegistrationScreen extends GetView<AuthController> {
             const SizedBox(height: 8),
             Text(
               exp.description!,
-              style: AppTheme.textTheme.bodyMedium,
+              style: ModernTheme.textTheme.bodyMedium,
             ),
           ],
           if (exp.technologies.isNotEmpty) ...[
@@ -705,8 +730,8 @@ class RegistrationScreen extends GetView<AuthController> {
               children: exp.technologies
                   .map((tech) => Chip(
                         label: Text(tech),
-                        backgroundColor: AppTheme.primarySwatch.shade50,
-                        labelStyle: TextStyle(color: AppTheme.primarySwatch),
+                        backgroundColor: ModernTheme.primaryColor,
+                        labelStyle: TextStyle(color: ModernTheme.primaryColor),
                       ))
                   .toList(),
             ),
@@ -725,7 +750,7 @@ class RegistrationScreen extends GetView<AuthController> {
           children: [
             Text(
               'Projects',
-              style: AppTheme.textTheme.titleLarge,
+              style: ModernTheme.textTheme.titleLarge,
             ),
             ModernButton(
               text: 'Add Project',
@@ -751,12 +776,12 @@ class RegistrationScreen extends GetView<AuthController> {
         children: [
           Text(
             project.title,
-            style: AppTheme.textTheme.titleMedium,
+            style: ModernTheme.textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
           Text(
             project.description,
-            style: AppTheme.textTheme.bodyMedium,
+            style: ModernTheme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -765,8 +790,8 @@ class RegistrationScreen extends GetView<AuthController> {
             children: project.technologies
                 .map((tech) => Chip(
                       label: Text(tech),
-                      backgroundColor: AppTheme.primarySwatch.shade50,
-                      labelStyle: TextStyle(color: AppTheme.primarySwatch),
+                      backgroundColor: ModernTheme.primaryColor,
+                      labelStyle: TextStyle(color: ModernTheme.primaryColor),
                     ))
                 .toList(),
           ),
@@ -787,7 +812,7 @@ class RegistrationScreen extends GetView<AuthController> {
       padding: EdgeInsets.only(bottom: isTablet ? 20.0 : 15.0),
       child: TextField(
         controller: controller,
-        decoration: AppTheme.inputDecoration.copyWith(
+        decoration: ModernTheme.inputDecoration.copyWith(
           labelText: label,
           prefixIcon: Icon(icon),
         ),
@@ -822,7 +847,7 @@ class RegistrationScreen extends GetView<AuthController> {
                 ),
               );
             }).toList(),
-            decoration: AppTheme.inputDecoration.copyWith(
+            decoration: ModernTheme.inputDecoration.copyWith(
               labelText: "Gender",
               prefixIcon: const Icon(Icons.person_outlined),
             ),
@@ -860,7 +885,7 @@ class RegistrationScreen extends GetView<AuthController> {
                 ),
               );
             }).toList(),
-            decoration: AppTheme.inputDecoration.copyWith(
+            decoration: ModernTheme.inputDecoration.copyWith(
               labelText: "Body Type",
               prefixIcon: const Icon(Icons.accessibility_new_outlined),
             ),
@@ -1012,7 +1037,7 @@ class RegistrationScreen extends GetView<AuthController> {
               ),
             );
           }).toList(),
-          decoration: AppTheme.inputDecoration.copyWith(
+          decoration: ModernTheme.inputDecoration.copyWith(
             labelText: label,
             prefixIcon: Icon(icon),
           ),
@@ -1044,11 +1069,11 @@ class RegistrationScreen extends GetView<AuthController> {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppTheme.primarySwatch),
+              Icon(icon, color: ModernTheme.primaryColor),
               const SizedBox(width: 8),
               Text(
                 label,
-                style: AppTheme.textTheme.titleMedium,
+                style: ModernTheme.textTheme.titleMedium,
               ),
             ],
           ),
@@ -1061,7 +1086,7 @@ class RegistrationScreen extends GetView<AuthController> {
                     onChanged(option);
                   }
                 },
-                activeColor: AppTheme.primarySwatch,
+                activeColor: ModernTheme.primaryColor,
               ))),
         ],
       ),
@@ -1116,7 +1141,7 @@ class PasswordInputField extends StatelessWidget {
                     authController.passwordText.value = value;
                   }
                 },
-                decoration: AppTheme.inputDecoration.copyWith(
+                decoration: ModernTheme.inputDecoration.copyWith(
                   labelText: label,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
@@ -1328,7 +1353,7 @@ class SocialLinksSection extends StatelessWidget {
             style: TextStyle(
               fontSize: isTablet ? 20.0 : 18.0,
               fontWeight: FontWeight.bold,
-              color: AppTheme.primarySwatch,
+              color: ModernTheme.primaryColor,
             ),
           ),
           SizedBox(height: 16),

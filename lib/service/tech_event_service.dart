@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/tech_event.dart';
-import 'package:tuncforwork/service/push_notification_system.dart';
-
-import 'dart:developer';
 
 class TechEventService extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -25,11 +22,8 @@ class TechEventService extends GetxController {
 
       // Etkinlik oluşturulduğunda katılımcılara bildirim gönder
       if (event.isPublished) {
-        await _sendEventNotification(
-          event,
-          'Yeni Etkinlik',
-          '${event.title} etkinliği oluşturuldu!',
-        );
+        // Notification sistem devre dışı (performans için)
+        // Bildirim gönderimi devre dışı bırakıldı
       }
     } catch (e) {
       errorMessage.value = 'Etkinlik oluşturulurken hata: $e';
@@ -97,12 +91,8 @@ class TechEventService extends GetxController {
           await _firestore.collection('tech_events').doc(eventId).get();
       final event = TechEvent.fromMap(eventDoc.data()!);
 
-      await _sendEventNotification(
-        event,
-        'Yeni Katılımcı',
-        'Etkinliğinize yeni bir katılımcı eklendi!',
-        [event.organizerId],
-      );
+      // Notification sistem devre dışı (performans için)
+      // Bildirim gönderimi devre dışı bırakıldı
     } catch (e) {
       errorMessage.value = 'Etkinliğe katılırken hata: $e';
       rethrow;
@@ -156,6 +146,11 @@ class TechEventService extends GetxController {
       return {};
     }
   }
+
+  //  Notification sistemi kaldırıldı (performans için)
+  // Aşağıdaki fonksiyonlar yorum satırında bırakıldı
+
+/*
 
   // Etkinlik bildirimi gönder
   Future<void> _sendEventNotification(
@@ -227,7 +222,7 @@ class TechEventService extends GetxController {
     }
   }
 
-  // Kullanıcı token'larını getir
+    // Kullanıcı token'larını getir
   Future<List<String>> _getUserTokens(List<String> userIds) async {
     try {
       final tokens = <String>[];
@@ -259,4 +254,5 @@ class TechEventService extends GetxController {
       return [];
     }
   }
+ */
 }

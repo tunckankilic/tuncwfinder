@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 
 /// Service for Firebase Crashlytics integration
 /// Handles crash reporting and error logging
+///
+/// PERFORMANS: Debug modunda devre dışı, sadece release modunda çalışır
 class CrashlyticsService {
   static final CrashlyticsService _instance = CrashlyticsService._internal();
   factory CrashlyticsService() => _instance;
@@ -12,15 +14,21 @@ class CrashlyticsService {
   late FirebaseCrashlytics _crashlytics;
   bool _initialized = false;
 
-  /// Initialize Crashlytics
+  /// Initialize Crashlytics (sadece release modunda)
   Future<void> initialize() async {
     if (_initialized) return;
+
+    // Debug modunda Crashlytics'i başlatma
+    if (kDebugMode) {
+      dev_tools.log('⚡ Crashlytics devre dışı (DEBUG mode)');
+      return;
+    }
 
     try {
       _crashlytics = FirebaseCrashlytics.instance;
 
       // Enable Crashlytics collection
-      await _crashlytics.setCrashlyticsCollectionEnabled(!kDebugMode);
+      await _crashlytics.setCrashlyticsCollectionEnabled(true);
 
       // Pass all uncaught errors to Crashlytics
       FlutterError.onError = _crashlytics.recordFlutterFatalError;
@@ -32,7 +40,7 @@ class CrashlyticsService {
       };
 
       _initialized = true;
-      dev_tools.log('Crashlytics initialized successfully');
+      dev_tools.log('Crashlytics initialized successfully (RELEASE mode)');
     } catch (e, stackTrace) {
       dev_tools.log('Failed to initialize Crashlytics: $e');
       dev_tools.log('Stack trace: $stackTrace');
@@ -47,8 +55,13 @@ class CrashlyticsService {
     Iterable<Object>? information,
     bool fatal = false,
   }) async {
-    if (!_initialized) {
-      dev_tools.log('Crashlytics not initialized, skipping error log');
+    // Debug modunda error loglamayı atla
+    if (kDebugMode || !_initialized) {
+      // Debug modunda sadece console'a yazdır
+      if (kDebugMode) {
+        dev_tools
+            .log('DEBUG Error: $error${reason != null ? " - $reason" : ""}');
+      }
       return;
     }
 
@@ -69,7 +82,7 @@ class CrashlyticsService {
 
   /// Log a message to Crashlytics
   Future<void> logMessage(String message) async {
-    if (!_initialized) return;
+    if (kDebugMode || !_initialized) return;
 
     try {
       await _crashlytics.log(message);
@@ -80,7 +93,7 @@ class CrashlyticsService {
 
   /// Set user identifier
   Future<void> setUserId(String userId) async {
-    if (!_initialized) return;
+    if (kDebugMode || !_initialized) return;
 
     try {
       await _crashlytics.setUserIdentifier(userId);
@@ -92,7 +105,7 @@ class CrashlyticsService {
 
   /// Set custom key-value pairs
   Future<void> setCustomKey(String key, dynamic value) async {
-    if (!_initialized) return;
+    if (kDebugMode || !_initialized) return;
 
     try {
       await _crashlytics.setCustomKey(key, value);
@@ -103,7 +116,7 @@ class CrashlyticsService {
 
   /// Set multiple custom keys at once
   Future<void> setCustomKeys(Map<String, dynamic> keys) async {
-    if (!_initialized) return;
+    if (kDebugMode || !_initialized) return;
 
     try {
       for (var entry in keys.entries) {
@@ -116,13 +129,13 @@ class CrashlyticsService {
 
   /// Force a crash (for testing purposes only)
   void forceCrash() {
-    if (!_initialized) return;
+    if (kDebugMode || !_initialized) return;
     _crashlytics.crash();
   }
 
   /// Enable/disable crash collection
   Future<void> setCrashlyticsCollectionEnabled(bool enabled) async {
-    if (!_initialized) return;
+    if (kDebugMode || !_initialized) return;
 
     try {
       await _crashlytics.setCrashlyticsCollectionEnabled(enabled);

@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
-import 'package:tuncforwork/theme/app_theme.dart';
+import 'package:tuncforwork/theme/modern_theme.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 import 'package:tuncforwork/views/screens/auth/pages/forgot_password.dart';
 import 'package:tuncforwork/views/screens/auth/pages/register_screen.dart';
@@ -15,7 +15,7 @@ class LoginScreen extends GetView<AuthController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: ModernTheme.backgroundColor,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -54,7 +54,7 @@ class LoginScreen extends GetView<AuthController> {
         // Sol taraf - Logo ve bilgi
         Expanded(
           child: Container(
-            color: AppTheme.primarySwatch.shade50,
+            color: ModernTheme.primaryColor,
             padding: const EdgeInsets.all(48.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -67,13 +67,13 @@ class LoginScreen extends GetView<AuthController> {
                 const SizedBox(height: 32),
                 Text(
                   AppStrings.welcome,
-                  style: AppTheme.textTheme.displayLarge,
+                  style: ModernTheme.textTheme.displayLarge,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   AppStrings.loginNow,
-                  style: AppTheme.textTheme.titleLarge,
+                  style: ModernTheme.textTheme.titleLarge,
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -113,7 +113,7 @@ class LoginScreen extends GetView<AuthController> {
         FadeAnimation(
           child: Text(
             AppStrings.welcome,
-            style: AppTheme.textTheme.displayMedium,
+            style: ModernTheme.textTheme.displayMedium,
             textAlign: TextAlign.center,
           ),
         ),
@@ -121,7 +121,7 @@ class LoginScreen extends GetView<AuthController> {
         FadeAnimation(
           child: Text(
             AppStrings.loginNow,
-            style: AppTheme.textTheme.titleMedium,
+            style: ModernTheme.textTheme.titleMedium,
             textAlign: TextAlign.center,
           ),
         ),
@@ -137,7 +137,7 @@ class LoginScreen extends GetView<AuthController> {
         children: [
           TextField(
             controller: controller.emailController,
-            decoration: AppTheme.inputDecoration.copyWith(
+            decoration: ModernTheme.inputDecoration.copyWith(
               labelText: AppStrings.email,
               prefixIcon: const Icon(Icons.email),
             ),
@@ -146,7 +146,7 @@ class LoginScreen extends GetView<AuthController> {
           const SizedBox(height: 16),
           Obx(() => TextField(
                 controller: controller.passwordController,
-                decoration: AppTheme.inputDecoration.copyWith(
+                decoration: ModernTheme.inputDecoration.copyWith(
                   labelText: AppStrings.password,
                   prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
@@ -185,8 +185,8 @@ class LoginScreen extends GetView<AuthController> {
           onPressed: () => Get.toNamed(ForgotPasswordScreen.routeName),
           child: Text(
             AppStrings.forgotPassword,
-            style: AppTheme.textTheme.labelLarge?.copyWith(
-              color: AppTheme.primarySwatch,
+            style: ModernTheme.textTheme.labelLarge?.copyWith(
+              color: ModernTheme.primaryColor,
             ),
           ),
         ),
@@ -196,14 +196,14 @@ class LoginScreen extends GetView<AuthController> {
           children: [
             Text(
               AppStrings.dontHaveAccount,
-              style: AppTheme.textTheme.bodyMedium,
+              style: ModernTheme.textTheme.bodyMedium,
             ),
             TextButton(
               onPressed: () => Get.toNamed(RegistrationScreen.routeName),
               child: Text(
                 AppStrings.createHere,
-                style: AppTheme.textTheme.labelLarge?.copyWith(
-                  color: AppTheme.primarySwatch,
+                style: ModernTheme.textTheme.labelLarge?.copyWith(
+                  color: ModernTheme.primaryColor,
                   decoration: TextDecoration.underline,
                 ),
               ),
@@ -224,12 +224,12 @@ class LoginScreen extends GetView<AuthController> {
                 children: [
                   TextSpan(
                     text: '${AppStrings.iAgree} ',
-                    style: AppTheme.textTheme.bodyMedium,
+                    style: ModernTheme.textTheme.bodyMedium,
                   ),
                   TextSpan(
                     text: AppStrings.termsAndConditions,
-                    style: AppTheme.textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.primarySwatch,
+                    style: ModernTheme.textTheme.bodyMedium?.copyWith(
+                      color: ModernTheme.primaryColor,
                       decoration: TextDecoration.underline,
                     ),
                     recognizer: TapGestureRecognizer()
@@ -237,12 +237,12 @@ class LoginScreen extends GetView<AuthController> {
                   ),
                   TextSpan(
                     text: ' ${AppStrings.and} ',
-                    style: AppTheme.textTheme.bodyMedium,
+                    style: ModernTheme.textTheme.bodyMedium,
                   ),
                   TextSpan(
                     text: AppStrings.privacyPolicy,
-                    style: AppTheme.textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.primarySwatch,
+                    style: ModernTheme.textTheme.bodyMedium?.copyWith(
+                        color: ModernTheme.primaryColor,
                       decoration: TextDecoration.underline,
                     ),
                     recognizer: TapGestureRecognizer()
@@ -279,7 +279,7 @@ class LoginScreen extends GetView<AuthController> {
             children: [
               Text(
                 AppStrings.termsAndConditions,
-                style: AppTheme.textTheme.titleLarge,
+                style: ModernTheme.textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -289,7 +289,7 @@ class LoginScreen extends GetView<AuthController> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Text(
                     controller.eula,
-                    style: AppTheme.textTheme.bodyMedium,
+                    style: ModernTheme.textTheme.bodyMedium,
                   ),
                 ),
               ),
@@ -336,7 +336,7 @@ class LoginScreen extends GetView<AuthController> {
             children: [
               Text(
                 AppStrings.privacyPolicy,
-                style: AppTheme.textTheme.titleLarge,
+                style: ModernTheme.textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -346,7 +346,7 @@ class LoginScreen extends GetView<AuthController> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Text(
                     controller.privacyPolicy,
-                    style: AppTheme.textTheme.bodyMedium,
+                    style: ModernTheme.textTheme.bodyMedium,
                   ),
                 ),
               ),

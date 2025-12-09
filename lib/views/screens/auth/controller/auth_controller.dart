@@ -10,6 +10,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:tuncforwork/models/models.dart';
 import 'package:tuncforwork/models/person.dart' as p_model;
 import 'package:tuncforwork/service/validation.dart';
+import 'package:tuncforwork/service/global.dart';
+import 'package:tuncforwork/service/snackbar_service.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
 import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'package:tuncforwork/views/screens/home/home_bindings.dart';
@@ -315,15 +317,21 @@ By accepting this privacy policy, you declare that you understand and agree to t
   }
 
   Future<void> register() async {
+    log('Register method called');
     try {
       showProgressBar.value = true;
+      log('Progress bar set to true');
 
       // Email kontrolü
+      log('Checking email: ${emailController.text.trim()}');
       final emailExists = await _checkEmailExists(emailController.text.trim());
       if (emailExists) {
-        _showError(AppStrings.errorEmailExists);
+        log('Email already exists');
+        _showError(Get.context, AppStrings.errorEmailExists);
+        showProgressBar.value = false;
         return;
       }
+      log('Email check passed');
 
       // Debug için sosyal medya değerlerini kontrol edelim
       log('Instagram URL: ${instagramController.text}');
@@ -356,6 +364,22 @@ By accepting this privacy policy, you declare that you understand and agree to t
           yearsOfExperience: 1, // Varsayılan değer
         ));
       }
+
+      // CareerGoal nesnesini oluştur
+      CareerGoal? careerGoalData;
+      if (careerGoalController.text.trim().isNotEmpty) {
+        careerGoalData = CareerGoal(
+          title: targetPositionController.text.trim().isNotEmpty
+              ? targetPositionController.text.trim()
+              : professionController.text.trim(),
+          description: careerGoalController.text.trim(),
+          targetDate:
+              DateTime.now().add(const Duration(days: 365)), // 1 yıl sonra
+          requiredSkills: selectedSkills.toList(),
+          milestones: [], // Boş başlangıç
+        );
+      }
+      log('Career goal created: ${careerGoalData?.title}');
 
       final p_model.Person userData = p_model.Person(
         uid: user.uid,
@@ -415,8 +439,10 @@ By accepting this privacy policy, you declare that you understand and agree to t
         skills: skillsList.isNotEmpty ? skillsList : null,
         workExperiences: workExperiences.isNotEmpty ? workExperiences : null,
         projects: projects.isNotEmpty ? projects : null,
-        careerGoal: careerGoal.value,
+        careerGoal: careerGoalData,
       );
+
+      log('User data prepared, saving to Firestore');
 
       await _firestore.collection('users').doc(user.uid).set(userData.toJson());
       await user.updateDisplayName(nameController.text.trim());
@@ -447,16 +473,14 @@ By accepting this privacy policy, you declare that you understand and agree to t
         })
       ]);
 
-      Get.snackbar(
-        AppStrings.successTitle,
-        AppStrings.successAccountCreated,
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green.shade50,
-        colorText: Colors.green.shade900,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(8),
-        borderRadius: 8,
-      );
+      if (Get.context != null && Get.context!.mounted) {
+        SnackbarService.showSuccess(
+          Get.context!,
+          AppStrings.successAccountCreated,
+          title: AppStrings.successTitle,
+        );
+      }
+
       final writtenData =
           await _firestore.collection('users').doc(user.uid).get();
       log('Written data: ${writtenData.data()}');
@@ -471,11 +495,17 @@ By accepting this privacy policy, you declare that you understand and agree to t
         duration: const Duration(milliseconds: 500),
       );
     } on FirebaseAuthException catch (e) {
+      log('Firebase Auth error during registration: ${e.code} - ${e.message}');
       _handleLoginError(e);
-    } catch (e) {
-      _showError('${AppStrings.errorRegistrationFailed}${e.toString()}');
+    } catch (e, stackTrace) {
       log('Registration error: $e');
+      log('Stack trace: $stackTrace');
+      if (Get.context != null && Get.context!.mounted) {
+        SnackbarService.showError(Get.context!,
+            '${AppStrings.errorRegistrationFailed}${e.toString()}');
+      }
     } finally {
+      log('Registration completed, hiding progress bar');
       showProgressBar.value = false;
     }
   }
@@ -498,15 +528,9 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
   }
 
-  void _showSuccess(String message) {
-    Get.snackbar(
-      'Success',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
+  void _showSuccess(BuildContext? context, String message) {
+    if (context == null || !context.mounted) return;
+    SnackbarService.showSuccess(context, message);
   }
 
   void updateChildrenOption(String value) {
@@ -540,7 +564,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
   }
 
-  Future<void> pickImage() async {
+  Future<void> pickImage({BuildContext? context}) async {
     try {
       isLoading.value = true;
 
@@ -548,7 +572,8 @@ By accepting this privacy policy, you declare that you understand and agree to t
       if (status.isDenied) {
         status = await Permission.photos.request();
         if (status.isDenied) {
-          _showError('Please allow access to your gallery to select a photo');
+          _showError(
+              context, 'Please allow access to your gallery to select a photo');
           return;
         }
       }
@@ -562,17 +587,17 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
       if (pickedFile != null) {
         pickedImage.value = File(pickedFile.path);
-        _showSuccess('Image selected successfully');
+        _showSuccess(context, 'Image selected successfully');
       }
     } catch (e) {
       log('Error picking image: $e');
-      _showError('Failed to pick image. Please try again.');
+      _showError(context, 'Failed to pick image. Please try again.');
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> captureImage() async {
+  Future<void> captureImage({BuildContext? context}) async {
     try {
       isLoading.value = true;
 
@@ -580,7 +605,8 @@ By accepting this privacy policy, you declare that you understand and agree to t
       if (status.isDenied) {
         status = await Permission.camera.request();
         if (status.isDenied) {
-          _showError('Please allow access to your camera to take a photo');
+          _showError(
+              context, 'Please allow access to your camera to take a photo');
           return;
         }
       }
@@ -594,11 +620,11 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
       if (pickedFile != null) {
         pickedImage.value = File(pickedFile.path);
-        _showSuccess('Photo captured successfully');
+        _showSuccess(context, 'Photo captured successfully');
       }
     } catch (e) {
       log('Error capturing image: $e');
-      _showError('Failed to capture image. Please try again.');
+      _showError(context, 'Failed to capture image. Please try again.');
     } finally {
       isLoading.value = false;
     }
@@ -606,8 +632,13 @@ By accepting this privacy policy, you declare that you understand and agree to t
 
   Future<void> login() async {
     if (!termsAccepted.value) {
-      Get.snackbar(
-          AppStrings.termsAndConditions, AppStrings.validateTermsAccept);
+      if (Get.context != null && Get.context!.mounted) {
+        SnackbarService.showWarning(
+          Get.context!,
+          AppStrings.validateTermsAccept,
+          title: AppStrings.termsAndConditions,
+        );
+      }
       return;
     }
 
@@ -653,7 +684,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       handleAuthError(e);
     } catch (e) {
       log('Login error: $e');
-      _showError('${AppStrings.errorLoginFailed}${e.toString()}');
+      _showError(Get.context, '${AppStrings.errorLoginFailed}${e.toString()}');
     } finally {
       isLoading.value = false;
     }
@@ -680,7 +711,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       default:
         message = e.message ?? 'An error occurred';
     }
-    _showError(message);
+    _showError(Get.context, message);
     return Future.value();
   }
 
@@ -712,7 +743,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
       }
     }
 
-    _showError(message);
+    _showError(Get.context, message);
     return Future.value();
   }
 
@@ -721,16 +752,16 @@ By accepting this privacy policy, you declare that you understand and agree to t
       await _auth.signOut();
       Get.offAll(() => const LoginScreen());
     } catch (error) {
-      _showError('Failed to log out: ${error.toString()}');
+      _showError(Get.context, 'Failed to log out: ${error.toString()}');
     }
   }
 
   Future<void> resetPassword(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
-      _showSuccess(AppStrings.successPasswordReset);
+      _showSuccess(Get.context, AppStrings.successPasswordReset);
     } catch (error) {
-      _showError(error.toString());
+      _showError(Get.context, error.toString());
     }
   }
 
@@ -742,20 +773,17 @@ By accepting this privacy policy, you declare that you understand and agree to t
       );
       Get.offAll(() => const LoginScreen(), binding: AuthBindings());
     } catch (error) {
-      Get.snackbar('Error', error.toString());
+      if (Get.context != null && Get.context!.mounted) {
+        SnackbarService.showError(Get.context!, error.toString());
+      }
     } finally {
       isLoading.value = false;
     }
   }
 
-  void _showError(String message) {
-    Get.snackbar(
-      'Error',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-    );
+  void _showError(BuildContext? context, String message) {
+    if (context == null || !context.mounted) return;
+    SnackbarService.showError(context, message);
   }
 
   Future<String> _uploadProfilePicture(String uid) async {
@@ -907,6 +935,36 @@ By accepting this privacy policy, you declare that you understand and agree to t
         break;
 
       case 1: // Personal Info
+        // Boş alanları otomatik olarak ilk değerle doldur
+        if (genderController.text.trim().isEmpty) {
+          genderController.text = gender.first;
+          selectedGender.value = gender.first;
+        }
+        if (countryController.text.trim().isEmpty) {
+          countryController.text = countries.first;
+          selectedCountry.value = countries.first;
+        }
+        if (nationalityController.text.trim().isEmpty) {
+          nationalityController.text = nationalities.first;
+          selectedNationality.value = nationalities.first;
+        }
+        if (educationController.text.trim().isEmpty) {
+          educationController.text = educationLevels.first;
+          selectedEducation.value = educationLevels.first;
+        }
+        if (languageSpokenController.text.trim().isEmpty) {
+          languageSpokenController.text = languages.first;
+          selectedLanguage.value = languages.first;
+        }
+        if (religionController.text.trim().isEmpty) {
+          religionController.text = religion.first;
+          selectedReligion.value = religion.first;
+        }
+        if (ethnicityController.text.trim().isEmpty) {
+          ethnicityController.text = ethnicities.first;
+          selectedEthnicity.value = ethnicities.first;
+        }
+
         validationResult = RegistrationValidator.validatePersonalInfo(
           age: ageController.text,
           gender: genderController.text,
@@ -918,6 +976,12 @@ By accepting this privacy policy, you declare that you understand and agree to t
         break;
 
       case 2: // Appearance
+        // Boş alanları otomatik olarak ilk değerle doldur
+        if (bodyTypeController.text.trim().isEmpty) {
+          bodyTypeController.text = bodyTypes.first;
+          selectedBodyType.value = bodyTypes.first;
+        }
+
         validationResult = RegistrationValidator.validateAppearance(
           height: heightController.text,
           weight: weightController.text,
@@ -926,6 +990,41 @@ By accepting this privacy policy, you declare that you understand and agree to t
         break;
 
       case 3: // Lifestyle
+        // Boş alanları otomatik olarak ilk değerle doldur
+        if (drinkController.text.trim().isEmpty) {
+          drinkController.text = drinkingHabits.first;
+          selectedDrink.value = drinkingHabits.first;
+        }
+        if (smokeController.text.trim().isEmpty) {
+          smokeController.text = smokingHabits.first;
+          selectedSmoke.value = smokingHabits.first;
+        }
+        if (maritalStatusController.text.trim().isEmpty) {
+          maritalStatusController.text = maritalStatuses.first;
+          selectedMaritalStatus.value = maritalStatuses.first;
+        }
+        if (childrenSelection.value.trim().isEmpty) {
+          childrenSelection.value = childrenOptions.first;
+        }
+        if (professionController.text.trim().isEmpty) {
+          professionController.text = itJobs.first;
+          selectedProfession.value = itJobs.first;
+        }
+        if (employmentStatusController.text.trim().isEmpty) {
+          employmentStatusController.text = employmentStatuses.first;
+          selectedEmploymentStatus.value = employmentStatuses.first;
+        }
+        if (incomeController.text.trim().isEmpty) {
+          incomeController.text = '0';
+        }
+        if (livingSituationController.text.trim().isEmpty) {
+          livingSituationController.text = livingSituations.first;
+          selectedLivingSituation.value = livingSituations.first;
+        }
+        if (relationshipSelection.value.trim().isEmpty) {
+          relationshipSelection.value = relationshipOptions.first;
+        }
+
         validationResult = RegistrationValidator.validateLifestyle(
           drink: drinkController.text,
           smoke: smokeController.text,
@@ -941,15 +1040,17 @@ By accepting this privacy policy, you declare that you understand and agree to t
         break;
 
       case 4: // Career Information
-        // Career validation - şimdilik basit kontrol
+        // Boş alanları otomatik olarak default değerlerle doldur
         if (careerGoalController.text.trim().isEmpty) {
-          validationResult = ValidationResult(
-            isValid: false,
-            errorMessage: 'Please enter your career goals',
-          );
-        } else {
-          validationResult = ValidationResult(isValid: true);
+          careerGoalController.text = 'Career development';
         }
+        if (targetPositionController.text.trim().isEmpty) {
+          targetPositionController.text = professionController.text.isNotEmpty
+              ? professionController.text
+              : 'Software Developer';
+        }
+
+        validationResult = ValidationResult(isValid: true);
         break;
 
       default:
@@ -968,16 +1069,12 @@ By accepting this privacy policy, you declare that you understand and agree to t
         register();
       }
     } else {
-      Get.snackbar(
-        'Error',
-        validationResult.errorMessage ?? 'Please check your inputs',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade50,
-        colorText: Colors.red.shade900,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(8),
-        borderRadius: 8,
-      );
+      if (Get.context != null && Get.context!.mounted) {
+        SnackbarService.showError(
+          Get.context!,
+          validationResult.errorMessage ?? 'Please check your inputs',
+        );
+      }
     }
   }
 
@@ -1029,7 +1126,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
   }
 
-  void showAddWorkExperienceDialog(bool isTablet) {
+  void showAddWorkExperienceDialog(bool isTablet, {BuildContext? context}) {
     final titleController = TextEditingController();
     final companyController = TextEditingController();
     final descriptionController = TextEditingController();
@@ -1040,12 +1137,12 @@ By accepting this privacy policy, you declare that you understand and agree to t
     RxString startDateText = ''.obs;
     RxString endDateText = ''.obs;
 
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Container(
+    Get.dialog(Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Builder(
+        builder: (dialogContext) => Container(
           padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1222,10 +1319,9 @@ By accepting this privacy policy, you declare that you understand and agree to t
                         ));
                         Get.back();
                       } else {
-                        Get.snackbar(
-                          AppStrings.errorTurkish,
+                        SnackbarService.showError(
+                          dialogContext,
                           AppStrings.pleaseFillAllRequiredFieldsTurkish,
-                          snackPosition: SnackPosition.BOTTOM,
                         );
                       }
                     },
@@ -1237,7 +1333,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
           ),
         ),
       ),
-    );
+    ));
   }
 
   // Proje İşlemleri
@@ -1251,7 +1347,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
     }
   }
 
-  void showAddProjectDialog(bool isTablet) {
+  void showAddProjectDialog(bool isTablet, {BuildContext? context}) {
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
     final technologiesController = TextEditingController();
@@ -1259,12 +1355,12 @@ By accepting this privacy policy, you declare that you understand and agree to t
     DateTime? selectedDate;
     RxString dateText = ''.obs;
 
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Container(
+    Get.dialog(Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Builder(
+        builder: (dialogContext) => Container(
           padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1375,10 +1471,9 @@ By accepting this privacy policy, you declare that you understand and agree to t
                         ));
                         Get.back();
                       } else {
-                        Get.snackbar(
-                          'Hata',
+                        SnackbarService.showError(
+                          dialogContext,
                           'Lütfen tüm zorunlu alanları doldurun.',
-                          snackPosition: SnackPosition.BOTTOM,
                         );
                       }
                     },
@@ -1390,7 +1485,7 @@ By accepting this privacy policy, you declare that you understand and agree to t
           ),
         ),
       ),
-    );
+    ));
   }
 
   @override

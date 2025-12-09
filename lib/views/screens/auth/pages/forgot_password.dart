@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
-import 'package:tuncforwork/theme/app_theme.dart';
+import 'package:tuncforwork/theme/modern_theme.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 import 'package:tuncforwork/widgets/modern_widgets.dart';
 
@@ -27,19 +27,19 @@ class ForgotPasswordScreen extends GetView<AuthController> {
                 SizedBox(height: isTablet ? 40.0 : 24.0),
                 Text(
                   AppStrings.forgotPasswordTitle,
-                  style: AppTheme.textTheme.headlineMedium,
+                  style: ModernTheme.textTheme.headlineMedium,
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: isTablet ? 24.0 : 16.0),
                 Text(
                   AppStrings.forgotPasswordDescription,
-                  style: AppTheme.textTheme.bodyLarge,
+                  style: ModernTheme.textTheme.bodyLarge,
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: isTablet ? 48.0 : 32.0),
                 TextField(
                   controller: controller.emailController,
-                  decoration: AppTheme.inputDecoration.copyWith(
+                  decoration: ModernTheme.inputDecoration.copyWith(
                     labelText: AppStrings.email,
                     prefixIcon: const Icon(Icons.email),
                   ),
@@ -58,8 +58,8 @@ class ForgotPasswordScreen extends GetView<AuthController> {
                   onPressed: () => Get.back(),
                   child: Text(
                     AppStrings.backToLogin,
-                    style: AppTheme.textTheme.labelLarge?.copyWith(
-                      color: AppTheme.primarySwatch,
+                    style: ModernTheme.textTheme.labelLarge?.copyWith(
+                      color: ModernTheme.primaryColor,
                     ),
                   ),
                 ),

@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:tuncforwork/service/snackbar_service.dart';
 
 /// Global Error Handler Service
 /// Tüm hata türlerini yakalar ve kullanıcı dostu mesajlar gösterir
@@ -167,70 +168,47 @@ class ErrorHandler extends GetxService {
 
   /// Hata mesajını kullanıcıya gösterir
   void showError(String message, {Duration? duration}) {
-    Get.snackbar(
-      'Hata',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red.shade600,
-      colorText: Colors.white,
-      icon: const Icon(Icons.error_outline, color: Colors.white),
-      duration: duration ?? const Duration(seconds: 4),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-    );
+    if (Get.context != null && Get.context!.mounted) {
+      SnackbarService.showError(
+        Get.context!,
+        message,
+        title: 'Hata',
+        duration: duration ?? const Duration(seconds: 4),
+      );
+    }
   }
 
   /// Başarı mesajını kullanıcıya gösterir
   void showSuccess(String message, {Duration? duration}) {
-    Get.snackbar(
-      'Success',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.shade600,
-      colorText: Colors.white,
-      icon: const Icon(Icons.check_circle_outline, color: Colors.white),
-      duration: duration ?? const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-    );
+    if (Get.context != null && Get.context!.mounted) {
+      SnackbarService.showSuccess(
+        Get.context!,
+        message,
+        duration: duration ?? const Duration(seconds: 3),
+      );
+    }
   }
 
   /// Uyarı mesajını kullanıcıya gösterir
   void showWarning(String message, {Duration? duration}) {
-    Get.snackbar(
-      'Warning',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.orange.shade600,
-      colorText: Colors.white,
-      icon: const Icon(Icons.warning, color: Colors.white),
-      duration: duration ?? const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-    );
+    if (Get.context != null && Get.context!.mounted) {
+      SnackbarService.showWarning(
+        Get.context!,
+        message,
+        duration: duration ?? const Duration(seconds: 3),
+      );
+    }
   }
 
   /// Bilgi mesajını kullanıcıya gösterir
   void showInfo(String message, {Duration? duration}) {
-    Get.snackbar(
-      'Info',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.blue.shade600,
-      colorText: Colors.white,
-      icon: const Icon(Icons.info_outline, color: Colors.white),
-      duration: duration ?? const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-    );
+    if (Get.context != null && Get.context!.mounted) {
+      SnackbarService.showInfo(
+        Get.context!,
+        message,
+        duration: duration ?? const Duration(seconds: 3),
+      );
+    }
   }
 
   /// Loading dialog gösterir

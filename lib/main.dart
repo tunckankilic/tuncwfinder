@@ -1,6 +1,5 @@
 import 'dart:developer';
-import 'dart:io';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:tuncforwork/service/service.dart';
@@ -9,7 +8,6 @@ import 'package:tuncforwork/service/analytics_service.dart';
 import 'package:tuncforwork/views/screens/auth/auth_service.dart';
 import 'package:tuncforwork/views/screens/auth/auth_wrapper.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'firebase_options.dart';
 import 'package:tuncforwork/theme/modern_theme.dart';
@@ -43,9 +41,8 @@ class MyApp extends StatelessWidget {
           getPages: AppRoutes.routes,
           unknownRoute: AppRoutes.unknownRoute,
           initialBinding: InitialBindings(),
-          navigatorObservers: [
-            analyticsService.observer,
-          ],
+          // Analytics observer'ı sadece release modunda aktif et (performans için)
+          navigatorObservers: kReleaseMode ? [analyticsService.observer] : [],
           builder: (context, widget) {
             ScreenUtil.init(context);
             return MediaQuery(
@@ -65,7 +62,7 @@ class InitialBindings extends Bindings {
     // Core Services
     Get.put(ErrorHandler(), permanent: true);
     Get.put(AuthService(), permanent: true);
-    Get.put(PushNotificationSystem(), permanent: true);
+    // 🔕 Push Notification System kaldırıldı (performans için)
 
     // Core Controllers - permanent olarak yükle
     Get.put(UserController(), permanent: true);
@@ -83,52 +80,30 @@ Future<void> initializeApp() async {
     );
     log('Firebase initialized successfully');
 
-    // Initialize Crashlytics
-    log('Initializing Crashlytics...');
-    await crashlyticsService.initialize();
-    log('Crashlytics initialized successfully');
+    // PERFORMANS OPTİMİZASYONU:
+    // Debug modunda Firebase servislerini başlatma (build performansını artırır)
+    if (kReleaseMode) {
+      // Sadece Release/Profile modunda tüm servisleri etkinleştir
+      log('Initializing Crashlytics (Release mode)...');
+      await crashlyticsService.initialize();
+      log('Crashlytics initialized successfully');
 
-    // Initialize Analytics
-    log('Initializing Analytics...');
-    await analyticsService.initialize();
-    log('Analytics initialized successfully');
-
-    if (Platform.isIOS) {
-      try {
-        await FirebaseMessaging.instance.setAutoInitEnabled(true);
-        final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-        log('Initial APNS token: $apnsToken');
-      } catch (e) {
-        log('Error setting up iOS messaging: $e');
-        await crashlyticsService.logError(e, StackTrace.current,
-            reason: 'iOS messaging setup failed');
-      }
+      log('Initializing Analytics (Release mode)...');
+      await analyticsService.initialize();
+      log('Analytics initialized successfully');
+    } else {
+      log('⚡ DEBUG MODE: Firebase Analytics ve Crashlytics devre dışı (performans için)');
     }
+
+    // Firebase Messaging kaldırıldı (performans için)
   } catch (e, stack) {
     log('Error initializing app: $e\n$stack');
-    await crashlyticsService.logError(e, stack,
-        reason: 'App initialization failed', fatal: true);
+    if (kReleaseMode) {
+      await crashlyticsService.logError(e, stack,
+          reason: 'App initialization failed', fatal: true);
+    }
   }
 }
 
-Future<void> requestNotificationPermission() async {
-  try {
-    // Permission handler ile izin isteme
-    final status = await Permission.notification.request();
-    log('Notification permission status: $status');
-
-    // Firebase Messaging izinleri
-    final settings = await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-    log('Firebase Messaging permission status: ${settings.authorizationStatus}');
-  } catch (e) {
-    log('Error requesting notification permissions: $e');
-  }
-}
+//  Notification sistem devre dışı (performans için)
+// requestNotificationPermission() fonksiyonu artık gerekli değil

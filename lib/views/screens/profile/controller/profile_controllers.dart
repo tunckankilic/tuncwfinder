@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/views/screens/auth/pages/screens.dart';
-import 'package:tuncforwork/service/push_notification_system.dart';
 import 'package:tuncforwork/views/screens/swipe/mixins/swipe_filter_mixin.dart';
 
 class ProfileController extends GetxController with SwipeFilterMixin {
@@ -116,6 +115,8 @@ class ProfileController extends GetxController with SwipeFilterMixin {
     update();
   }
 
+  // Notification sistemi kaldırıldı (performans için)
+  // Bildirimler artık gönderilmiyor, sadece Firestore'a kaydediliyor
   Future<void> sendNotificationToUser(
       String receiverID, String featureType, String senderName) async {
     try {
@@ -124,43 +125,16 @@ class ProfileController extends GetxController with SwipeFilterMixin {
         return;
       }
 
-      final userDoc =
-          await _firestore.collection("users").doc(receiverID).get();
+      // Bildirim sistemi kaldırıldı - sadece log tutuyoruz
+      log(' Notification disabled: $featureType from $senderName to $receiverID');
+      log(' Push notification system removed for better performance');
 
-      final userDeviceToken = userDoc.data()?["userDeviceToken"] as String?;
-
-      if (userDeviceToken == null) {
-        log('User device token not found for user: $receiverID');
-        return;
-      }
-
-      final notificationSystem = Get.find<PushNotificationSystem>();
-
-      NotificationType type;
-      switch (featureType.toLowerCase()) {
-        case "like":
-          type = NotificationType.like;
-          break;
-        case "view":
-          type = NotificationType.view;
-          break;
-        case "favorite":
-          type = NotificationType.favorite;
-          break;
-        default:
-          log('Invalid feature type: $featureType');
-          return;
-      }
-
-      await notificationSystem.sendInteractionNotification(
-        userDeviceToken: userDeviceToken,
-        senderName: senderName,
-        type: type,
-        receiverId: receiverID,
-        senderId: currentUserId,
-      );
+      // İleride tekrar aktif etmek isterseniz:
+      // 1. firebase_messaging ve cloud_functions paketlerini geri ekleyin
+      // 2. PushNotificationSystem sınıfını geri ekleyin
+      // 3. Bu fonksiyonu eski haline getirin
     } catch (e) {
-      log('Error sending notification: $e');
+      log('Error in notification placeholder: $e');
     }
   }
 

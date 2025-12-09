@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
 import 'package:tuncforwork/models/models.dart';
 import 'package:tuncforwork/service/service.dart';
-import 'package:tuncforwork/theme/app_theme.dart';
+import 'package:tuncforwork/theme/modern_theme.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
 import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 import 'package:tuncforwork/widgets/modern_widgets.dart';
@@ -33,7 +33,7 @@ class UserDetails extends GetView<UserDetailsController> {
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: ModernTheme.backgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -50,7 +50,7 @@ class UserDetails extends GetView<UserDetailsController> {
         actions: controller.isCurrentUser.value
             ? [
                 PopupMenuButton<String>(
-                  icon: Icon(Icons.more_vert, color: AppTheme.primarySwatch),
+                  icon: Icon(Icons.more_vert, color: ModernTheme.primaryColor),
                   onSelected: (value) {
                     switch (value) {
                       case 'edit':
@@ -69,7 +69,7 @@ class UserDetails extends GetView<UserDetailsController> {
                       value: 'edit',
                       child: ListTile(
                         leading:
-                            Icon(Icons.edit, color: AppTheme.primarySwatch),
+                            Icon(Icons.edit, color: ModernTheme.primaryColor),
                         title: Text(AppStrings.editProfile),
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -78,7 +78,7 @@ class UserDetails extends GetView<UserDetailsController> {
                       value: 'logout',
                       child: ListTile(
                         leading:
-                            Icon(Icons.logout, color: AppTheme.primarySwatch),
+                            Icon(Icons.logout, color: ModernTheme.primaryColor),
                         title: Text(AppStrings.logout),
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -125,7 +125,7 @@ class UserDetails extends GetView<UserDetailsController> {
             TextButton(
               child: Text(
                 AppStrings.logout,
-                style: TextStyle(color: AppTheme.primarySwatch),
+                style: TextStyle(color: ModernTheme.primaryColor),
               ),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -184,7 +184,7 @@ class UserDetails extends GetView<UserDetailsController> {
         Expanded(
           flex: 2,
           child: Container(
-            color: AppTheme.primarySwatch.shade50,
+            color: ModernTheme.primaryColor,
             child: SingleChildScrollView(
               child: Column(
                 children: [
@@ -226,7 +226,7 @@ class UserDetails extends GetView<UserDetailsController> {
                 controller.name.value.isNotEmpty
                     ? controller.name.value
                     : AppStrings.anonymousUser,
-                style: AppTheme.textTheme.headlineMedium,
+                style: ModernTheme.textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -234,7 +234,7 @@ class UserDetails extends GetView<UserDetailsController> {
                 controller.profession.value.isNotEmpty
                     ? controller.profession.value
                     : AppStrings.noProfessionSpecified,
-                style: AppTheme.textTheme.titleMedium,
+                style: ModernTheme.textTheme.titleMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -243,7 +243,7 @@ class UserDetails extends GetView<UserDetailsController> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.location_on, color: AppTheme.primarySwatch),
+                    Icon(Icons.location_on, color: ModernTheme.primaryColor),
                     const SizedBox(width: 8),
                     Text(
                       [
@@ -252,7 +252,7 @@ class UserDetails extends GetView<UserDetailsController> {
                         if (controller.country.value.isNotEmpty)
                           controller.country.value,
                       ].join(', '),
-                      style: AppTheme.textTheme.bodyLarge,
+                      style: ModernTheme.textTheme.bodyLarge,
                     ),
                   ],
                 ),
@@ -281,7 +281,8 @@ class UserDetails extends GetView<UserDetailsController> {
                             const SizedBox(width: 8),
                             Text(
                               AppStrings.missingInformation,
-                              style: AppTheme.textTheme.titleMedium?.copyWith(
+                              style:
+                                  ModernTheme.textTheme.titleMedium?.copyWith(
                                 color: Colors.orange.shade900,
                               ),
                             ),
@@ -290,7 +291,7 @@ class UserDetails extends GetView<UserDetailsController> {
                         const SizedBox(height: 8),
                         Text(
                           AppStrings.missingInfoDescription,
-                          style: AppTheme.textTheme.bodyMedium?.copyWith(
+                          style: ModernTheme.textTheme.bodyMedium?.copyWith(
                             color: Colors.orange.shade900,
                           ),
                         ),
@@ -326,7 +327,7 @@ class UserDetails extends GetView<UserDetailsController> {
             children: [
               Text(
                 AppStrings.basicInformationTitle,
-                style: AppTheme.textTheme.titleLarge,
+                style: ModernTheme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
               _buildInfoRow(AppStrings.ageLabel, controller.age.value),
@@ -349,7 +350,7 @@ class UserDetails extends GetView<UserDetailsController> {
             children: [
               Text(
                 AppStrings.additionalInformation,
-                style: AppTheme.textTheme.titleLarge,
+                style: ModernTheme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
               _buildInfoRow(AppStrings.height, controller.height.value),
@@ -402,7 +403,7 @@ class UserDetails extends GetView<UserDetailsController> {
             children: [
               Text(
                 AppStrings.careerInformation,
-                style: AppTheme.textTheme.titleLarge,
+                style: ModernTheme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
               _buildInfoRow(AppStrings.profession, controller.profession.value),
@@ -410,7 +411,7 @@ class UserDetails extends GetView<UserDetailsController> {
                 const SizedBox(height: 16),
                 Text(
                   AppStrings.workExperiences,
-                  style: AppTheme.textTheme.titleMedium,
+                  style: ModernTheme.textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
                 ...controller.workExperiences
@@ -419,13 +420,13 @@ class UserDetails extends GetView<UserDetailsController> {
               const SizedBox(height: 16),
               Text(
                 AppStrings.skillsLabel,
-                style: AppTheme.textTheme.titleMedium,
+                style: ModernTheme.textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
               if (controller.skills.isEmpty)
                 Text(
                   AppStrings.noSkillsAdded,
-                  style: AppTheme.textTheme.bodyMedium?.copyWith(
+                  style: ModernTheme.textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[600],
                     fontStyle: FontStyle.italic,
                   ),
@@ -437,9 +438,9 @@ class UserDetails extends GetView<UserDetailsController> {
                   children: controller.skills
                       .map((skill) => Chip(
                             label: Text(skill),
-                            backgroundColor: AppTheme.primarySwatch.shade100,
+                            backgroundColor: ModernTheme.primaryColor,
                             labelStyle: TextStyle(
-                              color: AppTheme.primarySwatch.shade900,
+                              color: ModernTheme.primaryColor,
                             ),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 8),
@@ -477,7 +478,7 @@ class UserDetails extends GetView<UserDetailsController> {
             children: [
               Text(
                 AppStrings.socialMedia,
-                style: AppTheme.textTheme.titleLarge,
+                style: ModernTheme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
               if (controller.instagramUrl.value.isNotEmpty)
@@ -502,7 +503,7 @@ class UserDetails extends GetView<UserDetailsController> {
             flex: 2,
             child: Text(
               label,
-              style: AppTheme.textTheme.titleSmall?.copyWith(
+              style: ModernTheme.textTheme.titleSmall?.copyWith(
                 color: Colors.grey[600],
               ),
             ),
@@ -512,7 +513,7 @@ class UserDetails extends GetView<UserDetailsController> {
             flex: 3,
             child: Text(
               value,
-              style: AppTheme.textTheme.bodyMedium,
+              style: ModernTheme.textTheme.bodyMedium,
             ),
           ),
         ],
@@ -528,15 +529,15 @@ class UserDetails extends GetView<UserDetailsController> {
         children: [
           Text(
             exp.title,
-            style: AppTheme.textTheme.titleSmall,
+            style: ModernTheme.textTheme.titleSmall,
           ),
           Text(
             exp.company,
-            style: AppTheme.textTheme.bodyMedium,
+            style: ModernTheme.textTheme.bodyMedium,
           ),
           Text(
             '${exp.startDate} - ${exp.endDate ?? 'Present'}',
-            style: AppTheme.textTheme.bodySmall?.copyWith(
+            style: ModernTheme.textTheme.bodySmall?.copyWith(
               color: Colors.grey[600],
             ),
           ),
@@ -545,7 +546,7 @@ class UserDetails extends GetView<UserDetailsController> {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 exp.description!,
-                style: AppTheme.textTheme.bodyMedium,
+                style: ModernTheme.textTheme.bodyMedium,
               ),
             ),
         ],
@@ -624,8 +625,8 @@ class ProfileActionButtons extends GetView<SwipeController> {
             height: isTablet ? 48.0 : 40.0,
             decoration: BoxDecoration(
               color: hasValue
-                  ? AppTheme.primarySwatch
-                  : AppTheme.primarySwatch.withOpacity(0.3),
+                  ? ModernTheme.primaryColor
+                  : ModernTheme.primaryColor.withOpacity(0.3),
               shape: BoxShape.circle,
             ),
             child: Material(
@@ -651,13 +652,13 @@ class ProfileActionButtons extends GetView<SwipeController> {
               children: [
                 Text(
                   title,
-                  style: AppTheme.textTheme.titleMedium?.copyWith(
+                  style: ModernTheme.textTheme.titleMedium?.copyWith(
                     fontSize: isTablet ? 16.0 : 14.0,
                   ),
                 ),
                 Text(
                   value.isNotEmpty ? value : AppStrings.notProvidedLabel,
-                  style: AppTheme.textTheme.bodyMedium?.copyWith(
+                  style: ModernTheme.textTheme.bodyMedium?.copyWith(
                     fontSize: isTablet ? 14.0 : 12.0,
                     color: hasValue ? null : Colors.grey[500],
                   ),

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
+import 'package:tuncforwork/service/snackbar_service.dart';
 
 class ValidationResult {
   final bool isValid;
@@ -552,16 +553,12 @@ extension ValidationHandling on AuthController {
     if (result.isValid) {
       onSuccess?.call();
     } else {
-      Get.snackbar(
-        'Error',
-        result.errorMessage ?? 'Please check your inputs',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade50,
-        colorText: Colors.red.shade900,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(8),
-        borderRadius: 8,
-      );
+      if (Get.context != null && Get.context!.mounted) {
+        SnackbarService.showError(
+          Get.context!,
+          result.errorMessage ?? 'Please check your inputs',
+        );
+      }
     }
   }
 

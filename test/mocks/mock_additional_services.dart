@@ -1,8 +1,5 @@
-import 'package:flutter/widgets.dart';
-import 'package:get/get.dart';
 import 'package:tuncforwork/models/models.dart';
 import 'package:tuncforwork/service/career_recommendation_service.dart';
-import 'package:tuncforwork/service/push_notification_system.dart';
 
 /// Basit Firestore bağımsız kariyer öneri servisi mock'u.
 class MockCareerRecommendationService extends CareerRecommendationService {
@@ -19,9 +16,8 @@ class MockCareerRecommendationService extends CareerRecommendationService {
       Person person) async {
     return _paths.map((path) {
       final missingSkills = path.requiredSkills
-          .where((skill) =>
-              !(person.skills ?? [])
-                  .any((p) => p.name.toLowerCase() == skill.toLowerCase()))
+          .where((skill) => !(person.skills ?? [])
+              .any((p) => p.name.toLowerCase() == skill.toLowerCase()))
           .toList();
 
       final total = path.requiredSkills.length;
@@ -49,9 +45,12 @@ class MockCareerRecommendationService extends CareerRecommendationService {
   }
 }
 
+//  PushNotificationSystem kaldırıldı (performans için)
+// Aşağıdaki mock artık kullanılmıyor ancak referans için bırakıldı
+
+/*
 /// Ağ bağımlılığı olmadan bildirim davranışı kaydeden mock.
-class MockPushNotificationSystem extends GetxController
-    implements PushNotificationSystem {
+class MockPushNotificationSystem extends GetxController {
   final List<Map<String, dynamic>> sentNotifications = [];
   String? lastGeneratedToken;
   bool initialized = false;
@@ -147,7 +146,6 @@ class MockPushNotificationSystem extends GetxController
     // UI açma yok
   }
 
-  @override
   Widget notificationDialogBox(
       String senderID,
       String profileImage,
@@ -161,4 +159,4 @@ class MockPushNotificationSystem extends GetxController
     return const SizedBox.shrink();
   }
 }
-
+*/

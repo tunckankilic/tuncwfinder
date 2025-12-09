@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class ModernTheme {
   // MD3 Color System
@@ -33,91 +32,89 @@ class ModernTheme {
 
   // Modern Typography
   static TextTheme get textTheme => TextTheme(
-        displayLarge: GoogleFonts.inter(
+        displayLarge: TextStyle(
           fontSize: 57,
           fontWeight: FontWeight.w400,
           letterSpacing: -0.25,
           height: 1.12,
         ),
-        displayMedium: GoogleFonts.inter(
-          fontSize: 45,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0,
-          height: 1.16,
-        ),
-        displaySmall: GoogleFonts.inter(
-          fontSize: 36,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0,
-          height: 1.22,
-        ),
-        headlineLarge: GoogleFonts.inter(
+        displayMedium: TextStyle(
+            fontSize: 45,
+            fontWeight: FontWeight.w400,
+            letterSpacing: 0,
+            height: 1.16),
+        displaySmall: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.w400,
+            letterSpacing: 0,
+            height: 1.22),
+        headlineLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.w400,
           letterSpacing: 0,
           height: 1.25,
         ),
-        headlineMedium: GoogleFonts.inter(
+        headlineMedium: TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.w400,
           letterSpacing: 0,
           height: 1.29,
         ),
-        headlineSmall: GoogleFonts.inter(
+        headlineSmall: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.w400,
           letterSpacing: 0,
           height: 1.33,
         ),
-        titleLarge: GoogleFonts.inter(
+        titleLarge: TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.w400,
           letterSpacing: 0,
           height: 1.27,
         ),
-        titleMedium: GoogleFonts.inter(
+        titleMedium: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w500,
           letterSpacing: 0.15,
           height: 1.5,
         ),
-        titleSmall: GoogleFonts.inter(
+        titleSmall: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           letterSpacing: 0.1,
           height: 1.43,
         ),
-        bodyLarge: GoogleFonts.inter(
+        bodyLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w400,
           letterSpacing: 0.5,
           height: 1.5,
         ),
-        bodyMedium: GoogleFonts.inter(
+        bodyMedium: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           letterSpacing: 0.25,
           height: 1.43,
         ),
-        bodySmall: GoogleFonts.inter(
+        bodySmall: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w400,
           letterSpacing: 0.4,
           height: 1.33,
         ),
-        labelLarge: GoogleFonts.inter(
+        labelLarge: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           letterSpacing: 0.1,
           height: 1.43,
         ),
-        labelMedium: GoogleFonts.inter(
+        labelMedium: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w500,
           letterSpacing: 0.5,
           height: 1.33,
         ),
-        labelSmall: GoogleFonts.inter(
+        labelSmall: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w500,
           letterSpacing: 0.5,
@@ -130,7 +127,7 @@ class ModernTheme {
         backgroundColor: primaryColor,
         foregroundColor: onPrimaryColor,
         elevation: 1,
-        shadowColor: primaryColor.withOpacity(0.3),
+        shadowColor: primaryColor.withValues(alpha: 0.3),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),

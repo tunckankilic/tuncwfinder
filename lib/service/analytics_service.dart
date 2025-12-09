@@ -2,10 +2,13 @@ import 'dart:developer';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/foundation.dart';
 
 /// Service for Firebase Analytics integration
 /// Handles event tracking and user properties
 /// GDPR/KVKK compliant - no PII (Personal Identifiable Information) sent
+///
+/// ⚡ PERFORMANS: Debug modunda devre dışı, sadece release modunda çalışır
 class AnalyticsService {
   static final AnalyticsService _instance = AnalyticsService._internal();
   factory AnalyticsService() => _instance;
@@ -15,19 +18,25 @@ class AnalyticsService {
   late FirebaseAnalyticsObserver _observer;
   bool _initialized = false;
 
-  /// Initialize Analytics
+  /// Initialize Analytics (sadece release modunda)
   Future<void> initialize() async {
     if (_initialized) return;
+
+    // Debug modunda analytics'i başlatma (performans için)
+    if (!kReleaseMode) {
+      log('⚡ Analytics devre dışı (DEBUG mode)');
+      return;
+    }
 
     try {
       _analytics = FirebaseAnalytics.instance;
       _observer = FirebaseAnalyticsObserver(analytics: _analytics);
 
-      // Enable analytics collection
+      // Enable analytics collection (sadece release)
       await _analytics.setAnalyticsCollectionEnabled(true);
 
       _initialized = true;
-      log('Analytics initialized successfully');
+      log('Analytics initialized successfully (RELEASE mode)');
     } catch (e) {
       log('Failed to initialize Analytics: $e');
     }
@@ -84,8 +93,8 @@ class AnalyticsService {
     required String name,
     Map<String, dynamic>? parameters,
   }) async {
-    if (!_initialized) {
-      log('Analytics not initialized, skipping event log');
+    // Debug modunda event loglamayı atla
+    if (!kReleaseMode || !_initialized) {
       return;
     }
 
@@ -294,6 +303,9 @@ class AnalyticsService {
     required String screenName,
     String? screenClass,
   }) async {
+    // Debug modunda screen view loglamayı atla
+    if (!kReleaseMode || !_initialized) return;
+
     await _analytics.logScreenView(
       screenName: screenName,
       screenClass: screenClass,
@@ -304,7 +316,7 @@ class AnalyticsService {
 
   /// Set user ID (hashed for privacy)
   Future<void> setUserId(String userId) async {
-    if (!_initialized) return;
+    if (!kReleaseMode || !_initialized) return;
 
     try {
       // Hash the user ID before setting it in Analytics
@@ -321,7 +333,7 @@ class AnalyticsService {
     required String name,
     required String value,
   }) async {
-    if (!_initialized) return;
+    if (!kReleaseMode || !_initialized) return;
 
     try {
       await _analytics.setUserProperty(name: name, value: value);
@@ -353,7 +365,7 @@ class AnalyticsService {
 
   /// Enable/disable analytics collection
   Future<void> setAnalyticsCollectionEnabled(bool enabled) async {
-    if (!_initialized) return;
+    if (!kReleaseMode || !_initialized) return;
 
     try {
       await _analytics.setAnalyticsCollectionEnabled(enabled);
@@ -365,7 +377,7 @@ class AnalyticsService {
 
   /// Reset analytics data
   Future<void> resetAnalyticsData() async {
-    if (!_initialized) return;
+    if (!kReleaseMode || !_initialized) return;
 
     try {
       await _analytics.resetAnalyticsData();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/theme/modern_theme.dart';
 import 'package:tuncforwork/views/screens/favoritesent/fsfr_controller.dart';
 import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
@@ -18,7 +19,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
           if (controller.isLoading.value) {
             return const Center(
               child: CircularProgressIndicator(
-                color: ElegantTheme.primaryColor,
+                color: ModernTheme.primaryColor,
               ),
             );
           }
@@ -35,7 +36,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
     return AppBar(
       automaticallyImplyLeading: false,
       elevation: 0,
-      backgroundColor: ElegantTheme.primaryColor,
+      backgroundColor: ModernTheme.primaryColor,
       toolbarHeight: isTablet ? 72 : 56,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -46,7 +47,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
             child: Text(
               "|",
               style: TextStyle(
-                color: ElegantTheme.accentBordeaux,
+                color: ModernTheme.secondaryColor,
                 fontSize: fontSize,
               ),
             ),
@@ -70,7 +71,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
           children: [
             Icon(
               Icons.favorite_border,
-              color: ElegantTheme.accentBordeaux,
+              color: ModernTheme.secondaryColor,
               size: isTablet ? 100 : 80,
             ),
             const SizedBox(height: 16),
@@ -80,7 +81,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
                   : 'No one has favorited you yet',
               style: TextStyle(
                 fontSize: isTablet ? 20 : 16,
-                color: ElegantTheme.accentBordeaux,
+                color: ModernTheme.secondaryColor,
               ),
             ),
           ],
@@ -133,8 +134,8 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
             text,
             style: TextStyle(
               color: controller.isFavoriteSentClicked.value == isSent
-                  ? ElegantTheme.lightGrey
-                  : ElegantTheme.secondaryColor,
+                  ? ModernTheme.surfaceVariant
+                  : ModernTheme.secondaryColor,
               fontWeight: controller.isFavoriteSentClicked.value == isSent
                   ? FontWeight.bold
                   : FontWeight.normal,
@@ -191,7 +192,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
                     "${user["name"]} • ${user["age"]}",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: ElegantTheme.textTheme.titleMedium!.copyWith(
+                    style: ModernTheme.textTheme.titleMedium!.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: nameFontSize,
@@ -211,7 +212,7 @@ class FavoriteSendFavoriteReceived extends GetView<FsfrController> {
                           "${user["city"]}, ${user["country"]}",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: ElegantTheme.textTheme.bodySmall!.copyWith(
+                          style: ModernTheme.textTheme.bodySmall!.copyWith(
                             color: Colors.white70,
                             fontSize: locationFontSize,
                           ),
