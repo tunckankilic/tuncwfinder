@@ -95,9 +95,6 @@ Future<Map<String, List<String>>> getAllDropdownValues() async {
 
 // Global Variables
 String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-String? chosenAge;
-String? chosenCountry;
-String? chosenGender;
 
 // Programming and Technical Skills
 const List<String> programmingLanguages = [

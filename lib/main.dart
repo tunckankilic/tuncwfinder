@@ -4,6 +4,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:tuncforwork/service/service.dart';
+import 'package:tuncforwork/service/crashlytics_service.dart';
+import 'package:tuncforwork/service/analytics_service.dart';
 import 'package:tuncforwork/views/screens/auth/auth_service.dart';
 import 'package:tuncforwork/views/screens/auth/auth_wrapper.dart';
 import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
@@ -41,6 +43,9 @@ class MyApp extends StatelessWidget {
           getPages: AppRoutes.routes,
           unknownRoute: AppRoutes.unknownRoute,
           initialBinding: InitialBindings(),
+          navigatorObservers: [
+            analyticsService.observer,
+          ],
           builder: (context, widget) {
             ScreenUtil.init(context);
             return MediaQuery(
@@ -78,6 +83,16 @@ Future<void> initializeApp() async {
     );
     log('Firebase initialized successfully');
 
+    // Initialize Crashlytics
+    log('Initializing Crashlytics...');
+    await crashlyticsService.initialize();
+    log('Crashlytics initialized successfully');
+
+    // Initialize Analytics
+    log('Initializing Analytics...');
+    await analyticsService.initialize();
+    log('Analytics initialized successfully');
+
     if (Platform.isIOS) {
       try {
         await FirebaseMessaging.instance.setAutoInitEnabled(true);
@@ -85,11 +100,14 @@ Future<void> initializeApp() async {
         log('Initial APNS token: $apnsToken');
       } catch (e) {
         log('Error setting up iOS messaging: $e');
+        await crashlyticsService.logError(e, StackTrace.current,
+            reason: 'iOS messaging setup failed');
       }
     }
   } catch (e, stack) {
     log('Error initializing app: $e\n$stack');
-    // Firebase başlatılamazsa bile uygulamanın çalışmasına izin ver
+    await crashlyticsService.logError(e, stack,
+        reason: 'App initialization failed', fatal: true);
   }
 }
 

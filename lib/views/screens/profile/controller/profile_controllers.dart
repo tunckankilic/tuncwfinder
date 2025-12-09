@@ -3,11 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/person.dart';
-import 'package:tuncforwork/service/global.dart';
 import 'package:tuncforwork/views/screens/auth/pages/screens.dart';
 import 'package:tuncforwork/service/push_notification_system.dart';
+import 'package:tuncforwork/views/screens/swipe/mixins/swipe_filter_mixin.dart';
 
-class ProfileController extends GetxController {
+class ProfileController extends GetxController with SwipeFilterMixin {
   final Rx<List<Person>> usersProfileList = Rx<List<Person>>([]);
   List<Person> get allUsersProfileList => usersProfileList.value;
 
@@ -27,12 +27,13 @@ class ProfileController extends GetxController {
         .collection("users")
         .where("uid", isNotEqualTo: _auth.currentUser!.uid);
 
-    if (chosenGender != null && chosenCountry != null && chosenAge != null) {
+    if (chosenGender.value.isNotEmpty &&
+        chosenCountry.value.isNotEmpty &&
+        chosenAge.value.isNotEmpty) {
       query = query
-          .where("gender", isEqualTo: chosenGender.toString().toLowerCase())
-          .where("country", isEqualTo: chosenCountry)
-          .where("age",
-              isGreaterThanOrEqualTo: int.parse(chosenAge.toString()));
+          .where("gender", isEqualTo: chosenGender.value.toLowerCase())
+          .where("country", isEqualTo: chosenCountry.value)
+          .where("age", isGreaterThanOrEqualTo: int.parse(chosenAge.value));
     }
 
     usersProfileList.bindStream(query.snapshots().map((querySnapshot) {

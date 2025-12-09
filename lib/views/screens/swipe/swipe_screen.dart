@@ -21,7 +21,7 @@ class SwipeScreen extends GetView<SwipeController> {
         actions: [
           // İstatistik butonu
           Obx(() {
-            final stats = controller.getSwipeStatistics();
+            final stats = controller.getStats();
             return IconButton(
               icon: const Icon(Icons.analytics),
               onPressed: () => _showStatisticsDialog(context, stats),
@@ -182,8 +182,8 @@ class SwipeScreen extends GetView<SwipeController> {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                controller.clearProcessedUsers();
-                controller.getResults(); // ${AppStrings.loadNewProfiles}
+                controller.clearCache();
+                controller.getResults();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
