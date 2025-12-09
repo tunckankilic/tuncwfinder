@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/service/global.dart';
-import 'package:http/http.dart' as http;
 import 'package:tuncforwork/views/screens/auth/pages/screens.dart';
 import 'package:tuncforwork/service/push_notification_system.dart';
 
@@ -43,7 +41,7 @@ class ProfileController extends GetxController {
             try {
               return Person.fromDataSnapshot(doc);
             } catch (e) {
-              print('Error parsing user document ${doc.id}: $e');
+              log('Error parsing user document ${doc.id}: $e');
               return null;
             }
           })

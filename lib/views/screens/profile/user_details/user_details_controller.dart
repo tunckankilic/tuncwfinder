@@ -7,8 +7,6 @@ import 'package:tuncforwork/views/screens/auth/controller/auth_bindings.dart';
 import 'package:tuncforwork/views/screens/auth/pages/screens.dart';
 import 'package:tuncforwork/views/screens/profile/account_settings/account_settings_controller.dart';
 import 'package:tuncforwork/views/screens/profile/account_settings/pages/account_info_settings.dart';
-import 'package:tuncforwork/views/screens/profile/account_settings/pages/photo_settings_screen.dart';
-import 'package:tuncforwork/views/screens/profile/profile_bindings.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/models/project.dart';
 import 'package:tuncforwork/models/work_experience.dart';
@@ -39,7 +37,7 @@ class UserDetailsController extends GetxController {
   final RxString bodyType = ''.obs;
   final RxString drink = ''.obs;
   final RxString smoke = ''.obs;
-  final RxString martialStatus = ''.obs;
+  final RxString maritalStatus = ''.obs;
   final RxString haveChildren = ''.obs;
   final RxString noOfChildren = ''.obs;
   final RxString employmentStatus = ''.obs;
@@ -76,7 +74,7 @@ class UserDetailsController extends GetxController {
         checkMissingInformation();
       }
     } catch (e) {
-      print('Error initializing user details: $e');
+      log('Error initializing user details: $e');
     } finally {
       isLoading.value = false;
     }
@@ -100,19 +98,25 @@ class UserDetailsController extends GetxController {
     if (bodyType.value.isEmpty) missingFields.add(AppStrings.bodyTypeField);
     if (drink.value.isEmpty) missingFields.add(AppStrings.drinkingPreference);
     if (smoke.value.isEmpty) missingFields.add(AppStrings.smokingPreference);
-    if (martialStatus.value.isEmpty)
+    if (maritalStatus.value.isEmpty) {
       missingFields.add(AppStrings.maritalStatusField);
-    if (haveChildren.value.isEmpty)
+    }
+    if (haveChildren.value.isEmpty) {
       missingFields.add(AppStrings.childrenStatus);
-    if (employmentStatus.value.isEmpty)
+    }
+    if (employmentStatus.value.isEmpty) {
       missingFields.add(AppStrings.employmentField);
+    }
     if (income.value.isEmpty) missingFields.add(AppStrings.incomeField);
-    if (livingSituation.value.isEmpty)
+    if (livingSituation.value.isEmpty) {
       missingFields.add(AppStrings.livingSituationField);
-    if (nationality.value.isEmpty)
+    }
+    if (nationality.value.isEmpty) {
       missingFields.add(AppStrings.nationalityField);
-    if (languageSpoken.value.isEmpty)
+    }
+    if (languageSpoken.value.isEmpty) {
       missingFields.add(AppStrings.spokenLanguageField);
+    }
     if (religion.value.isEmpty) missingFields.add(AppStrings.religionField);
     if (ethnicity.value.isEmpty) missingFields.add(AppStrings.ethnicityField);
 
@@ -163,7 +167,7 @@ class UserDetailsController extends GetxController {
       bodyType.value = data['bodyType'] ?? '';
       drink.value = data['drink'] ?? '';
       smoke.value = data['smoke'] ?? '';
-      martialStatus.value = data['martialStatus'] ?? '';
+      maritalStatus.value = data['maritalStatus'] ?? '';
       haveChildren.value = data['haveChildren'] ?? '';
       noOfChildren.value = data['noOfChildren'] ?? '';
       employmentStatus.value = data['employmentStatus'] ?? '';
@@ -182,7 +186,7 @@ class UserDetailsController extends GetxController {
       await _loadSkills();
       await _loadProjects();
     } catch (e) {
-      print('Error retrieving user info: $e');
+      log('Error retrieving user info: $e');
     }
   }
 
@@ -200,8 +204,8 @@ class UserDetailsController extends GetxController {
             try {
               return WorkExperience.fromMap(doc.data());
             } catch (e) {
-              print('Error parsing work experience ${doc.id}: $e');
-              print('Data: ${doc.data()}');
+              log('Error parsing work experience ${doc.id}: $e');
+              log('Data: ${doc.data()}');
               // Hatalı veriyi atla ve devam et
               return null;
             }
@@ -210,7 +214,7 @@ class UserDetailsController extends GetxController {
           .cast<WorkExperience>()
           .toList();
     } catch (e) {
-      print('Error loading work experience: $e');
+      log('Error loading work experience: $e');
     }
   }
 
@@ -229,7 +233,7 @@ class UserDetailsController extends GetxController {
             // Map listesi olarak geliyor (Skill objesi)
             skills.value = skillsData
                 .map((skillMap) => skillMap['name'] as String)
-                .where((name) => name != null)
+                .where((name) => name.isNotEmpty)
                 .cast<String>()
                 .toList();
           } else if (skillsData.isNotEmpty && skillsData.first is String) {
@@ -252,7 +256,7 @@ class UserDetailsController extends GetxController {
     } catch (e, stackTrace) {
       log('${AppStrings.errorLoadingSkills}: $e');
       log('Stack trace: $stackTrace');
-      print('Error loading skills: $e');
+      log('Error loading skills: $e');
     }
   }
 
@@ -268,7 +272,7 @@ class UserDetailsController extends GetxController {
       projects.value =
           snapshot.docs.map((doc) => Project.fromMap(doc.data())).toList();
     } catch (e) {
-      print('Error loading projects: $e');
+      log('Error loading projects: $e');
     }
   }
 
@@ -280,7 +284,7 @@ class UserDetailsController extends GetxController {
         throw 'Could not launch $url';
       }
     } catch (e) {
-      print('Error launching URL: $e');
+      log('Error launching URL: $e');
     }
   }
 

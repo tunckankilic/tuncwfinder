@@ -1,10 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:integration_test/integration_test.dart';
-import 'package:tuncforwork/main.dart' as app;
 import 'package:tuncforwork/models/models.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/services.dart';
 import '../firebase_mock.dart';
 
 Future<void> setupTestApp() async {

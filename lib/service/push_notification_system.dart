@@ -2,13 +2,11 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/service/global.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
 
 class PushNotificationSystem extends GetxController {
@@ -399,29 +397,25 @@ class PushNotificationSystem extends GetxController {
     bool isScheduled = false,
     DateTime? scheduledTime,
   }) async {
-    try {
-      final notification = PushNotification(
-        title: title,
-        body: body,
-        channel: channel.name,
-        category: type.name,
-        data: {
-          ...?additionalData,
-          'notification_type': type.name,
-          'channel': channel.name,
-        },
-        groupKey: groupKey,
-        isScheduled: isScheduled,
-        scheduledTime: scheduledTime,
-      );
+    final payload = {
+      'target': {'token': userDeviceToken},
+      'notification': {
+        'title': title,
+        'body': body,
+        'channel': channel.name,
+        'category': type.name,
+      },
+      'data': {
+        ...?additionalData,
+        'notification_type': type.name,
+        'channel': channel.name,
+      },
+      'groupKey': groupKey,
+      'isScheduled': isScheduled,
+      'scheduledTime': scheduledTime?.toIso8601String(),
+    };
 
-      await notification.send([userDeviceToken]);
-
-      log('Notification sent successfully');
-    } catch (e) {
-      log('Error sending notification: $e');
-      rethrow;
-    }
+    await _postToBackend(payload);
   }
 
   Future<void> sendEventNotification({
@@ -542,104 +536,39 @@ class PushNotification {
       };
 
   Future<void> send(List<String> tokens, {int maxRetries = 3}) async {
-    if (tokens.isEmpty) {
-      log('No tokens provided for notification');
-      return;
-    }
+    final payload = {
+      'target': {'tokens': tokens},
+      'notification': {
+        'title': title,
+        'body': body,
+        'channel': channel,
+        'category': category,
+        'priority': priority,
+      },
+      'data': {
+        ...?data,
+        if (groupKey != null) 'group_key': groupKey,
+        if (isScheduled && scheduledTime != null)
+          'scheduled_time': scheduledTime!.toIso8601String(),
+      },
+      'groupKey': groupKey,
+      'groupSummary': groupSummary,
+      'isScheduled': isScheduled,
+      'scheduledTime': scheduledTime?.toIso8601String(),
+    };
 
-    if (isScheduled &&
-        scheduledTime != null &&
-        scheduledTime!.isBefore(DateTime.now())) {
-      log('Scheduled time is in the past');
-      return;
-    }
-
-    int attempts = 0;
-    while (attempts < maxRetries) {
-      try {
-        final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
-        final serverKey = dotenv.env['FCM_SERVER_TOKEN'];
-
-        if (serverKey == null) {
-          throw 'FCM Server Token is not configured';
-        }
-
-        // Tokenleri gruplar halinde gönder (maksimum 500 token)
-        for (var i = 0; i < tokens.length; i += 500) {
-          final batch = tokens.sublist(
-              i, i + 500 > tokens.length ? tokens.length : i + 500);
-
-          final response = await http.post(
-            url,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'key=$serverKey',
-            },
-            body: json.encode({
-              ...toMap(),
-              'registration_ids': batch,
-            }),
-          );
-
-          if (response.statusCode == 200) {
-            final result = json.decode(response.body);
-            _handleFCMResponse(result, batch);
-          } else {
-            throw 'FCM request failed with status: ${response.statusCode}';
-          }
-        }
-        return;
-      } catch (e) {
-        attempts++;
-        log('Notification attempt $attempts failed: $e');
-        if (attempts == maxRetries) {
-          log('Max retries reached for notification');
-          rethrow;
-        }
-        // Exponential backoff
-        await Future.delayed(Duration(seconds: attempts * 2));
-      }
-    }
+    await _postToBackend(payload);
   }
+}
 
-  void _handleFCMResponse(Map<String, dynamic> result, List<String> tokens) {
-    final success = result['success'] ?? 0;
-    final failure = result['failure'] ?? 0;
-    final results = result['results'] as List<dynamic>? ?? [];
-
-    log('FCM Response - Success: $success, Failure: $failure');
-
-    if (failure > 0) {
-      // Token sorunlarını işle
-      for (var i = 0; i < results.length; i++) {
-        final error = results[i]['error'];
-        if (error != null) {
-          log('Token ${tokens[i]} failed: $error');
-          if (error == 'NotRegistered') {
-            _handleInvalidToken(tokens[i]);
-          }
-        }
-      }
-    }
-  }
-
-  Future<void> _handleInvalidToken(String token) async {
-    try {
-      // Geçersiz tokeni Firestore'dan temizle
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('userDeviceToken', isEqualTo: token)
-          .get();
-
-      for (var doc in querySnapshot.docs) {
-        await doc.reference.update({
-          'userDeviceToken': FieldValue.delete(),
-        });
-        log('Removed invalid token for user: ${doc.id}');
-      }
-    } catch (e) {
-      log('Error handling invalid token: $e');
-    }
+Future<void> _postToBackend(Map<String, dynamic> payload) async {
+  try {
+    final callable =
+        FirebaseFunctions.instance.httpsCallable('sendNotification');
+    await callable.call(payload);
+    log('Bildirim Functions\'a iletildi.');
+  } catch (e, stack) {
+    log('Bildirim Functions çağrısı başarısız: $e\n$stack');
   }
 }
 

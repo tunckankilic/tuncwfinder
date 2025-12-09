@@ -15,7 +15,7 @@ class ModernTextField extends StatelessWidget {
   final bool enabled;
 
   const ModernTextField({
-    Key? key,
+    super.key,
     this.controller,
     this.hintText,
     this.labelText,
@@ -26,7 +26,7 @@ class ModernTextField extends StatelessWidget {
     this.validator,
     this.onSuffixIconPressed,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,7 @@ class ModernTextField extends StatelessWidget {
               )
             : null,
         filled: true,
-        fillColor: theme.colorScheme.surfaceVariant,
+        fillColor: theme.colorScheme.surfaceContainerHighest,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -92,14 +92,14 @@ class ModernCard extends StatelessWidget {
   final double? elevation;
 
   const ModernCard({
-    Key? key,
+    super.key,
     required this.child,
     this.padding,
     this.margin,
     this.onTap,
     this.color,
     this.elevation,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +143,7 @@ class ModernButton extends StatelessWidget {
   final double? height;
 
   const ModernButton({
-    Key? key,
+    super.key,
     required this.text,
     this.onPressed,
     this.icon,
@@ -153,7 +153,7 @@ class ModernButton extends StatelessWidget {
     this.textColor,
     this.width,
     this.height,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -236,10 +236,10 @@ class ModernLoading extends StatelessWidget {
   final Color? color;
 
   const ModernLoading({
-    Key? key,
+    super.key,
     this.message,
     this.color,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -278,13 +278,13 @@ class ModernEmptyState extends StatelessWidget {
   final VoidCallback? onActionPressed;
 
   const ModernEmptyState({
-    Key? key,
+    super.key,
     required this.icon,
     required this.title,
     this.subtitle,
     this.actionText,
     this.onActionPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -341,12 +341,12 @@ class ModernBottomSheet extends StatelessWidget {
   final bool enableDrag;
 
   const ModernBottomSheet({
-    Key? key,
+    super.key,
     required this.child,
     this.title,
     this.isDismissible = true,
     this.enableDrag = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -398,11 +398,11 @@ class FadeAnimation extends StatelessWidget {
   final double offset;
 
   const FadeAnimation({
-    Key? key,
+    super.key,
     required this.child,
     this.duration = const Duration(milliseconds: 500),
     this.offset = 50,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

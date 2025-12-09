@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tuncforwork/constants/app_strings.dart';
 
 class DeviceHelper {
   static bool isTablet(BuildContext context) {

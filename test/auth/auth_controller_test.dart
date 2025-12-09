@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 import 'package:tuncforwork/service/validation.dart';
 
 class MockAuthController extends GetxController {

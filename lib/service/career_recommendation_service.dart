@@ -1,6 +1,7 @@
 import 'dart:math' show min, pi, sin, cos, sqrt, atan2;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:developer';
 import 'package:tuncforwork/models/models.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,7 @@ class CareerRecommendationService {
           .map((doc) => CareerPath.fromMap(doc.data()))
           .toList();
     } catch (e) {
-      print('Kariyer yolları yüklenirken hata: $e');
+      log('Kariyer yolları yüklenirken hata: $e');
       return [];
     }
   }
@@ -154,7 +155,7 @@ class CareerRecommendationService {
 
       return recommendations;
     } catch (e) {
-      print('Kariyer önerileri oluşturulurken hata: $e');
+      log('Kariyer önerileri oluşturulurken hata: $e');
       return [];
     }
   }
@@ -210,7 +211,7 @@ class CareerRecommendationService {
       }
 
       // Person nesnesini güncelle
-      Person updatedPerson = person.copyWith(
+      person.copyWith(
         careerGoal: careerGoal,
         skillGaps: skillGaps,
       );
@@ -221,7 +222,7 @@ class CareerRecommendationService {
         'skillGaps': skillGaps,
       });
     } catch (e) {
-      print('Kariyer hedefi belirlenirken hata: $e');
+      log('Kariyer hedefi belirlenirken hata: $e');
       rethrow;
     }
   }
@@ -278,7 +279,7 @@ class CareerRecommendationService {
 
       return jobs;
     } catch (e) {
-      print('İş ilanları eşleştirilirken hata: $e');
+      log('İş ilanları eşleştirilirken hata: $e');
       return jobs;
     }
   }
@@ -375,7 +376,7 @@ class CareerRecommendationService {
 
       return learningPath;
     } catch (e) {
-      print('Öğrenme yolu oluşturulurken hata: $e');
+      log('Öğrenme yolu oluşturulurken hata: $e');
       return [];
     }
   }
@@ -470,7 +471,7 @@ class CareerRecommendationService {
 
       return skillGapResources;
     } catch (e) {
-      print('Yetenek açığı analizi yapılırken hata: $e');
+      log('Yetenek açığı analizi yapılırken hata: $e');
       return {};
     }
   }
@@ -737,7 +738,7 @@ class ChallengeController extends GetxController {
           .map((doc) => Challenge.fromJson(doc.data()))
           .toList();
     } catch (e) {
-      print('Challenge\'lar yüklenirken hata: $e');
+      log('Challenge\'lar yüklenirken hata: $e');
     }
   }
 
@@ -753,13 +754,13 @@ class ChallengeController extends GetxController {
       await loadUserChallenges(userId);
       await checkBadgeEligibility(userId);
     } catch (e) {
-      print('Challenge tamamlanırken hata: $e');
+      log('Challenge tamamlanırken hata: $e');
     }
   }
 
   Future<void> checkBadgeEligibility(String userId) async {
     try {
-      final userDoc = await _firestore.collection('users').doc(userId).get();
+      await _firestore.collection('users').doc(userId).get();
       final completedChallenges = await _firestore
           .collection('users')
           .doc(userId)
@@ -787,7 +788,7 @@ class ChallengeController extends GetxController {
             .set(badge.toJson());
       }
     } catch (e) {
-      print('Rozet kontrolü yapılırken hata: $e');
+      log('Rozet kontrolü yapılırken hata: $e');
     }
   }
 
@@ -826,7 +827,7 @@ class ChallengeController extends GetxController {
 
       return matches;
     } catch (e) {
-      print('Skill eşleşmeleri bulunurken hata: $e');
+      log('Skill eşleşmeleri bulunurken hata: $e');
       return [];
     }
   }
@@ -1049,7 +1050,7 @@ class CommunityService {
           .doc(event.id)
           .set(event.toJson());
     } catch (e) {
-      print('Tech event oluşturulurken hata: $e');
+      log('Tech event oluşturulurken hata: $e');
       rethrow;
     }
   }
@@ -1069,7 +1070,7 @@ class CommunityService {
         return distance <= radiusInKm;
       }).toList();
     } catch (e) {
-      print('Yakındaki eventler getirilirken hata: $e');
+      log('Yakındaki eventler getirilirken hata: $e');
       return [];
     }
   }
@@ -1082,7 +1083,7 @@ class CommunityService {
           .doc(space.id)
           .set(space.toJson());
     } catch (e) {
-      print('Co-working space oluşturulurken hata: $e');
+      log('Co-working space oluşturulurken hata: $e');
       rethrow;
     }
   }
@@ -1101,7 +1102,7 @@ class CommunityService {
         return distance <= radiusInKm;
       }).toList();
     } catch (e) {
-      print('Yakındaki co-working space\'ler getirilirken hata: $e');
+      log('Yakındaki co-working space\'ler getirilirken hata: $e');
       return [];
     }
   }
@@ -1111,7 +1112,7 @@ class CommunityService {
     try {
       await _firestore.collection('tech_cafes').doc(cafe.id).set(cafe.toJson());
     } catch (e) {
-      print('Tech cafe oluşturulurken hata: $e');
+      log('Tech cafe oluşturulurken hata: $e');
       rethrow;
     }
   }
@@ -1129,7 +1130,7 @@ class CommunityService {
         return distance <= radiusInKm;
       }).toList();
     } catch (e) {
-      print('Yakındaki tech cafe\'ler getirilirken hata: $e');
+      log('Yakındaki tech cafe\'ler getirilirken hata: $e');
       return [];
     }
   }

@@ -151,7 +151,7 @@ class Circle extends StatefulWidget {
 class _CircleState extends State<Circle> {
   List<Widget> widgets = [];
 
-  Widget mywidget(index) {
+  Widget mywidget(int index) {
     return Padding(
       padding: EdgeInsets.only(left: 8.w),
       child: Container(

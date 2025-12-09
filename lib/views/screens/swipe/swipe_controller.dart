@@ -9,7 +9,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tuncforwork/models/person.dart';
 import 'package:tuncforwork/service/global.dart';
-import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details.dart';
 import 'package:tuncforwork/views/screens/profile/user_details/user_details_controller.dart';
@@ -355,7 +354,7 @@ class SwipeController extends GetxController {
 
               if (_isValidInput(chosenMaritalStatus.value)) {
                 matchesFilters = matchesFilters &&
-                    person.martialStatus?.toLowerCase() ==
+                    person.maritalStatus?.toLowerCase() ==
                         chosenMaritalStatus.value.toLowerCase();
               }
 
@@ -405,7 +404,7 @@ class SwipeController extends GetxController {
                 filteredUsers.add(person);
               }
             } catch (e) {
-              print('Error parsing user document ${doc.id}: $e');
+              log('Error parsing user document ${doc.id}: $e');
             }
           }
         }
@@ -489,7 +488,7 @@ class SwipeController extends GetxController {
         }
       }
     } catch (e) {
-      print("Error reading current user data: $e");
+      log("Error reading current user data: $e");
     }
   }
 
@@ -499,21 +498,12 @@ class SwipeController extends GetxController {
     }
   }
 
-  bool _isValidAge(String input) {
-    int? age = int.tryParse(input);
-    return age != null && age >= 18 && age <= 120;
-  }
-
-  bool _isValidEmail(String input) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(input);
-  }
-
   // Input validation
   bool _isValidInput(String input) {
     // Implement proper input validation based on your requirements
     return input.isNotEmpty &&
         input.length <= 100 &&
-        !input.contains(RegExp(r'[<>&\]'));
+        !input.contains(RegExp(r'[<>&\[\]]'));
   }
 
   // Rate limiting
@@ -909,7 +899,7 @@ class SwipeController extends GetxController {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: Offset(0, -2),
                   ),
@@ -1092,52 +1082,7 @@ class SwipeController extends GetxController {
     }
   }
 
-  Widget _buildDropdownListTile({
-    required IconData icon,
-    required String title,
-    required RxString value,
-    required List<String> items,
-    required bool isTablet,
-  }) {
-    return Obx(() => Column(
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                  fontSize: isTablet ? 22 : 14, fontWeight: FontWeight.bold),
-            ),
-            ListTile(
-              leading: Icon(icon),
-              trailing: SizedBox(
-                width: 150, // Dropdown genişliğini sınırla
-                child: DropdownButton<String>(
-                  value: value.value.isEmpty ? null : value.value,
-                  hint: Text('Select $title'),
-                  isExpanded:
-                      true, // Dropdown'ın mevcut alanı kaplamasını sağla
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      value.value = newValue;
-                    }
-                  },
-                  items: items.map<DropdownMenuItem<String>>((String item) {
-                    return DropdownMenuItem<String>(
-                      value: item,
-                      child: Text(
-                        item,
-                        overflow:
-                            TextOverflow.ellipsis, // Uzun metinleri kısalt
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-          ],
-        ));
-  }
-
-  startChattingInWhatsApp(
+  Future<void> startChattingInWhatsApp(
       {required String receiverPhoneNumber,
       required BuildContext context}) async {
     var androidUrl =
@@ -1312,7 +1257,7 @@ class SwipeController extends GetxController {
                     ),
                   )
                 : null,
-            trailing: Container(
+            trailing: SizedBox(
               width: 120,
               child: DropdownButton<String>(
                 value: value.value.isEmpty ? null : value.value,

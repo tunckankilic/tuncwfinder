@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:tuncforwork/service/service.dart';
 import 'package:tuncforwork/views/screens/screens.dart';
 import 'package:tuncforwork/models/work_experience.dart';
-import 'package:tuncforwork/service/global.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
 
 class AccountSettingsController extends GetxController {
@@ -39,7 +38,7 @@ class AccountSettingsController extends GetxController {
   // Life style Controllers
   final drinkController = TextEditingController();
   final smokeController = TextEditingController();
-  final martialStatusController = TextEditingController();
+  final maritalStatusController = TextEditingController();
   final noOfChildrenController = TextEditingController();
   final professionController = TextEditingController();
   final employmentStatusController = TextEditingController();
@@ -270,7 +269,7 @@ class AccountSettingsController extends GetxController {
       // Lifestyle
       drinkController.text = data['drink']?.toString() ?? '';
       smokeController.text = data['smoke']?.toString() ?? '';
-      martialStatusController.text = data['martialStatus']?.toString() ?? '';
+      maritalStatusController.text = data['maritalStatus']?.toString() ?? '';
       childrenSelection.value = data['haveChildren']?.toString() ?? '';
       noOfChildrenController.text = data['noOfChildren']?.toString() ?? '0';
       professionController.text = data['profession']?.toString() ?? '';
@@ -351,7 +350,7 @@ class AccountSettingsController extends GetxController {
     selectedDrink.value = data['drink']?.toString() ?? drinkingHabits.first;
     selectedSmoke.value = data['smoke']?.toString() ?? smokingHabits.first;
     selectedMaritalStatus.value =
-        data['martialStatus']?.toString() ?? maritalStatuses.first;
+        data['maritalStatus']?.toString() ?? maritalStatuses.first;
     selectedProfession.value = data['profession']?.toString() ?? itJobs.first;
     selectedEmploymentStatus.value =
         data['employmentStatus']?.toString() ?? employmentStatuses.first;
@@ -429,8 +428,8 @@ class AccountSettingsController extends GetxController {
           : (dropdownValues['smokingHabits']?.firstOrNull ??
               smokingHabits.first);
 
-      martialStatusController.text = martialStatusController.text.isNotEmpty
-          ? martialStatusController.text
+      maritalStatusController.text = maritalStatusController.text.isNotEmpty
+          ? maritalStatusController.text
           : (dropdownValues['maritalStatuses']?.firstOrNull ??
               maritalStatuses.first);
 
@@ -528,7 +527,7 @@ class AccountSettingsController extends GetxController {
     selectedMaritalStatus.value = maritalStatuses.contains(martialData)
         ? martialData
         : maritalStatuses.first;
-    martialStatusController.text = selectedMaritalStatus.value;
+    maritalStatusController.text = selectedMaritalStatus.value;
 
     childrenSelection.value = data['haveChildren'] ?? childrenOptions.first;
     noOfChildrenController.text = data['noOfChildren'] ?? '0';
@@ -743,7 +742,7 @@ class AccountSettingsController extends GetxController {
         // Life style
         'drink': drinkController.text,
         'smoke': smokeController.text,
-        'martialStatus': martialStatusController.text,
+        'maritalStatus': maritalStatusController.text,
         'haveChildren': childrenSelection.value,
         'noOfChildren': noOfChildrenController.text,
         'profession': professionController.text,
@@ -973,7 +972,7 @@ class AccountSettingsController extends GetxController {
             // Map listesi olarak geliyor (Skill objesi)
             skills.value = skillsData
                 .map((skillMap) => skillMap['name'] as String)
-                .where((name) => name != null)
+                .where((name) => name.isNotEmpty)
                 .cast<String>()
                 .toList();
           } else if (skillsData.isNotEmpty && skillsData.first is String) {
@@ -1053,7 +1052,7 @@ class AccountSettingsController extends GetxController {
     bodyTypeController.dispose();
     drinkController.dispose();
     smokeController.dispose();
-    martialStatusController.dispose();
+    maritalStatusController.dispose();
     noOfChildrenController.dispose();
     professionController.dispose();
     employmentStatusController.dispose();

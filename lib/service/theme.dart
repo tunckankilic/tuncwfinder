@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:tuncforwork/constants/app_strings.dart';
 
 class ElegantTheme {
   // ${AppStrings.colorPrimary}

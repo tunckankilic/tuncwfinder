@@ -86,7 +86,7 @@ class AppStrings {
 
   static const String close = "Close";
   static const String closeButton = "Close";
-  static const String closeDialog = "Close";
+  static const String closeDialog = "Kapat";
   static const String colorAccent = "Accent Colors";
   static const String colorNeutral = "Neutral Tones";
   // Color Comments
@@ -534,7 +534,7 @@ class AppStrings {
   static const String venueCapacity = "%d people";
   static const String viewButton = "View";
   // Notification Strings
-  static const String viewProfile = "View Profile";
+  static const String viewProfile = "Görüntüle";
 
   static const String warning = "Warning";
   static const String weight = "Weight";

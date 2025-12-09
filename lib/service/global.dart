@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer';
 import 'package:tuncforwork/constants/app_strings.dart';
@@ -96,7 +95,6 @@ Future<Map<String, List<String>>> getAllDropdownValues() async {
 
 // Global Variables
 String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-String fcmServerToken = dotenv.env['FCM_SERVER_TOKEN'] ?? '';
 String? chosenAge;
 String? chosenCountry;
 String? chosenGender;

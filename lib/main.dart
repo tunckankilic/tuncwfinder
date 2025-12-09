@@ -10,8 +10,6 @@ import 'package:tuncforwork/views/screens/auth/controller/auth_controller.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tuncforwork/views/screens/auth/controller/user_controller.dart';
 import 'firebase_options.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:get/get.dart';
 import 'package:tuncforwork/theme/modern_theme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
@@ -19,14 +17,6 @@ import 'package:tuncforwork/constants/app_strings.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeApp();
-
-  // .env.prod dosyasını yükle
-  try {
-    await dotenv.load(fileName: '.env.prod');
-  } catch (e) {
-    print(
-        'Warning: .env.prod file not found. Continuing without environment variables.');
-  }
 
   runApp(const MyApp());
 }
@@ -68,6 +58,7 @@ class InitialBindings extends Bindings {
   @override
   void dependencies() {
     // Core Services
+    Get.put(ErrorHandler(), permanent: true);
     Get.put(AuthService(), permanent: true);
     Get.put(PushNotificationSystem(), permanent: true);
 

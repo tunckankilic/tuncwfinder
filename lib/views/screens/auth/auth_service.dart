@@ -6,7 +6,6 @@ import 'package:tuncforwork/service/service.dart';
 
 class AuthService extends GetxService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<bool> checkUserBanStatus(String userId) async {
     try {

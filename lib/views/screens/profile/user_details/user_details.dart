@@ -216,10 +216,10 @@ class UserDetails extends GetView<UserDetailsController> {
                 backgroundImage: controller.imageUrl.value.isNotEmpty
                     ? NetworkImage(controller.imageUrl.value)
                     : null,
+                backgroundColor: Colors.grey[200],
                 child: controller.imageUrl.value.isEmpty
                     ? const Icon(Icons.person, size: 50)
                     : null,
-                backgroundColor: Colors.grey[200],
               ),
               const SizedBox(height: 16),
               Text(
@@ -358,22 +358,37 @@ class UserDetails extends GetView<UserDetailsController> {
                   AppStrings.bodyTypeField, controller.bodyType.value),
               _buildInfoRow(AppStrings.drinkingField, controller.drink.value),
               _buildInfoRow(AppStrings.smokingField, controller.smoke.value),
-              _buildInfoRow(AppStrings.maritalStatusField,
-                  controller.martialStatus.value),
+              _buildInfoRow(
+                  AppStrings.maritalStatusField,
+                  controller.maritalStatus.value.isEmpty
+                      ? 'Not specified'
+                      : controller.maritalStatus.value),
               _buildInfoRow(
                   AppStrings.childrenField, controller.haveChildren.value),
               if (controller.haveChildren.value == 'Yes')
                 _buildInfoRow(
                     AppStrings.numberOfChildren, controller.noOfChildren.value),
-              _buildInfoRow(AppStrings.employmentField,
-                  controller.employmentStatus.value),
-              _buildInfoRow(AppStrings.incomeField, controller.income.value),
-              _buildInfoRow(AppStrings.livingSituationField,
-                  controller.livingSituation.value),
               _buildInfoRow(
-                  AppStrings.nationalityField, controller.nationality.value),
-              _buildInfoRow(AppStrings.spokenLanguageField,
-                  controller.languageSpoken.value),
+                  AppStrings.employmentField,
+                  controller.employmentStatus.value.isEmpty
+                      ? 'Not specified'
+                      : controller.employmentStatus.value),
+              _buildInfoRow(AppStrings.incomeField, controller.income.value),
+              _buildInfoRow(
+                  AppStrings.livingSituationField,
+                  controller.livingSituation.value.isEmpty
+                      ? 'Not specified'
+                      : controller.livingSituation.value),
+              _buildInfoRow(
+                  AppStrings.nationalityField,
+                  controller.nationality.value.isEmpty
+                      ? 'Not specified'
+                      : controller.nationality.value),
+              _buildInfoRow(
+                  AppStrings.spokenLanguageField,
+                  controller.languageSpoken.value.isEmpty
+                      ? 'Not specified'
+                      : controller.languageSpoken.value),
             ],
           ),
         ));
@@ -400,7 +415,6 @@ class UserDetails extends GetView<UserDetailsController> {
                 const SizedBox(height: 8),
                 ...controller.workExperiences
                     .map((exp) => _buildExperienceItem(exp, isTablet))
-                    .toList(),
               ],
               const SizedBox(height: 16),
               Text(
@@ -623,7 +637,8 @@ class ProfileActionButtons extends GetView<SwipeController> {
                   padding: EdgeInsets.all(isTablet ? 12.0 : 10.0),
                   child: SvgPicture.asset(
                     icon,
-                    color: Colors.white,
+                    colorFilter:
+                        const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                   ),
                 ),
               ),

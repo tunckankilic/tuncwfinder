@@ -5,7 +5,6 @@ import 'package:tuncforwork/views/screens/swipe/swipe_controller.dart';
 import 'package:tuncforwork/views/screens/swipe/widgets/button_cards.dart';
 import 'package:get/get.dart';
 import 'package:tuncforwork/constants/app_strings.dart';
-import 'package:tuncforwork/views/screens/swipe/widgets/swipe_cards.dart';
 
 class SwipeScreen extends GetView<SwipeController> {
   const SwipeScreen({super.key});
