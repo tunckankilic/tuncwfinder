@@ -1,0 +1,17 @@
+# iOS App Configuration
+# Docs: https://docs.fastlane.tools/actions/appfile/
+
+# App Store Connect
+app_identifier("site.tunckankilic.tuncforwork")  # Bundle Identifier
+apple_id("your-apple-id@example.com")            # Apple ID - DEĞİŞTİRİN
+itc_team_id("YOUR_ITC_TEAM_ID")                  # App Store Connect Team ID - DEĞİŞTİRİN
+team_id("YOUR_TEAM_ID")                          # Developer Portal Team ID - DEĞİŞTİRİN
+
+# Environment variables kullanarak da ayarlayabilirsiniz:
+# app_identifier(ENV["APP_IDENTIFIER"])
+# apple_id(ENV["APPLE_ID"])
+# itc_team_id(ENV["ITC_TEAM_ID"])
+# team_id(ENV["TEAM_ID"])
+
+# For more information about the Appfile, see:
+# https://docs.fastlane.tools/advanced/#appfile

@@ -1,0 +1,181 @@
+# Android Fastlane Configuration
+# Docs: https://docs.fastlane.tools
+
+default_platform(:android)
+
+platform :android do
+  # ============================================
+  # Lanes
+  # ============================================
+  
+  desc "📝 Flutter pub get"
+  lane :setup do
+    sh("cd ../.. && flutter pub get")
+  end
+
+  desc "🧪 Testleri çalıştır"
+  lane :test do
+    sh("cd ../.. && flutter test")
+  end
+
+  desc "🔨 Debug APK oluştur"
+  lane :build_debug do
+    setup
+    sh("cd ../.. && flutter build apk --debug")
+  end
+
+  desc "🔨 Release APK oluştur"
+  lane :build_release do
+    setup
+    sh("cd ../.. && flutter build apk --release")
+  end
+
+  desc "🔨 Release App Bundle oluştur"
+  lane :build_bundle do
+    setup
+    sh("cd ../.. && flutter build appbundle --release")
+  end
+
+  desc "📦 Beta sürümü Internal Test'e yükle"
+  lane :beta do
+    setup
+    
+    # Build number'ı güncelle (opsiyonel)
+    # version_code = google_play_track_version_codes(track: "internal")[0] + 1
+    
+    # App Bundle oluştur
+    sh("cd ../.. && flutter build appbundle --release")
+    
+    # Play Store Internal Test'e yükle
+    upload_to_play_store(
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+    
+    # Slack bildirimi (opsiyonel)
+    # slack(
+    #   message: "🤖 Android Beta başarıyla yüklendi!",
+    #   slack_url: ENV["SLACK_WEBHOOK_URL"]
+    # )
+  end
+
+  desc "📦 Alpha sürümü Closed Test'e yükle"
+  lane :alpha do
+    setup
+    
+    # App Bundle oluştur
+    sh("cd ../.. && flutter build appbundle --release")
+    
+    # Play Store Alpha'ya yükle
+    upload_to_play_store(
+      track: "alpha",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "🚀 Production sürümü Play Store'a yükle"
+  lane :production do
+    setup
+    
+    # App Bundle oluştur
+    sh("cd ../.. && flutter build appbundle --release")
+    
+    # Play Store Production'a yükle
+    upload_to_play_store(
+      track: "production",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      release_status: "draft"  # Manuel onay için draft olarak bırak
+    )
+  end
+
+  desc "🔄 Staged rollout ile yükle"
+  lane :staged_rollout do |options|
+    rollout_percentage = options[:percentage] || 10
+    
+    setup
+    sh("cd ../.. && flutter build appbundle --release")
+    
+    upload_to_play_store(
+      track: "production",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      rollout: rollout_percentage.to_s,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "📋 Play Store metadata'yı güncelle"
+  lane :update_metadata do
+    upload_to_play_store(
+      track: "production",
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "📸 Play Store screenshot'larını yükle"
+  lane :upload_screenshots do
+    upload_to_play_store(
+      track: "production",
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_metadata: true
+    )
+  end
+
+  # ============================================
+  # Helper Lanes
+  # ============================================
+  
+  desc "🔑 Version code'u artır"
+  lane :increment_version do
+    # En son version code'u al
+    version_codes = google_play_track_version_codes(track: "internal")
+    new_version_code = version_codes[0] + 1
+    
+    UI.message("Yeni version code: #{new_version_code}")
+    
+    # Build gradle'da güncelle (manuel veya script ile)
+    new_version_code
+  end
+
+  desc "🧹 Build klasörlerini temizle"
+  lane :clean do
+    sh("cd ../.. && flutter clean")
+    sh("cd ../.. && flutter pub get")
+  end
+
+  # ============================================
+  # Error Handling
+  # ============================================
+  
+  error do |lane, exception|
+    # Hata durumunda Slack bildirimi (opsiyonel)
+    # slack(
+    #   message: "❌ Android #{lane} lane başarısız oldu!",
+    #   success: false,
+    #   slack_url: ENV["SLACK_WEBHOOK_URL"],
+    #   attachment_properties: {
+    #     fields: [
+    #       {
+    #         title: "Error",
+    #         value: exception.message,
+    #         short: false
+    #       }
+    #     ]
+    #   }
+    # )
+  end
+end

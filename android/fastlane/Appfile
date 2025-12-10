@@ -1,0 +1,15 @@
+# Android App Configuration
+# Docs: https://docs.fastlane.tools/actions/appfile/
+
+# Package name (applicationId)
+package_name("site.tunckankilic.tuncforwork")
+
+# Google Play Store Service Account JSON Key
+# Bu dosyayı GitHub Secrets'ta saklayın ve CI'da oluşturun
+json_key_file("fastlane/play-store-key.json")
+
+# Alternatif: Environment variable ile
+# json_key_file(ENV["PLAY_STORE_JSON_KEY_PATH"])
+
+# For more information about the Appfile, see:
+# https://docs.fastlane.tools/advanced/#appfile

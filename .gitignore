@@ -106,3 +106,34 @@ build/
 **/ios/Flutter/flutter_export_environment.sh
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
+
+# CI/CD & Fastlane Secrets
+# Android signing
+*.jks
+*.keystore
+android/key.properties
+android/fastlane/play-store-key.json
+android/fastlane/report.xml
+android/fastlane/README.md
+
+# iOS signing
+*.p12
+*.mobileprovision
+*.cer
+ios/fastlane/report.xml
+ios/fastlane/README.md
+ios/AuthKey*.p8
+
+# Fastlane generated
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Ruby
+.bundle/
+vendor/bundle
+Gemfile.lock
+
+# Match (Certificate repo)
+match/
