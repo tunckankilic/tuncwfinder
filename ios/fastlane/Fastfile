@@ -1,0 +1,135 @@
+# iOS Fastlane Configuration
+# Docs: https://docs.fastlane.tools
+
+default_platform(:ios)
+
+platform :ios do
+  # ============================================
+  # Lanes
+  # ============================================
+  
+  desc "📝 Flutter pub get ve CocoaPods kurulumu"
+  lane :setup do
+    # Flutter bağımlılıkları
+    sh("cd ../.. && flutter pub get")
+    
+    # CocoaPods kurulumu
+    cocoapods(
+      clean_install: true,
+      podfile: "./Podfile"
+    )
+  end
+
+  desc "🧪 Testleri çalıştır"
+  lane :test do
+    sh("cd ../.. && flutter test")
+  end
+
+  desc "🔨 Release build oluştur"
+  lane :build do
+    setup
+    
+    # Flutter iOS build
+    sh("cd ../.. && flutter build ios --release --no-codesign")
+  end
+
+  desc "📦 Beta sürümü TestFlight'a yükle"
+  lane :beta do
+    setup
+    
+    # Sertifikaları yükle (match kullanılıyorsa)
+    # match(type: "appstore", readonly: true)
+    
+    # Build number'ı artır
+    increment_build_number(
+      xcodeproj: "Runner.xcodeproj"
+    )
+    
+    # Flutter build
+    sh("cd ../.. && flutter build ipa --release")
+    
+    # TestFlight'a yükle
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      ipa: "../build/ios/ipa/tuncforwork.ipa"
+    )
+    
+    # Slack bildirimi (opsiyonel)
+    # slack(
+    #   message: "🍎 iOS Beta başarıyla yüklendi!",
+    #   slack_url: ENV["SLACK_WEBHOOK_URL"]
+    # )
+  end
+
+  desc "🚀 Production sürümü App Store'a yükle"
+  lane :production do
+    setup
+    
+    # Sertifikaları yükle
+    # match(type: "appstore", readonly: true)
+    
+    # Build number'ı artır
+    increment_build_number(
+      xcodeproj: "Runner.xcodeproj"
+    )
+    
+    # Flutter build
+    sh("cd ../.. && flutter build ipa --release")
+    
+    # App Store'a yükle
+    upload_to_app_store(
+      skip_metadata: true,
+      skip_screenshots: true,
+      ipa: "../build/ios/ipa/tuncforwork.ipa",
+      submit_for_review: false
+    )
+  end
+
+  desc "📸 Screenshot'ları yakala"
+  lane :screenshots do
+    capture_screenshots(scheme: "Runner")
+  end
+
+  # ============================================
+  # Code Signing (Match)
+  # ============================================
+  
+  desc "🔑 Sertifikaları senkronize et (development)"
+  lane :sync_dev_certs do
+    match(
+      type: "development",
+      readonly: false,
+      force_for_new_devices: true
+    )
+  end
+
+  desc "🔑 Sertifikaları senkronize et (appstore)"
+  lane :sync_appstore_certs do
+    match(
+      type: "appstore",
+      readonly: false
+    )
+  end
+
+  # ============================================
+  # Error Handling
+  # ============================================
+  
+  error do |lane, exception|
+    # Hata durumunda Slack bildirimi (opsiyonel)
+    # slack(
+    #   message: "❌ iOS #{lane} lane başarısız oldu!",
+    #   success: false,
+    #   slack_url: ENV["SLACK_WEBHOOK_URL"],
+    #   attachment_properties: {
+    #     fields: [
+    #       {
+    #         title: "Error",
+    #         value: exception.message,
+    #         short: false
+    #       }
+    #     ]
+    #   }
+    # )
+  end
+end
