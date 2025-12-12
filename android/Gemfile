@@ -1,6 +1,9 @@
 # Android Ruby Dependencies
 source "https://rubygems.org"
 
+# Ruby version
+ruby ">= 3.3.0"
+
 # Fastlane
 gem "fastlane", "~> 2.225"
 

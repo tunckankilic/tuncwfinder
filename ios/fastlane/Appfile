@@ -3,9 +3,9 @@
 
 # App Store Connect
 app_identifier("site.tunckankilic.tuncforwork")  # Bundle Identifier
-apple_id("your-apple-id@example.com")            # Apple ID - DEĞİŞTİRİN
-itc_team_id("YOUR_ITC_TEAM_ID")                  # App Store Connect Team ID - DEĞİŞTİRİN
-team_id("YOUR_TEAM_ID")                          # Developer Portal Team ID - DEĞİŞTİRİN
+apple_id("tuncsoftwarehere@gmail.com")           # Apple ID
+itc_team_id("J2T55ML92H")                        # App Store Connect Team ID
+team_id("J2T55ML92H")                            # Developer Portal Team ID
 
 # Environment variables kullanarak da ayarlayabilirsiniz:
 # app_identifier(ENV["APP_IDENTIFIER"])
