@@ -64,47 +64,47 @@ jobs:
         continue-on-error: true
 
   # ============================================
-  # Build Android Job
+  # Build Android Job (DEVRE DIŞI - Sadece iOS)
   # ============================================
-  build_android:
-    name: 🤖 Build Android
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: analyze
+  # build_android:
+  #   name: 🤖 Build Android
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 30
+  #   needs: analyze
 
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: 📥 Checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: ☕ Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: ${{ env.JAVA_VERSION }}
+  #     - name: ☕ Setup Java
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         distribution: "temurin"
+  #         java-version: ${{ env.JAVA_VERSION }}
 
-      - name: 🐦 Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: "stable"
-          cache: true
+  #     - name: 🐦 Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
+  #         channel: "stable"
+  #         cache: true
 
-      - name: 📦 Get dependencies
-        run: flutter pub get
+  #     - name: 📦 Get dependencies
+  #       run: flutter pub get
 
-      - name: 🔨 Build APK (Debug)
-        run: flutter build apk --debug
+  #     - name: 🔨 Build APK (Debug)
+  #       run: flutter build apk --debug
 
-      - name: 🔨 Build App Bundle (Release)
-        run: flutter build appbundle --release
-        continue-on-error: true # Signing key olmadan başarısız olabilir
+  #     - name: 🔨 Build App Bundle (Release)
+  #       run: flutter build appbundle --release
+  #       continue-on-error: true # Signing key olmadan başarısız olabilir
 
-      - name: 📤 Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk-debug
-          path: build/app/outputs/flutter-apk/app-debug.apk
-          retention-days: 7
+  #     - name: 📤 Upload APK artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: android-apk-debug
+  #         path: build/app/outputs/flutter-apk/app-debug.apk
+  #         retention-days: 7
 
   # ============================================
   # Build iOS Job
@@ -147,34 +147,34 @@ jobs:
         continue-on-error: true
 
   # ============================================
-  # Build Web Job
+  # Build Web Job (DEVRE DIŞI - Sadece iOS)
   # ============================================
-  build_web:
-    name: 🌐 Build Web
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: analyze
+  # build_web:
+  #   name: 🌐 Build Web
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 15
+  #   needs: analyze
 
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: 📥 Checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: 🐦 Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: "stable"
-          cache: true
+  #     - name: 🐦 Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
+  #         channel: "stable"
+  #         cache: true
 
-      - name: 📦 Get dependencies
-        run: flutter pub get
+  #     - name: 📦 Get dependencies
+  #       run: flutter pub get
 
-      - name: 🔨 Build Web
-        run: flutter build web --release
+  #     - name: 🔨 Build Web
+  #       run: flutter build web --release
 
-      - name: 📤 Upload Web artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-build
-          path: build/web
-          retention-days: 7
+  #     - name: 📤 Upload Web artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: web-build
+  #         path: build/web
+  #         retention-days: 7
