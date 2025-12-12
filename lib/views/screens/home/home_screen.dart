@@ -48,7 +48,7 @@ class HomeScreen extends GetView<HomeController> {
               color: ModernTheme.primaryColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Colors.black.withOpacity(0.1),
                   blurRadius: 8,
                   offset: const Offset(2, 0),
                 ),
@@ -106,7 +106,7 @@ class HomeScreen extends GetView<HomeController> {
                 size: isSelected ? 32 : 28,
                 color: isSelected
                     ? ModernTheme.secondaryColor
-                    : Colors.white.withValues(alpha: 0.6),
+                    : Colors.white.withOpacity(0.6),
               ),
               const SizedBox(height: 8),
               Text(
@@ -114,7 +114,7 @@ class HomeScreen extends GetView<HomeController> {
                 style: TextStyle(
                   color: isSelected
                       ? ModernTheme.secondaryColor
-                      : Colors.white.withValues(alpha: 0.6),
+                      : Colors.white.withOpacity(0.6),
                   fontSize: isSelected ? 14 : 12,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
@@ -132,7 +132,7 @@ class HomeScreen extends GetView<HomeController> {
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -143,7 +143,7 @@ class HomeScreen extends GetView<HomeController> {
         type: BottomNavigationBarType.fixed,
         backgroundColor: ModernTheme.primaryColor,
         selectedItemColor: ModernTheme.secondaryColor,
-        unselectedItemColor: Colors.white.withValues(alpha: 0.6),
+        unselectedItemColor: Colors.white.withOpacity(0.6),
         currentIndex: controller.screenIndex.value,
         items: [
           _buildNavItem(Icons.home, AppStrings.navHome, context),

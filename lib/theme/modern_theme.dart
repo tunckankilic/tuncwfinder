@@ -127,7 +127,7 @@ class ModernTheme {
         backgroundColor: primaryColor,
         foregroundColor: onPrimaryColor,
         elevation: 1,
-        shadowColor: primaryColor.withValues(alpha: 0.3),
+        shadowColor: primaryColor.withOpacity(0.3),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),

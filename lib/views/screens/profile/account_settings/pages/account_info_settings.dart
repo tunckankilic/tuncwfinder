@@ -76,7 +76,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withValues(alpha: 0.1),
+                  color: Colors.grey.withOpacity(0.1),
                   spreadRadius: 1,
                   blurRadius: 10,
                   offset: const Offset(0, 3),
@@ -99,7 +99,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                   borderRadius: BorderRadius.circular(16.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withValues(alpha: 0.1),
+                      color: Colors.grey.withOpacity(0.1),
                       spreadRadius: 1,
                       blurRadius: 10,
                       offset: const Offset(0, 3),
@@ -282,7 +282,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withValues(alpha: 0.1),
+                    color: Colors.grey.withOpacity(0.1),
                     spreadRadius: 1,
                     blurRadius: 10,
                     offset: const Offset(0, 3),
@@ -380,7 +380,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
+              ? Theme.of(context).primaryColor.withOpacity(0.1)
               : Colors.transparent,
           border: Border(
             left: BorderSide(
@@ -552,7 +552,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.2),
+                        color: Colors.grey.withOpacity(0.2),
                         spreadRadius: 2,
                         blurRadius: 10,
                         offset: const Offset(0, 3),
@@ -582,7 +582,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.3),
+                        color: Colors.grey.withOpacity(0.3),
                         spreadRadius: 1,
                         blurRadius: 5,
                       ),
@@ -686,7 +686,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
         width: isTablet ? 120.0 : 100.0,
         padding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
         decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
         ),
         child: Column(
@@ -945,7 +945,7 @@ class ProfileInfoScreen extends GetView<AccountSettingsController> {
                 margin: EdgeInsets.only(bottom: isTablet ? 8.0 : 4.0),
                 decoration: BoxDecoration(
                   color: selection.value == option
-                      ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
+                      ? Theme.of(context).primaryColor.withOpacity(0.1)
                       : Colors.white,
                   borderRadius: BorderRadius.circular(isTablet ? 8.0 : 6.0),
                 ),
