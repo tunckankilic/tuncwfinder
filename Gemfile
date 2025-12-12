@@ -1,6 +1,9 @@
 # Root Gemfile - CI/CD ve genel Ruby bağımlılıkları
 source "https://rubygems.org"
 
+# Ruby version
+ruby ">= 3.3.0"
+
 # Fastlane - iOS ve Android deploy için
 gem "fastlane", "~> 2.225"
 

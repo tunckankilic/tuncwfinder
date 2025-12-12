@@ -20,7 +20,7 @@ on:
 
 env:
   FLUTTER_VERSION: "3.24.0"
-  RUBY_VERSION: "3.2"
+  RUBY_VERSION: "3.3.6"
 
 jobs:
   release_ios:

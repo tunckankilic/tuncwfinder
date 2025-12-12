@@ -46,14 +46,18 @@ platform :android do
     # App Bundle oluştur
     sh("cd ../.. && flutter build appbundle --release")
     
-    # Play Store Internal Test'e yükle
-    upload_to_play_store(
-      track: "internal",
-      aab: "../build/app/outputs/bundle/release/app-release.aab",
-      skip_upload_metadata: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true
-    )
+    # PLAY STORE UPLOAD DEVRE DIŞI
+    # Play Store'a yüklemek için aşağıdaki yorumu kaldırın
+    # upload_to_play_store(
+    #   track: "internal",
+    #   aab: "../build/app/outputs/bundle/release/app-release.aab",
+    #   skip_upload_metadata: true,
+    #   skip_upload_images: true,
+    #   skip_upload_screenshots: true
+    # )
+    
+    UI.success("Beta App Bundle başarıyla oluşturuldu!")
+    UI.important("Not: Play Store upload devre dışı - build/app/outputs/bundle/release/app-release.aab")
     
     # Slack bildirimi (opsiyonel)
     # slack(
@@ -69,14 +73,17 @@ platform :android do
     # App Bundle oluştur
     sh("cd ../.. && flutter build appbundle --release")
     
-    # Play Store Alpha'ya yükle
-    upload_to_play_store(
-      track: "alpha",
-      aab: "../build/app/outputs/bundle/release/app-release.aab",
-      skip_upload_metadata: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true
-    )
+    # PLAY STORE UPLOAD DEVRE DIŞI
+    # upload_to_play_store(
+    #   track: "alpha",
+    #   aab: "../build/app/outputs/bundle/release/app-release.aab",
+    #   skip_upload_metadata: true,
+    #   skip_upload_images: true,
+    #   skip_upload_screenshots: true
+    # )
+    
+    UI.success("Alpha App Bundle başarıyla oluşturuldu!")
+    UI.important("Not: Play Store upload devre dışı")
   end
 
   desc "🚀 Production sürümü Play Store'a yükle"
@@ -86,15 +93,18 @@ platform :android do
     # App Bundle oluştur
     sh("cd ../.. && flutter build appbundle --release")
     
-    # Play Store Production'a yükle
-    upload_to_play_store(
-      track: "production",
-      aab: "../build/app/outputs/bundle/release/app-release.aab",
-      skip_upload_metadata: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true,
-      release_status: "draft"  # Manuel onay için draft olarak bırak
-    )
+    # PLAY STORE UPLOAD DEVRE DIŞI
+    # upload_to_play_store(
+    #   track: "production",
+    #   aab: "../build/app/outputs/bundle/release/app-release.aab",
+    #   skip_upload_metadata: true,
+    #   skip_upload_images: true,
+    #   skip_upload_screenshots: true,
+    #   release_status: "draft"  # Manuel onay için draft olarak bırak
+    # )
+    
+    UI.success("Production App Bundle başarıyla oluşturuldu!")
+    UI.important("Not: Play Store upload devre dışı - Manuel yükleme yapın")
   end
 
   desc "🔄 Staged rollout ile yükle"
@@ -104,51 +114,63 @@ platform :android do
     setup
     sh("cd ../.. && flutter build appbundle --release")
     
-    upload_to_play_store(
-      track: "production",
-      aab: "../build/app/outputs/bundle/release/app-release.aab",
-      rollout: rollout_percentage.to_s,
-      skip_upload_metadata: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true
-    )
+    # PLAY STORE UPLOAD DEVRE DIŞI
+    # upload_to_play_store(
+    #   track: "production",
+    #   aab: "../build/app/outputs/bundle/release/app-release.aab",
+    #   rollout: rollout_percentage.to_s,
+    #   skip_upload_metadata: true,
+    #   skip_upload_images: true,
+    #   skip_upload_screenshots: true
+    # )
+    
+    UI.important("⚠️  Play Store upload devre dışı")
   end
 
-  desc "📋 Play Store metadata'yı güncelle"
+  desc "Play Store metadata'yı güncelle (devre dışı)"
   lane :update_metadata do
-    upload_to_play_store(
-      track: "production",
-      skip_upload_aab: true,
-      skip_upload_apk: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true
-    )
+    # PLAY STORE UPLOAD DEVRE DIŞI
+    # upload_to_play_store(
+    #   track: "production",
+    #   skip_upload_aab: true,
+    #   skip_upload_apk: true,
+    #   skip_upload_images: true,
+    #   skip_upload_screenshots: true
+    # )
+    
+    UI.important("Not: Play Store upload devre dışı")
   end
 
-  desc "📸 Play Store screenshot'larını yükle"
+  desc "📸 Play Store screenshot'larını yükle (devre dışı)"
   lane :upload_screenshots do
-    upload_to_play_store(
-      track: "production",
-      skip_upload_aab: true,
-      skip_upload_apk: true,
-      skip_upload_metadata: true
-    )
+    # PLAY STORE UPLOAD DEVRE DIŞI
+    # upload_to_play_store(
+    #   track: "production",
+    #   skip_upload_aab: true,
+    #   skip_upload_apk: true,
+    #   skip_upload_metadata: true
+    # )
+    
+    UI.important("Not: Play Store upload devre dışı")
   end
 
   # ============================================
   # Helper Lanes
   # ============================================
   
-  desc "🔑 Version code'u artır"
+  desc "🔑 Version code'u artır (devre dışı)"
   lane :increment_version do
+    # PLAY STORE API DEVRE DIŞI
     # En son version code'u al
-    version_codes = google_play_track_version_codes(track: "internal")
-    new_version_code = version_codes[0] + 1
+    # version_codes = google_play_track_version_codes(track: "internal")
+    # new_version_code = version_codes[0] + 1
     
-    UI.message("Yeni version code: #{new_version_code}")
+    # UI.message("Yeni version code: #{new_version_code}")
     
     # Build gradle'da güncelle (manuel veya script ile)
-    new_version_code
+    # new_version_code
+    
+    UI.important("Not: Play Store API devre dışı - Version code manuel güncellenmeli")
   end
 
   desc "🧹 Build klasörlerini temizle"

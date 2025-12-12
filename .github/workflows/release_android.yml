@@ -1,27 +1,43 @@
 # Android Release Pipeline with Fastlane
 # Bu workflow release branch'e push veya tag oluşturulduğunda çalışır
+# ŞU ANDA DEVRE DIŞI - Play Store deployment için yorumları kaldırın
 
-name: 🤖 Android Release
+name: Android Release (Disabled)
 
+# Play Store deployment şimdilik devre dışı
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
     inputs:
       lane:
-        description: "Fastlane lane to run"
+        description: "Fastlane lane to run (Play Store DISABLED)"
         required: true
-        default: "beta"
+        default: "build_only"
         type: choice
         options:
-          - beta
-          - production
+          - build_only
+          # - beta
+          # - production
+
+# Otomatik tetikleme devre dışı
+# on:
+#   push:
+#     tags:
+#       - "v*"
+#   workflow_dispatch:
+#     inputs:
+#       lane:
+#         description: "Fastlane lane to run"
+#         required: true
+#         default: "beta"
+#         type: choice
+#         options:
+#           - beta
+#           - production
 
 env:
   FLUTTER_VERSION: "3.24.0"
   JAVA_VERSION: "17"
-  RUBY_VERSION: "3.2"
+  RUBY_VERSION: "3.3.6"
 
 jobs:
   release_android:
@@ -78,15 +94,18 @@ jobs:
       - name: 🔨 Build App Bundle
         run: flutter build appbundle --release
 
-      - name: 📤 Upload to Play Store
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
-          packageName: site.tunckankilic.tuncforwork
-          releaseFiles: build/app/outputs/bundle/release/app-release.aab
-          track: ${{ github.event.inputs.lane == 'production' && 'production' || 'internal' }}
-          status: completed
-        continue-on-error: true
+      # ⚠️ PLAY STORE UPLOAD DEVRE DIŞI
+      # Play Store'a yükleme yapmak için aşağıdaki yorumları kaldırın
+
+      # - name: 📤 Upload to Play Store
+      #   uses: r0adkll/upload-google-play@v1
+      #   with:
+      #     serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+      #     packageName: site.tunckankilic.tuncforwork
+      #     releaseFiles: build/app/outputs/bundle/release/app-release.aab
+      #     track: ${{ github.event.inputs.lane == 'production' && 'production' || 'internal' }}
+      #     status: completed
+      #   continue-on-error: true
 
       - name: 📤 Upload AAB artifact
         uses: actions/upload-artifact@v4
@@ -95,13 +114,13 @@ jobs:
           path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
 
-      # Alternatif: Fastlane ile deploy
-      - name: 🚀 Run Fastlane (Alternative)
-        if: failure()
-        working-directory: android
-        env:
-          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
-        run: |
-          bundle install
-          bundle exec fastlane ${{ github.event.inputs.lane || 'beta' }}
-        continue-on-error: true
+      # ⚠️ Fastlane Play Store deployment devre dışı
+      # - name: 🚀 Run Fastlane (Alternative)
+      #   if: failure()
+      #   working-directory: android
+      #   env:
+      #     PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+      #   run: |
+      #     bundle install
+      #     bundle exec fastlane ${{ github.event.inputs.lane || 'beta' }}
+      #   continue-on-error: true

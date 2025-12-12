@@ -2,6 +2,8 @@
 
 Bu dokümantasyon, TuncForWork Flutter uygulaması için CI/CD pipeline ve Fastlane yapılandırmasını açıklar.
 
+> **⚠️ ÖNEMLİ:** Play Store deployment şu anda devre dışı bırakılmıştır. Sadece **iOS App Store** deployment'ı aktiftir. Android build'ler oluşturulur ancak otomatik olarak Play Store'a yüklenmez.
+
 ## 📋 İçindekiler
 
 - [Genel Bakış](#genel-bakış)
@@ -19,16 +21,16 @@ Bu dokümantasyon, TuncForWork Flutter uygulaması için CI/CD pipeline ve Fastl
 Bu proje aşağıdaki CI/CD pipeline'ını kullanır:
 
 ```
-Push/PR → Analyze & Test → Build (Android/iOS/Web) → Deploy (Fastlane)
+Push/PR → Analyze & Test → Build (Android/iOS/Web) → Deploy (iOS App Store Only)
 ```
 
 ### Workflow Dosyaları
 
-| Dosya                                   | Amaç                         |
-| --------------------------------------- | ---------------------------- |
-| `.github/workflows/flutter_ci.yml`      | Her push/PR'da test ve build |
-| `.github/workflows/release_android.yml` | Android release deployment   |
-| `.github/workflows/release_ios.yml`     | iOS release deployment       |
+| Dosya                                   | Amaç                                 |
+| --------------------------------------- | ------------------------------------ |
+| `.github/workflows/flutter_ci.yml`      | Her push/PR'da test ve build         |
+| `.github/workflows/release_android.yml` | Android build (Upload devre dışı) ⚠️ |
+| `.github/workflows/release_ios.yml`     | iOS App Store deployment ✅          |
 
 ---
 
@@ -55,18 +57,22 @@ on:
     branches: [main, develop]
 ```
 
-### 2. Android Release (`release_android.yml`)
+### 2. Android Release (`release_android.yml`) ⚠️ DEVRE DIŞI
 
-Tag oluşturulduğunda veya manuel tetikleme ile çalışır:
+**Play Store upload şu anda devre dışıdır.** Workflow sadece App Bundle oluşturur, otomatik yükleme yapmaz.
+
+Manuel tetikleme ile çalışır (otomatik tag tetiklemesi devre dışı):
 
 ```bash
-# Tag ile release
-git tag v1.7.0
-git push origin v1.7.0
-
 # Manuel tetikleme
-# GitHub Actions → Release Android → Run workflow
+# GitHub Actions → Release Android → Run workflow → build_only seçin
 ```
+
+Play Store upload'ı aktifleştirmek için:
+
+1. `.github/workflows/release_android.yml` dosyasındaki yorumları kaldırın
+2. `android/fastlane/Fastfile` dosyasındaki `upload_to_play_store` satırlarının yorumlarını kaldırın
+3. Gerekli secrets'ları ekleyin
 
 ### 3. iOS Release (`release_ios.yml`)
 
@@ -140,9 +146,21 @@ bundle exec fastlane init
 
 ```bash
 cd android
-bundle exec fastlane beta
-bundle exec fastlane production
-bundle exec fastlane staged_rollout percentage:25
+
+# Build oluşturma (Play Store upload YOK)
+bundle exec fastlane beta          # Sadece build oluşturur
+bundle exec fastlane production    # Sadece build oluşturur
+
+# Manuel Play Store Upload (Play Console üzerinden)
+# 1. build/app/outputs/bundle/release/app-release.aab dosyasını bulun
+# 2. Play Console → Release → Create New Release
+# 3. AAB dosyasını manuel yükleyin
+
+# Play Store upload'ı aktif etmek için:
+# android/fastlane/Fastfile içindeki yorumları kaldırın
+# bundle exec fastlane beta          # Play Store Internal Test'e yükler
+# bundle exec fastlane production    # Play Store'a yükler
+# bundle exec fastlane staged_rollout percentage:25
 ```
 
 ---
@@ -151,15 +169,15 @@ bundle exec fastlane staged_rollout percentage:25
 
 GitHub repository → Settings → Secrets and variables → Actions
 
-### Android Secrets
+### Android Secrets ⚠️ (Play Store Devre Dışı - İleride Gerekli)
 
-| Secret                            | Açıklama                         |
-| --------------------------------- | -------------------------------- |
-| `ANDROID_KEYSTORE_BASE64`         | Upload keystore (base64 encoded) |
-| `ANDROID_KEY_ALIAS`               | Keystore alias                   |
-| `ANDROID_KEY_PASSWORD`            | Key password                     |
-| `ANDROID_STORE_PASSWORD`          | Store password                   |
-| `PLAY_STORE_SERVICE_ACCOUNT_JSON` | Google Play Service Account JSON |
+| Secret                            | Açıklama                         | Durum           |
+| --------------------------------- | -------------------------------- | --------------- |
+| `ANDROID_KEYSTORE_BASE64`         | Upload keystore (base64 encoded) | ✅ Gerekli      |
+| `ANDROID_KEY_ALIAS`               | Keystore alias                   | ✅ Gerekli      |
+| `ANDROID_KEY_PASSWORD`            | Key password                     | ✅ Gerekli      |
+| `ANDROID_STORE_PASSWORD`          | Store password                   | ✅ Gerekli      |
+| `PLAY_STORE_SERVICE_ACCOUNT_JSON` | Google Play Service Account JSON | ⚠️ Şimdilik yok |
 
 **Keystore'u Base64'e Dönüştürme:**
 
@@ -190,7 +208,9 @@ base64 -i Certificates.p12 | pbcopy
 
 ## 🤖 Android Deployment
 
-### 1. Google Play Console Hazırlığı
+> **⚠️ UYARI:** Play Store deployment şu anda devre dışıdır. Aşağıdaki adımlar gelecekte kullanmak için saklanmıştır.
+
+### 1. Google Play Console Hazırlığı (ŞU ANDA DEVRE DIŞI)
 
 1. [Google Play Console](https://play.google.com/console) → API access
 2. Service Account oluşturun
@@ -299,13 +319,15 @@ team_id("YOUR_TEAM_ID")
 ### Manuel Release
 
 ```bash
-# Android Internal Test
+# Android Build (Play Store upload DEVRE DIŞI)
 cd android
-bundle exec fastlane beta
+bundle exec fastlane beta  # Sadece AAB oluşturur
+# build/app/outputs/bundle/release/app-release.aab
+# → Play Console'dan manuel yükleyin
 
-# iOS TestFlight
+# iOS TestFlight (AKTİF)
 cd ios
-bundle exec fastlane beta
+bundle exec fastlane beta  # TestFlight'a otomatik yükler
 ```
 
 ### Git Tag ile Otomatik Release
