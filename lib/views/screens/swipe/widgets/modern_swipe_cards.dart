@@ -181,7 +181,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withValues(alpha: 0.7),
+                        Colors.black.withOpacity(0.7),
                       ],
                     ),
                   ),
@@ -205,7 +205,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
                             Text(
                               person.profession!,
                               style: theme.textTheme.bodyMedium?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: Colors.white.withOpacity(0.9),
                               ),
                             ),
                           ],
@@ -321,7 +321,7 @@ class _ModernSwipeCardsState extends State<ModernSwipeCards>
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.3),
+            color: color.withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
